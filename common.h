@@ -142,8 +142,8 @@
 /*
  * Location defaults - Zephyr Cove Office
  */
-#define IMX_LATITUDE_DEFAULT            38.986835
 #define IMX_LONGITUDE_DEFAULT           -119.943016
+#define IMX_LATITUDE_DEFAULT            38.986835
 #define IMX_ELEVATION_DEFAULT           1925.15         // Elevation in Meters
 
 /******************************************************
@@ -221,8 +221,13 @@ typedef struct {
     uint32_t product_capabilities;
     uint32_t product_id;
     uint32_t organization_id;
-    uint32_t building_id, level_id, indoor_x, indoor_y;
-    float longitude, lattitude, elevation;
+    uint32_t building_id;
+    uint32_t level_id;
+    uint32_t indoor_x;
+    uint32_t indoor_y;
+    float longitude;
+    float latitude;
+    float elevation;
 } imx_imatrix_init_config_t;
 /******************************************************
  *                    Structures

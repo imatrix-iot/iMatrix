@@ -406,7 +406,7 @@ typedef struct {
     uint32_t building_id, level_id, indoor_x, indoor_y;
     int32_t local_seconds_offset_from_utc;
     uint32_t log_messages;
-    float longitude, lattitude, elevation;
+    float longitude, latitude, elevation;
     wiced_security_t ap_security;
     wiced_utc_time_ms_t last_ntp_updated_time;
     control_sensor_block_t ccb[ MAX_NO_CONTROLS ];

@@ -191,7 +191,7 @@ bool system_init(void)
     /*
      * Start with last known location
      */
-    icb.lattitude = device_config.lattitude;
+    icb.lattitude = device_config.latitude;
     icb.longitude = device_config.longitude;
     icb.elevation = device_config.elevation;
     /*

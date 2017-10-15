@@ -41,6 +41,39 @@
 /*
  *	Defines for iMatrix API
  *
+ * This file contains add API defines and functions used by the iMatrix Library
+ *
+ * The following is a template for the initial settings of the iMatrix Config structure
+ *
+imx_imatrix_init_config_t imatrix_config = {
+    .product_name = IMX_PRODUCT_NAME,
+    .device_name = IMX_PRODUCT_NAME,
+    .imatrix_public_url = IMX_IMATRIX_SITE,
+    .ota_public_url = IMX_OTA_SITE,
+    .no_sensors = IMX_NO_SENSORS,
+    .no_controls = IMX_NO_CONTROLS,
+    .no_arduino_sensors = IMX_NO_ARDUINO_SENSORS,
+    .no_arduino_controls = IMX_NO_ARDUINO_CONTROLS,
+    .no_at_controls = IMX_NO_AT_CONTROLS,
+    .at_control_start = IMX_AT_CONTROL_START,
+    .no_at_sensors = IMX_NO_AT_SENSORS,
+    .at_sensor_start = IMX_AT_SENSOR_START,
+    .ap_eap_mode = 0,
+    .st_eap_mode = 0,
+    .ap_security_mode = WICED_SECURITY_OPEN,
+    .st_security_mode = IMX_DEFAULT_ST_SECURITY,
+    .product_capabilities = ( IMX_WIFI_2_4GHZ | IMX_WIFI_5_2GHZ |IMX_WIFI_5_4GHZ | IMX_WIFI_5_8GHZ ),
+    .product_id = IMX_PRODUCT_ID,
+    .organization_id = IMX_ORGANIZATION_ID,
+    .building_id = 0,
+    .level_id = 0,
+    .indoor_x = 0,
+    .indoor_y = 0,
+    .longitude = IMX_LONGITUDE_DEFAULT,
+    .Latitude = IMX_LATITUDE_DEFAULT,
+    .elevation = IMX_ELEVATION_DEFAULT
+};
+ *
  */
 /******************************************************
  *                      Macros
@@ -85,11 +118,13 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
 imx_status_t imx_process(void);
 imx_status_t imx_deinit(void);
 /*
- * System Status
+ * System status: Operating Mode Setup / Standalone mode - or normal online mode
  */
 bool imx_setup_mode(void);
+bool imx_network_connected(void);
+char *imx_get_device_serial_number(void);
 /*
- * Configuration management
+ * Apollo Configuration management
  */
 void *imx_get_config_current_address(void);
 wiced_result_t imx_save_config( void *config, uint16_t config_size );
@@ -99,7 +134,15 @@ wiced_result_t imx_save_config( void *config, uint16_t config_size );
 uint16_t imx_get_ch( char *ch );
 void imx_printf( char *format, ... );
 /*
+ * Set & Get Control / Sensor data
+ */
+imx_status_t imx_set_sensor( uint16_t sensor_entry, void *value );
+imx_status_t imx_get_sensor( uint16_t sensor_entry, void *value );
+imx_status_t imx_set_control( uint16_t sensor_entry, void *value );
+imx_status_t imx_get_control( uint16_t control_entry, void *value );
+/*
  * Support functions from host
  */
 void imx_update_led_red_status( uint16_t status );
+void imx_update_led_green_status( uint16_t status );
 #endif /* IMX_IMATRIX_H_ */

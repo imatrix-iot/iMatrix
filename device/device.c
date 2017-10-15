@@ -86,7 +86,7 @@ void device_init(void)
 {
 
 #ifdef PRINT_STATUS_MSGS
-	dcb.print_debugs = true;
+	icb.print_debugs = true;
 #endif
 	/*
 	 * Get the device config from the DCT

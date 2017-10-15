@@ -144,7 +144,7 @@ wiced_result_t imatrix_load_config(void)
     device_config.indoor_x = imatrix_init_config.indoor_x;
     device_config.indoor_y = imatrix_init_config.indoor_y;
     device_config.longitude = imatrix_init_config.longitude;
-    device_config.lattitude = imatrix_init_config.lattitude;
+    device_config.latitude = imatrix_init_config.latitude;
     device_config.elevation = imatrix_init_config.elevation;
 
     /*
@@ -229,7 +229,7 @@ void imatrix_print_config( uint16_t arg )
 	cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
 	cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
 	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
-	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.lattitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
+	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
 	cli_print( "Operating Mode: %s, SSID: %s, Passphrase: ->%s<-\r\n", device_config.AP_setup_mode ? "Provisioning" : "Normal Online", device_config.st_ssid, device_config.st_wpa );
 	imatrix_print_config( 0 );
 
@@ -259,7 +259,7 @@ wiced_result_t imatrix_print_saved_config( uint16_t arg )
 	cli_print( "Serial Number: %08lX%08lX%08lX", temp_app_dct_config->sn.serial1, temp_app_dct_config->sn.serial2, temp_app_dct_config->sn.serial3 );
 	cli_print( " - iMatrix assigned: %s\r\n", temp_app_dct_config->device_serial_number );
 	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) temp_app_dct_config->last_ntp_updated_time, temp_app_dct_config->reboots, temp_app_dct_config->valid_config );
-	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", temp_app_dct_config->longitude, temp_app_dct_config->lattitude, (float) temp_app_dct_config->local_seconds_offset_from_utc / ( 60 * 60 ) );
+	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", temp_app_dct_config->longitude, temp_app_dct_config->latitude, (float) temp_app_dct_config->local_seconds_offset_from_utc / ( 60 * 60 ) );
 
     return WICED_SUCCESS;
 }

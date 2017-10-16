@@ -126,11 +126,11 @@ void deinit_tcp(void)
     if( tcp.tcp_connection_up == true ) {
         result = wiced_tcp_unregister_callbacks( &tcp.socket );
         if( result != WICED_SUCCESS )
-            print_status( "Unable to unregister TCP callback...\r\n" );
+            imx_printf( "Unable to unregister TCP callback...\r\n" );
 
         result = wiced_tcp_delete_socket( &tcp.socket );
         if( result != WICED_SUCCESS )
-                print_status( "Unable to delete TCP socket...\r\n" );
+                imx_printf( "Unable to delete TCP socket...\r\n" );
     }
 }
 void process_tcp( wiced_time_t current_time )
@@ -148,7 +148,7 @@ void process_tcp( wiced_time_t current_time )
             }
             return;
             retry_count = 0;
-            print_status( "Starting TCP Transport Service\r\n" );
+            imx_printf( "Starting TCP Transport Service\r\n" );
 
             while( retry_count < IMX_MAX_CONNECTION_RETRY_COUNT ) {
                 /*
@@ -157,10 +157,10 @@ void process_tcp( wiced_time_t current_time )
                 if( 1 /* get_site_ip( device_config.imatrix_public_url, &tcp.address ) == true */ ) {
                     tcp.address.ip.v4 = MAKE_IPV4_ADDRESS( 10, 3, 0, 144 );
                     tcp.address.version = WICED_IPV4;
-                    print_status( "Got IP Address for: %s \r\n", device_config.imatrix_public_url );
+                    imx_printf( "Got IP Address for: %s \r\n", device_config.imatrix_public_url );
                     result = wiced_tcp_create_socket( &tcp.socket, WICED_STA_INTERFACE );
                     if( result != WICED_TCPIP_SUCCESS ) {
-                        print_status( "Failed to create socket on STA Interface, aborting\r\n" );
+                        imx_printf( "Failed to create socket on STA Interface, aborting\r\n" );
                         return;    // We are done
                     }
                     /*  --- Add security details
@@ -200,7 +200,7 @@ void process_tcp( wiced_time_t current_time )
                     /*
                      * Attempting to connect to
                      */
-                    print_status( "Connecting iMatrix CoAP Server: %03u.%03u.%03u.%03u ",
+                    imx_printf( "Connecting iMatrix CoAP Server: %03u.%03u.%03u.%03u ",
                             (unsigned int ) ( ( tcp.address.ip.v4 & 0xff000000 ) >> 24 ),
                             (unsigned int ) ( ( tcp.address.ip.v4 & 0x00ff0000 ) >> 16 ),
                             (unsigned int ) ( ( tcp.address.ip.v4 & 0x0000ff00 ) >> 8 ),
@@ -208,7 +208,7 @@ void process_tcp( wiced_time_t current_time )
 
                     result = wiced_tcp_connect( &tcp.socket, &tcp.address, DEFAULT_COAP_PORT, TCP_CONNECT_TIMEOUT );
                     if( result == WICED_TCPIP_SUCCESS ) {
-                        print_status( "Successfully Connected to: %s on Port: %u\r\n", device_config.imatrix_public_url, DEFAULT_COAP_PORT );
+                        imx_printf( "Successfully Connected to: %s on Port: %u\r\n", device_config.imatrix_public_url, DEFAULT_COAP_PORT );
                         tcp.state = TCP_REGISTER;
                         return;
                     } // else
@@ -222,17 +222,17 @@ void process_tcp( wiced_time_t current_time )
                  */
                 retry_count++;
             }
-            print_status( "Failed to establish TCP Connection\r\n" );
+            imx_printf( "Failed to establish TCP Connection\r\n" );
             wiced_time_get_time( &tcp.last_attempt );
             tcp.state = TCP_RETRY;
             break;
         case TCP_CLOSE_CONNECTION :
             result = wiced_tcp_disconnect( &tcp.socket );
             if( result != WICED_SUCCESS )
-                print_status( "TCP Disconnect Failed: %u\r\n", result );
+                imx_printf( "TCP Disconnect Failed: %u\r\n", result );
             result = wiced_tcp_delete_socket( &tcp.socket );
             if( result != WICED_SUCCESS )
-                print_status( "TCP Disconnect Failed: %u\r\n", result );
+                imx_printf( "TCP Disconnect Failed: %u\r\n", result );
             /*
              * Retry Connection
              */
@@ -249,7 +249,7 @@ void process_tcp( wiced_time_t current_time )
             /* Create the TCP packet. Memory for the tx_data is automatically allocated */
             result = wiced_packet_create_tcp(&tcp.socket, REGISTRATION_LENGTH, &packet, (uint8_t**)&registration, &available_data_length);
             if( ( result != WICED_SUCCESS ) || ( available_data_length < REGISTRATION_LENGTH ) ) {
-                print_status("TCP packet creation failed, in registration\r\n" );
+                imx_printf("TCP packet creation failed, in registration\r\n" );
                 tcp.state = TCP_INIT;
             }
             /*
@@ -265,7 +265,7 @@ void process_tcp( wiced_time_t current_time )
              */
             result = wiced_tcp_send_packet( &tcp.socket, packet );
             if( result != WICED_SUCCESS ) {
-                print_status("TCP packet creation failed, in registration\r\n" );
+                imx_printf("TCP packet creation failed, in registration\r\n" );
                 tcp.state = TCP_CLOSE_CONNECTION;
             } else {
                 /*
@@ -278,7 +278,7 @@ void process_tcp( wiced_time_t current_time )
         case TCP_GET_RESPONSE :
             result = wiced_tcp_receive( &tcp.socket, &rx_packet, 0 );
             if( result == WICED_SUCCESS ) {
-                print_status( "TCP response received: " );
+                imx_printf( "TCP response received: " );
                 /*
                  * Get the contents of the received packet
                  */
@@ -287,7 +287,7 @@ void process_tcp( wiced_time_t current_time )
                   * Null terminate the received string
                   */
                 response[ response_length ] = '\x0';
-                print_status( "Response from CoAP Server: %s\r\n", response );
+                imx_printf( "Response from CoAP Server: %s\r\n", response );
                 /*
                  * Delete the packet
                  */
@@ -305,7 +305,7 @@ void process_tcp( wiced_time_t current_time )
                     tcp.state = TCP_CLOSE_CONNECTION;
             } else {
                 if( is_later( current_time, tcp.last_attempt + TCP_REGISTRATION_TIMEOUT ) ) {
-                    print_status( "Timed out waiting for response from CoAP Server\r\n" );
+                    imx_printf( "Timed out waiting for response from CoAP Server\r\n" );
                     tcp.state = TCP_CLOSE_CONNECTION;
                 }
             }
@@ -322,7 +322,7 @@ wiced_tcp_socket_callback_t coap_tcp_disconnect( wiced_tcp_socket_t* socket, voi
 
     result = wiced_rtos_lock_mutex( &tcp_mutex );
     if( result != WICED_SUCCESS ) {
-        print_status( "TCP Unable to lock mutex...\r\n" );
+        imx_printf( "TCP Unable to lock mutex...\r\n" );
     }
 
     if( socket == &tcp.socket )     // Is it for the main TCP stream (Other is Telnet etc.
@@ -330,7 +330,7 @@ wiced_tcp_socket_callback_t coap_tcp_disconnect( wiced_tcp_socket_t* socket, voi
 
     result = wiced_rtos_unlock_mutex( &tcp_mutex );
     if( result != WICED_SUCCESS ) {
-        print_status( "TCP Unable to un lock mutex...\r\n" );
+        imx_printf( "TCP Unable to un lock mutex...\r\n" );
     }
     return WICED_SUCCESS;
 }

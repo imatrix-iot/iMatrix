@@ -70,7 +70,7 @@ void reset_sensors(void)
 	uint16_t i, scb_entry, count;
 
 	count = device_config.no_sensors;
-	print_status( "Adding %u Sensors\r\n", count );
+	imx_printf( "Adding %u Sensors\r\n", count );
 	for( i = 0; i < count; i++ ) {
 /*        printf( "Loading defaults from Sensor Defaults: %u, %s, id: %u, sample rate: %u, batch size: %u, percent change: %u, enabled: %u, send on percent: %u, data type: %u\r\n", i,
                 sensors_defaults[ i ].name,
@@ -104,13 +104,13 @@ uint16_t add_sensor( control_sensor_block_t *ctrl_blk, uint16_t *entry_no )
 	memcpy( &device_config.scb[ device_config.no_sensors ], ctrl_blk, sizeof( control_sensor_block_t ) );
 	*entry_no = device_config.no_sensors;
 
-	print_status( "Added new sensor: %u%s, %s ", device_config.no_sensors, device_config.scb[ device_config.no_sensors ].enabled ? "" : " (Disabled)", device_config.scb[ device_config.no_sensors ].name );
+	imx_printf( "Added new sensor: %u%s, %s ", device_config.no_sensors, device_config.scb[ device_config.no_sensors ].enabled ? "" : " (Disabled)", device_config.scb[ device_config.no_sensors ].name );
 
     if( device_config.scb[ device_config.no_sensors ].sample_rate == 0 )
-        print_status( "Event Driven" );
+        imx_printf( "Event Driven" );
     else
-        print_status( "Sample Rate Every: %u Sec", device_config.scb[ device_config.no_sensors ].sample_rate );
-    print_status( " Batch size: %u\r\n", device_config.scb[ device_config.no_sensors ].sample_batch_size );
+        imx_printf( "Sample Rate Every: %u Sec", device_config.scb[ device_config.no_sensors ].sample_rate );
+    imx_printf( " Batch size: %u\r\n", device_config.scb[ device_config.no_sensors ].sample_batch_size );
 
 	device_config.no_sensors += 1;
 

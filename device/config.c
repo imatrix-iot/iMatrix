@@ -105,13 +105,13 @@ wiced_result_t imatrix_load_config(void)
         return result;
 
     if ( device_config.valid_config == IMX_MAGIC_CONFIG) {
-        print_status( "Restored configuration from DCT\r\n" );
+        imx_printf( "Restored configuration from DCT\r\n" );
         return WICED_SUCCESS;
     }
 
     // Replace invalid DCT with factory defaults and user defined values
 
-    print_status( "Reseting to factory defaults\r\n" );
+    imx_printf( "Reseting to factory defaults\r\n" );
     memcpy( &device_config, &factory_default_config, sizeof( IOT_Device_Config_t ) );
 
     strncpy( device_config.product_name, imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
@@ -126,6 +126,9 @@ wiced_result_t imatrix_load_config(void)
      * Load the iMatrix URL and other configuration items that define this Thing
      */
     strncpy( device_config.imatrix_public_url, imatrix_init_config.imatrix_public_url, IMX_IMATRIX_URL_LENGTH );
+    strncpy( device_config.product_name, imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
+    strncpy( device_config.ota_public_url, imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
+    strncpy( device_config.manufacturing_url, imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
     device_config.no_sensors = imatrix_init_config.no_sensors;
     device_config.no_controls = imatrix_init_config.no_controls;
     device_config.no_arduino_sensors = imatrix_init_config.no_arduino_sensors;
@@ -192,9 +195,9 @@ wiced_result_t imatrix_load_config(void)
         strncpy( device_config.device_serial_number, DEVELOPER_SERIAL_NUMBER, DEVICE_SERIAL_NUMBER_LENGTH );
         strncpy( device_config.password, DEVELOPER_PASSWORD, PASSWORD_LENGTH );
 
-        print_status( "%c*** Developer Mode Active: Thing set to Serial No: %s, Password: %s, MAC: ", 0x07, device_config.device_serial_number, device_config.password );
+        imx_printf( "%c*** Developer Mode Active: Thing set to Serial No: %s, Password: %s, MAC: ", 0x07, device_config.device_serial_number, device_config.password );
         print_mac_address( (wiced_mac_t*) &wifi.mac_address );
-        print_status( " ***\r\n" );
+        imx_printf( " ***\r\n" );
 
     }
 #endif

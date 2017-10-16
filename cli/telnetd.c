@@ -423,13 +423,13 @@ void telnetd(void)
 					case SOCKET_MESSAGE_EVENT:
 						result = wiced_tcp_stream_read_with_count( &telnet_config.tcp_stream, local_buffer, TELNET_BUFFER_LENGTH, 0, &local_buffer_length );
 						if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - First off this will be the negotiation
-							// print_status( "\r\nReceived: %lu Bytes >", local_buffer_length );
+							// imx_printf( "\r\nReceived: %lu Bytes >", local_buffer_length );
 					    	for( i = 0; i < local_buffer_length; i++ ) {
 					    		/*
 					    		if( isprint( local_buffer[ i ] ) )
-					    			print_status( "%c", local_buffer[ i ] );
+					    			imx_printf( "%c", local_buffer[ i ] );
 					    		else */
-					    			// print_status( "[0x%02x]", local_buffer[ i ] );
+					    			// imx_printf( "[0x%02x]", local_buffer[ i ] );
 
 					    		if( telnet_config.processing_IAC == true ) {
 					    			switch( (uint16_t ) local_buffer[ i ] ) {
@@ -569,7 +569,7 @@ void telnetd(void)
 					    				if( telnet_config.length == TELNET_BUFFER_LENGTH )
 					    					;	// Drop Character
 					    				else {
-					    					// print_status( "Adding character [0x%02x] at start: %u and length: %u\r\n", (uint16_t ) local_buffer[ i ], telnet_config.start, telnet_config.length );
+					    					// imx_printf( "Adding character [0x%02x] at start: %u and length: %u\r\n", (uint16_t ) local_buffer[ i ], telnet_config.start, telnet_config.length );
 						    				if( telnet_config.start + telnet_config.length > TELNET_BUFFER_LENGTH )
 						    					telnet_config.buffer[ ( telnet_config.start + telnet_config.length ) - TELNET_BUFFER_LENGTH ] = local_buffer[ i ];
 						    				else
@@ -597,7 +597,7 @@ send_response:
 
 					    	}// End of for loop.
 
-					    	// print_status( "<\r\n" );
+					    	// imx_printf( "<\r\n" );
 					    	result =  wiced_tcp_stream_flush( &telnet_config.tcp_stream );
 						    wiced_time_get_time( &telnet_config.last_telnet_time );	// Last time we got data
 					    	return;
@@ -729,12 +729,12 @@ uint16_t telnetd_getch( char *ch )
 {
 	if( telnet_config.length > 0 ) {
 		*ch = (char) telnet_config.buffer[ telnet_config.start ];
-		//print_status( "Got character [0x%02x] at start: %u and length: %u\r\n", (uint16_t ) *ch, telnet_config.start, telnet_config.length );
+		//imx_printf( "Got character [0x%02x] at start: %u and length: %u\r\n", (uint16_t ) *ch, telnet_config.start, telnet_config.length );
 		telnet_config.start += 1;
 		if( telnet_config.start == TELNET_BUFFER_LENGTH )
 			telnet_config.start = 0;	// Wrap
 		telnet_config.length -= 1;
-		//print_status( "length now %u\r\n", telnet_config.length );
+		//imx_printf( "length now %u\r\n", telnet_config.length );
 		return true;
 	} else
 		return false;
@@ -746,12 +746,12 @@ uint16_t telnetd_write( char *buffer, uint16_t length )
 
 	result = wiced_tcp_stream_write( &telnet_config.tcp_stream, (void *) buffer, (uint32_t) length );
 	if ( result != WICED_TCPIP_SUCCESS ) {
-		print_status( "Failed to send to TCP Stream\r\n" );
+		imx_printf( "Failed to send to TCP Stream\r\n" );
 		return false;
 	}
 	result =  wiced_tcp_stream_flush( &telnet_config.tcp_stream );
 	if ( result != WICED_TCPIP_SUCCESS ) {
-		print_status( "Failed to flush TCP Stream with error code: %u\r\n", result );
+		imx_printf( "Failed to flush TCP Stream with error code: %u\r\n", result );
 		return false;
 	}
 	return true;

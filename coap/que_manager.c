@@ -155,16 +155,16 @@ void mutex_init(void)
     wiced_result_t result;
     result = wiced_rtos_init_mutex( &list_mutex );
     if( result != WICED_SUCCESS )
-        print_status( "Unable to setup list mutex...\r\n" );
+        imx_printf( "Unable to setup list mutex...\r\n" );
 
     result = wiced_rtos_init_mutex( &udp_xmit_reset_mutex ); // this mutex is only used by coap_udp_xmit_reset() in coap_udp_xmit.c
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to setup mutex for transmitting reset...\r\n" );
+        imx_printf( "Unable to setup mutex for transmitting reset...\r\n" );
     }
 
     result = wiced_rtos_init_mutex( &last_packet_mutex ); // this mutex is used to store the timestamp of the last packet.
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to setup mutex for timestamp of last packet...\r\n" );
+        imx_printf( "Unable to setup mutex for timestamp of last packet...\r\n" );
     }
 
 }
@@ -174,14 +174,14 @@ static void set_packet_time( wiced_time_t time, wiced_time_t *packet_recv_time )
 	wiced_result_t result;
     result = wiced_rtos_lock_mutex( &last_packet_mutex );
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to lock list mutex...\r\n" );
+        imx_printf( "Unable to lock list mutex...\r\n" );
     }
 
     *packet_recv_time = time;
 
     result = wiced_rtos_unlock_mutex( &last_packet_mutex );
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to un lock list mutex...\r\n" );
+        imx_printf( "Unable to un lock list mutex...\r\n" );
     }
 
 }
@@ -193,7 +193,7 @@ static wiced_time_t get_packet_time( wiced_time_t *packet_recv_time )
 
 	result = wiced_rtos_lock_mutex( &last_packet_mutex );
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to lock list mutex...\r\n" );
+        imx_printf( "Unable to lock list mutex...\r\n" );
     }
 //wiced_time_get_utc_time_ms( &time );
 
@@ -201,7 +201,7 @@ static wiced_time_t get_packet_time( wiced_time_t *packet_recv_time )
 
 	result = wiced_rtos_unlock_mutex( &last_packet_mutex );
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to un lock list mutex...\r\n" );
+        imx_printf( "Unable to un lock list mutex...\r\n" );
     }
     return time;
 }
@@ -249,7 +249,7 @@ void list_add_at( wiced_time_t timestamp, message_list_t *list, message_t *new_e
 
     result = wiced_rtos_lock_mutex( &list_mutex );   // All use same mutex for simplicity
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to lock list mutex...\r\n" );
+        imx_printf( "Unable to lock list mutex...\r\n" );
     }
    
     new_entry->coap.send_attempts = send_attempts;
@@ -288,7 +288,7 @@ void list_add_at( wiced_time_t timestamp, message_list_t *list, message_t *new_e
 
     result = wiced_rtos_unlock_mutex( &list_mutex );   // All use same mutex for simplicity
         if( result != WICED_SUCCESS ) {
-            print_status( "Unable to unlock list mutex...\r\n" );
+            imx_printf( "Unable to unlock list mutex...\r\n" );
         }
 
 }
@@ -313,7 +313,7 @@ message_t *list_pop_before( wiced_time_t timestamp, message_list_t *list )
 
     result = wiced_rtos_lock_mutex( &list_mutex );   // All use same mutex for simplicity
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to lock list mutex...\r\n" );
+        imx_printf( "Unable to lock list mutex...\r\n" );
     }
 
     if ( ( list->head == NULL ) || ( is_later( list->head->coap.next_timestamp, timestamp ) ) ) {// Assume no entries
@@ -335,7 +335,7 @@ message_t *list_pop_before( wiced_time_t timestamp, message_list_t *list )
 
     result = wiced_rtos_unlock_mutex( &list_mutex );   // All use same mutex for simplicity
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to un lock list mutex...\r\n" );
+        imx_printf( "Unable to un lock list mutex...\r\n" );
     }
     return entry;
 
@@ -405,12 +405,12 @@ void create_msg_lists()
 			num_msg = NUM_MSG_W_HUGE_DATA_SIZE;
 		}
 		else if ( s != NUMBER_OF_DATA_SIZES - 1 ) {// Unless this is the last loop print error message.
-			print_status("Unrecognized message data size: %u\r\n", free_messages_by_size[ s ].data_size );
+			imx_printf("Unrecognized message data size: %u\r\n", free_messages_by_size[ s ].data_size );
 			exit(-1);
 		}
 	}
 	if( i != TOTAL_BYTES_FOR_MESSAGE_DATA ) {
-		print_status( "Incorrect total of message bytes: %u\r\n", i );
+		imx_printf( "Incorrect total of message bytes: %u\r\n", i );
 		exit(-1);
 	}
 
@@ -426,7 +426,7 @@ void create_msg_lists()
 		memset( &all_messages[ i ], 0, sizeof( message_t) );
 		list_add( &list_free, &all_messages[ i ] );
 	}
-	print_status("%u message_t structs added to the free list.\r\n", TOTAL_NUM_MESSAGE_BUFFERS );
+	imx_printf("%u message_t structs added to the free list.\r\n", TOTAL_NUM_MESSAGE_BUFFERS );
 }
 
 /**
@@ -519,7 +519,7 @@ unlock_mutex_and_return_msg:
 wiced_result_t msg_release( message_t *msg )
 {
 	if ( msg == NULL ) {
-		print_status( "NULL passed to msg_release function.\r\n");
+		imx_printf( "NULL passed to msg_release function.\r\n");
 		return WICED_ERROR;
 	}
     wiced_result_t result, return_result = WICED_SUCCESS;
@@ -529,14 +529,14 @@ wiced_result_t msg_release( message_t *msg )
 
 		result = wiced_rtos_lock_mutex( &list_mutex );   // All use same mutex for simplicity
 		if( result != WICED_SUCCESS ) {
-			print_status( "Unable to lock list mutex...\r\n" );
+			imx_printf( "Unable to lock list mutex...\r\n" );
 		}
 
 		if ( ( msg->coap.data_block->next != NULL ) || // Data block must be disconnected from a free list before releasing it.
 		     ( msg->coap.data_block->data == NULL ) || // Data array must exist in every data block.
 		     ( msg->coap.data_block->release_list_for_data_size == NULL ) ) // Release list must exist.
 		{
-			print_status("Memory Leak Error in list_release function.\r\n");
+			imx_printf("Memory Leak Error in list_release function.\r\n");
 			return_result = WICED_ERROR;
 		}
 		else {
@@ -550,7 +550,7 @@ wiced_result_t msg_release( message_t *msg )
 		}
 		result = wiced_rtos_unlock_mutex( &list_mutex );   // All use same mutex for simplicity
 		if( result != WICED_SUCCESS ) {
-			print_status( "Unable to unlock list mutex...\r\n" );
+			imx_printf( "Unable to unlock list mutex...\r\n" );
 		}
     }
 
@@ -591,7 +591,7 @@ void list_release_all( message_list_t *list )
     // This should never happen but just check to make sure the list is empty.
 
     if ( ( list->head != NULL ) || ( list->tail != NULL ) ) {
-    	print_status( "Failed to release all list members in list_release_all function.\r\n" );
+    	imx_printf( "Failed to release all list members in list_release_all function.\r\n" );
     }
 }
 
@@ -605,7 +605,7 @@ void list_release_all( message_list_t *list )
 wiced_result_t coap_msg_resize( coap_message_t* coap, uint16_t min_bytes )
 {
 	if ( coap == NULL ) {
-		print_status( "NULL passed to coap_msg_resize function.\r\n" );
+		imx_printf( "NULL passed to coap_msg_resize function.\r\n" );
 		return WICED_ERROR;
 	}
     wiced_result_t result, return_result = WICED_ERROR;
@@ -615,13 +615,13 @@ wiced_result_t coap_msg_resize( coap_message_t* coap, uint16_t min_bytes )
 			( ( coap->data_block->release_list_for_data_size == NULL ) ||
 			  ( coap->data_block->data == NULL ) ) )
 	{
-		print_status( "Attempted to access invalid data block in coap_msg_resize function.\r\n" );
+		imx_printf( "Attempted to access invalid data block in coap_msg_resize function.\r\n" );
 		return WICED_ERROR;
 	}
 
     result = wiced_rtos_lock_mutex( &list_mutex );   // All use same mutex for simplicity
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to lock list mutex...\r\n" );
+        imx_printf( "Unable to lock list mutex...\r\n" );
 		return WICED_ERROR;
     }
 
@@ -676,13 +676,13 @@ wiced_result_t coap_msg_resize( coap_message_t* coap, uint16_t min_bytes )
     		goto unlock_mutex;
     	}
     }
-    print_status( "Unable to find big enough memory block(%u bytes) in coap_msg_resize function.\r\n", min_bytes );
+    imx_printf( "Unable to find big enough memory block(%u bytes) in coap_msg_resize function.\r\n", min_bytes );
     return_result = WICED_ERROR;
 
 unlock_mutex:
     result = wiced_rtos_unlock_mutex( &list_mutex );   // All use same mutex for simplicity
     if( result != WICED_SUCCESS ) {
-        print_status( "Unable to unlock list mutex...\r\n" );
+        imx_printf( "Unable to unlock list mutex...\r\n" );
     }
     return return_result;
 }
@@ -695,14 +695,14 @@ unlock_mutex:
 uint16_t coap_msg_data_size( coap_message_t* coap )
 {
 	if ( coap == NULL ) {
-		print_status( "NULL passed to coap_msg_data_size function.\r\n");
+		imx_printf( "NULL passed to coap_msg_data_size function.\r\n");
 		return 0;
 	}
 	if ( coap->data_block == NULL ) {// OK: No data block means no data.
 		return 0;
 	}
 	if ( coap->data_block->release_list_for_data_size == NULL ) {
-		print_status( "Data block missing required release list in coap_msg_data_size function.r\n" );
+		imx_printf( "Data block missing required release list in coap_msg_data_size function.r\n" );
 		return 0;
 	}
 	return coap->data_block->release_list_for_data_size->data_size;
@@ -734,7 +734,7 @@ void * coap_msg_payload( coap_message_t* coap )
 			}
 		}
 	}
-	print_status( "Unable to find a payload in coap_msg_payload.\r\n" );
+	imx_printf( "Unable to find a payload in coap_msg_payload.\r\n" );
 	return NULL;
 }
 
@@ -774,7 +774,7 @@ message_t *list_create_temporary_message( void )
         new_msg->coap.is_temporary_bit_flag = 1; // deleted
     }
     else {
-        print_status( "Out of memory\r\n" );
+        imx_printf( "Out of memory\r\n" );
     }
 
     return new_msg;
@@ -851,23 +851,23 @@ void print_msg( message_t *msg )
     uint16_t i;
     bool payload = false;
 
-    print_status( "Message Contents\r\n");
-    print_status( "  Next: %lu, Prev %lu\r\n", (uint32_t)msg->header.next, (uint32_t) msg->header.prev );
-    print_status( "  CoAP: IP Address: %u.%u.%u.%u, Port: %u\r\n", (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4 ) >> 24 ) & 0xff ),
+    imx_printf( "Message Contents\r\n");
+    imx_printf( "  Next: %lu, Prev %lu\r\n", (uint32_t)msg->header.next, (uint32_t) msg->header.prev );
+    imx_printf( "  CoAP: IP Address: %u.%u.%u.%u, Port: %u\r\n", (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4 ) >> 24 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 16 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 8 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 0 ) & 0xff ), msg->coap.port );
-    print_status( "        Header: Ver: %u, Type: %u, Code: 0x%02x, Message ID: %u\r\n", msg->coap.header.ver, msg->coap.header.t, msg->coap.header.code, msg->coap.header.id );
-    print_status( "        Message Length: %u: ", msg->coap.msg_length );
+    imx_printf( "        Header: Ver: %u, Type: %u, Code: 0x%02x, Message ID: %u\r\n", msg->coap.header.ver, msg->coap.header.t, msg->coap.header.code, msg->coap.header.id );
+    imx_printf( "        Message Length: %u: ", msg->coap.msg_length );
     for( i = 0; i < msg->coap.msg_length; i++ ) {
         if( msg->coap.data_block->data[ i ] == 0xff )
             payload = true;
         if ( isprint( msg->coap.data_block->data[ i ] ) && payload == false )
-            print_status( "%c", msg->coap.data_block->data[ i ] );
+            imx_printf( "%c", msg->coap.data_block->data[ i ] );
         else
-            print_status( "[0x%02x]", msg->coap.data_block->data[ i ] );
+            imx_printf( "[0x%02x]", msg->coap.data_block->data[ i ] );
     }
-    print_status( "\r\n" );
+    imx_printf( "\r\n" );
 
 }
 

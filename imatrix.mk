@@ -40,7 +40,6 @@ at_cmds/at_cmds.c at_cmds/at_cmds.h \
 cli/cli.c cli/cli.h cli/cli_help.c cli/cli_help.h cli/cli_reboot.c cli/cli_reboot.h cli/cli_status.c cli/status.h \
 cli/cli_set_ssid.c cli/cli_set_ssid.h cli/cli_dump.c cli/cli_dump.h cli/cli_set_serial.c cli/cli_set_serial.h \
 cli/interface.c cli/interface.h cli/print_dct.c cli/print_dct.h cli/telnetd.c cli/telnetd.h cli/cli_debug.c cli/cli_debug.h \
-cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
 coap/coap.c coap/coap.h coap/coap_setup.c coap/coap_setup.h coap/coap_udp_recv.c coap_udp_recv.h \
 coap/add_coap_option.c coap/add_coap_option.h coap/coap_process.c coap/coap_process.h \
 coap/coap_reliable_udp.c coap/coap_reliable_udp.h \
@@ -66,10 +65,17 @@ coap_interface/coap_sensor_rssi.c coap_interface/coap_sensor_rssi.h \
 coap_interface/get_uint_from_query_str.c coap_interface/get_uint_from_query_str.h \
 coap_interface/match_uri.c coap_interface/match_uri.h \
 coap_interface/token_string.c coap_interface/token_string.h \
-device/config.c device/config.h device/device.c device/device.h device/system_init.c device/system_init.h \
-device/cert_util.c device/cert_util.h device/cert_defs.h device/set_serial.c device/set_serial.h \
-device/hal_wifi.c device/hal_wifi.h \
-
+cs_ctrl/controls. cs_ctrl/controls.h cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
+cs_ctrl/hal_event.c cs_ctrl/hal_event.h cs_ctrl/hal_sample.c cs_ctrl/hal_sample.h  \
+device/cert_util.c device/cert_util.h device/config.c device/config.h device/device.c device/device.h \
+device/hal_wifi.c device/hal_wifi.h device/set_serial.c device/set_serial.h device/system_init.c device/system_init.h device/var_data.c device/var_data.h \
+imatrix/add_internal.c imatrix/add_internal.h imatrix/imatrix_get_ip.c imatrix/imatrix_get_ip.h imatrix/imatrix.c imatrix/imatrix.h imatrix/registration.c imatrix/registration.h \
+location/location.c location/location.h \
+manufacturing/manufacturing.c manufacturing/manufacturing.h \
+networking/get_inbound_destination_ip.c networking/get_inbound_destination_ip.h networking/http_get_sn_mac_address.c networking/http_get_sn_mac_address.h \
+networking/keep_alive.c networking/keep_alive.h networking/utility.c networking/utility.h \
+time/ck_time.c time/ck_time.h time/ntp_success.c time/ntp_success.h time/sntp.c time/sntp.h \
+wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/process_wifi.c wifi/process_wifi.h wifi/wifi/c wifi/wifi/h
 $(NAME)_DEFINES += IMATRIX_CLIENT
 
 GLOBAL_INCLUDES := .

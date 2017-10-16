@@ -61,7 +61,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -126,7 +126,7 @@ uint16_t coap_get_control_securessid(coap_message_t *msg, CoAP_msg_detail_t *cd,
         response_type = ACKNOWLEDGEMENT;
     }
 
-    print_status( "Get Configuration - '/control/securessid'\r\n");
+    imx_printf( "Get Configuration - '/control/securessid'\r\n");
     PRINTF( "URI Query: %s\r\n", cd->uri_query );
 
     memset( buffer, 0x00, SSID_OUTPUT_BUFFER_LENGTH );
@@ -134,7 +134,7 @@ uint16_t coap_get_control_securessid(coap_message_t *msg, CoAP_msg_detail_t *cd,
     sprintf( buffer, "{ \"ssid\" : \"%s\", \"phrase_key\" : \"%s\", \"security_type\" : %lu }",
     		strcmp( device_config.st_ssid, "" ) == 0x00 ? "null" : device_config.st_ssid,
     		strcmp( device_config.st_wpa, "" ) == 0x00 ? "null" : device_config.st_wpa, device_config.st_security_mode );
-    print_status( "%s\r\n", buffer );
+    imx_printf( "%s\r\n", buffer );
     if ( coap_store_response_data( msg, CONTENT, response_type, buffer, JSON_MEDIA_TYPE ) != WICED_SUCCESS ) {
 			PRINTF( "Failed to create response.\r\n" );
 			return COAP_NO_RESPONSE;

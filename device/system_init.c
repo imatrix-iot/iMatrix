@@ -45,6 +45,7 @@
 #include "../cli/interface.h"
 #include "../cli/telnetd.h"
 #include "config.h"
+#include "hal_leds.h"
 #include "icb_def.h"
 #include "var_data.h"
 #include "system_init.h"
@@ -120,21 +121,21 @@ bool system_init(void)
 	wiced_result_t wiced_result;
 	wiced_utc_time_t now;
 
-    print_status( "Preparing WICED...");
+    imx_printf( "Preparing WICED...");
 
     wiced_result = wiced_init();  //wiced_core_init();
 	if ( wiced_result != WICED_SUCCESS ) {
-		print_status( "wiced_core_init() failed with error code: %u.\n", wiced_result );
+		imx_printf( "wiced_core_init() failed with error code: %u.\n", wiced_result );
 		return false;
 	}
 
-    print_status( "Commencing Setup procedure: " );
+    imx_printf( "Commencing Setup procedure: " );
 
 
 #ifdef USE_CCMRAM
-    print_status( " *** Using CCMRAM ***\r\n" );
+    imx_printf( " *** Using CCMRAM ***\r\n" );
 #else
-    print_status( "\r\n" );
+    imx_printf( "\r\n" );
 #endif
     // Ensure the DCT is valid before anything needs to access the DCT like functions that connect to the Wi-Fi.
 
@@ -145,10 +146,10 @@ bool system_init(void)
      */
     wiced_result = wiced_rtos_init_semaphore( &wiced_semaphore );
     if( wiced_result != WICED_SUCCESS )
-        PRINTF( "Failed to initialize WICED Semaphore\r\n" );
+        imx_printf( "Failed to initialize WICED Semaphore\r\n" );
     wiced_result = wiced_rtos_set_semaphore( &wiced_semaphore );    // Get it ready to use
     if( wiced_result != WICED_SUCCESS )
-    	PRINTF( "Failed to set WICED Semaphore\r\n" );
+        imx_printf( "Failed to set WICED Semaphore\r\n" );
 
     mutex_init();
 
@@ -157,7 +158,7 @@ bool system_init(void)
     /*
      * Always print status messages? - dcb is initialized to all 0s
      */
-#ifdef PRINT_STATUS_MSGS
+#ifdef imx_printf_MSGS
     icb.print_debugs = true;
 #endif
     /*
@@ -171,15 +172,15 @@ bool system_init(void)
     wiced_time_set_utc_time_ms( &( device_config.last_ntp_updated_time ) );
     icb.boot_time = icb.fake_utc_boot_time;
 
-    update_led_red_status( 0 );
-    update_led_green_status( 0 );
+    set_host_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED LED to off
+    set_host_led( IMX_LED_GREEN, IMX_LED_OFF );         // SEt GREEN LED off
 
 	if( init_serial_flash() == false )
-	    print_status( "ERROR: Serial Flash size does not match product definition\r\n" );
+	    imx_printf( "ERROR: Serial Flash size does not match product definition\r\n" );
     device_config.boot_count += 1;
     imatrix_save_config();
 
-    print_status( "Core System Initialized\r\n" );
+    imx_printf( "Core System Initialized\r\n" );
 
 
     telnetd_setup();
@@ -191,47 +192,41 @@ bool system_init(void)
     /*
      * Start with last known location
      */
-    icb.lattitude = device_config.latitude;
+    icb.latitude = device_config.latitude;
     icb.longitude = device_config.longitude;
     icb.elevation = device_config.elevation;
     /*
      * Initialize sensors and controls - Check if none are defined, then we are probably starting with a blank config - Initialize the system
      */
-    print_status( "Setting up %s, Product ID: 0x%08lx, Serial Number: %s\r\n", device_config.product_name, device_config.product_id, device_config.device_serial_number );
+    imx_printf( "Setting up %s, Product ID: 0x%08lx, Serial Number: %s\r\n", device_config.product_name, device_config.product_id, device_config.device_serial_number );
     /*
      * Set up variable length payload pools
-     */
     // !@# init_var_pool();
-    /*
      * If no controls or sensors do not match config then we need to intialize the config to include them
-     */
     if( ( ( device_config.no_controls != get_no_controls() ) || ( device_config.no_sensors != get_no_sensors() ) ) ) {
-        /*
          * Start with a blank slate
-         */
         device_config.no_controls = 0;
         device_config.no_sensors = 0;
         // !@# init_arduino();
-        /*
          * Add any internal controls and sensors
-         */
         // !@# reset_controls();
         // !@# reset_sensors();
     }
-    print_status( "System has %u Controls and %u Sensors\r\n", device_config.no_controls, device_config.no_sensors );
+*/
+    imx_printf( "System has %u Controls and %u Sensors\r\n", device_config.no_controls, device_config.no_sensors );
 
-    print_status( "Initializing Controls\r\n" );
+    imx_printf( "Initializing Controls\r\n" );
     // !@# init_controls();
-    print_status( "Initializing Sensors\r\n" );
+    imx_printf( "Initializing Sensors\r\n" );
     // !@# init_sensors();
-    print_status( "Configuring Smart Arduino\r\n" );
+    imx_printf( "Configuring Smart Arduino\r\n" );
     // !@# configure_arduino();
-    print_status( "Initializing Locaton System\r\n" );
+    imx_printf( "Initializing Locaton System\r\n" );
     // !@# init_location_system();
 
     icb.wifi_state = MAIN_WIFI_SETUP;
 
-    print_status( "Initialization Complete, Thing will run in %s mode\r\n", device_config.AP_setup_mode ? "Provisioning" : "Operational" );
+    imx_printf( "Initialization Complete, Thing will run in %s mode\r\n", device_config.AP_setup_mode ? "Provisioning" : "Operational" );
 
 	return true;
 }

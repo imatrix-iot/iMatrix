@@ -100,13 +100,13 @@ bool init_udp( wiced_interface_t interface )
     wiced_ip_address_t multicast_address = {.ip.v4 = MAKE_IPV4_ADDRESS( 224, 0,  1,  187 ), .version = WICED_IPV4 };
 
     if( wiced_udp_create_socket( &udp_coap_socket, DEFAULT_COAP_PORT, interface ) != WICED_SUCCESS ) {
-        print_status( "Unable to create CoAP UDP Socket...\r\n" );
+        imx_printf( "Unable to create CoAP UDP Socket...\r\n" );
         goto deregister_link_callbacks_if_needed_and_fail;
     }
 
 
     if( wiced_udp_register_callbacks( &udp_coap_socket, (wiced_udp_socket_callback_t) coap_udp_recv, NULL ) != WICED_SUCCESS ) {
-         print_status( "Unable to setup CoAP UDP callback...\r\n" );
+         imx_printf( "Unable to setup CoAP UDP callback...\r\n" );
          goto delete_socket_and_fail;
      }
     /*
@@ -115,7 +115,7 @@ bool init_udp( wiced_interface_t interface )
      */
 
     if( wiced_multicast_join(interface, &multicast_address ) != WICED_SUCCESS ) {
-        print_status( "Unable to Join Multicast...\r\n" );
+        imx_printf( "Unable to Join Multicast...\r\n" );
         goto unregister_udp_callbacks_and_fail;
     }
 
@@ -124,7 +124,7 @@ bool init_udp( wiced_interface_t interface )
      */
 
     if( wiced_multicast_join(interface, &multicast_address ) != WICED_SUCCESS ) {
-        print_status( "Unable to Join Multicast...\r\n" );
+        imx_printf( "Unable to Join Multicast...\r\n" );
         goto unregister_udp_callbacks_and_fail;
     }
     /*

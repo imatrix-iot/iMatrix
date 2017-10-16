@@ -72,7 +72,7 @@ enum output_devices {
  *               Function Definitions
  ******************************************************/
 uint16_t st_get_ch( char *ch );
-void print_status( char *format, ... );
+void imx_printf( char *format, ... );
 void cli_print( char *format, ... );
 bool verify_cmd( void );
 

@@ -45,13 +45,14 @@
 
 #include "wiced.h"
 
-#include "../defines.h"
+#include "../storage.h"
 #include "../coap/coap_transmit.h"
 #include "../cli/interface.h"
+#include "../device/hal_leds.h"
 #include "../device/config.h"
-#include "../device/dcb_def.h"
+#include "../device/hal_leds.h"
+#include "../device/icb_def.h"
 #include "../time/ck_time.h"
-#include "../hal_support.h"
 #include "registration.h"
 
 /******************************************************
@@ -113,8 +114,8 @@ static registration_t registration = {
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern IOT_Device_Config_t device_config;   // Defined in device\config.h
-extern dcb_t dcb;
+extern IOT_Device_Config_t device_config;   // Defined in device/config.h
+extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -127,8 +128,8 @@ extern dcb_t dcb;
 void init_registration(void)
 {
     registration.state = INIT_REGISTRATION;
-    dcb.registration_in_process = true;
-    save_config();
+    icb.registration_in_process = true;
+    imatrix_save_config();
 }
 
 /**
@@ -155,15 +156,15 @@ void registration_process(wiced_time_t current_time )
 {
     if( registration.last_state != registration.state ) {
         registration.last_state = registration.state;
-        print_status( "Changing Registration state to: %u\r\n", registration.state );
+        imx_printf( "Changing Registration state to: %u\r\n", registration.state );
     }
     switch( registration.state ) {
         case INIT_REGISTRATION :
             registration.error_code = NO_ERROR;
             registration.reg_timer = current_time;
-            print_status( "Registration in process\r\n" );
-            set_led( LED_GREEN, (void *) &LED_BLINK_1);   // Set Green Led to Blink 1 times a second
-            set_led( LED_RED, (void *) &LED_OFF );   // Set RED Led to off
+            imx_printf( "Registration in process\r\n" );
+            set_host_led( IMX_LED_GREEN, IMX_LED_BLINK_1 );     // Set Green Led to Blink 1 times a second
+            set_host_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED Led to off
             registration.state = CHECK_COAP_QUEUE;
             break;
         case CHECK_COAP_QUEUE :
@@ -176,13 +177,13 @@ void registration_process(wiced_time_t current_time )
                 /*
                  * Something strange going on - should never have traffic still going on at this point.
                  */
-                print_status( "Aborting Registration process due to pending CoAP traffic\r\n" );
+                imx_printf( "Aborting Registration process due to pending CoAP traffic\r\n" );
                 registration.error_code = COAP_TIMEOUT_ERROR;
                 /*
                  * Failure Show RED LED
                  */
-                set_led( 1, (void *) &LED_OFF );
-                set_led( 0, (void *) &LED_ON );
+                set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
+                set_host_led( IMX_LED_RED, IMX_LED_ON );           // Set RED Led to on
                 registration.reg_timer = current_time;
                 registration.state = REGISTRATION_SHOW_DONE;
             }
@@ -193,25 +194,25 @@ void registration_process(wiced_time_t current_time )
              */
             if( is_later( current_time, registration.reg_timer + COAP_DELAY ) == true ) {
                 device_config.AP_setup_mode = false;
-                save_config();
+                imatrix_save_config();
                 registration.reg_timer = current_time;
-                dcb.wifi_up = false;
+                icb.wifi_up = false;
                 registration.state = CHECK_WIFI_UP;
             }
             break;
         case CHECK_WIFI_UP :
-            if( dcb.wifi_up == true )
+            if( icb.wifi_up == true )
                 registration.state = SETUP_REGISTRATION;
             else if( is_later( current_time, registration.reg_timer + WIFI_TIMEOUT ) == true ) {
-                print_status( "Wi Fi Failed to come up\r\n" );
+                imx_printf( "Wi Fi Failed to come up\r\n" );
                 device_config.AP_setup_mode = true;     // Come back up in AP mode
-                save_config();
+                imatrix_save_config();
                 registration.error_code = WIFI_TIMEOUT_ERROR;
                 /*
                  * Failure Show RED LED
                  */
-                set_led( 1, (void *) &LED_OFF );
-                set_led( 0, (void *) &LED_ON );
+                set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
+                set_host_led( IMX_LED_RED, IMX_LED_ON );           // Set RED Led to on
                 registration.reg_timer = current_time;
                 registration.state = REGISTRATION_SHOW_DONE;
             }
@@ -219,12 +220,12 @@ void registration_process(wiced_time_t current_time )
     case SETUP_REGISTRATION :
         registration.retry_count = 0;
         registration.ack_received = false;
-        set_led( 1, (void *) &LED_BLINK_4 );   // Set Green Led to Blink 4 times a second
+        set_host_led( IMX_LED_GREEN, IMX_LED_BLINK_4 );             // Set Green Led to Blink 4 times a second
         registration.state = SEND_REGISTRATION;
         break;
     case SEND_REGISTRATION :
-        print_status( "Sending Registration request\r\n" );
-        dcb.send_registration = true;
+        imx_printf( "Sending Registration request\r\n" );
+        icb.send_registration = true;
         registration.reg_timer = current_time;
         registration.state = CHECK_REGISTRATION_ACK;
         break;
@@ -236,24 +237,24 @@ void registration_process(wiced_time_t current_time )
             /*
              * Success Show GREEN LED
              */
-            set_led( 1, (void *) &LED_ON );
-            set_led( 0, (void *) &LED_OFF );
+            set_host_led( IMX_LED_GREEN, IMX_LED_ON );
+            set_host_led( IMX_LED_RED, IMX_LED_OFF );
             registration.reg_timer = current_time;
             registration.state = REGISTRATION_SHOW_DONE;
         } else if( is_later( current_time, registration.reg_timer + REGISTRATION_TIMEOUT ) == true ) {
             if( registration.retry_count >= REGISTRATION_RETRIES ) {
-                print_status( "Aborting due to retry accounts exceeded\r\n" );
+                imx_printf( "Aborting due to retry accounts exceeded\r\n" );
                 /*
                  * Failed to get a registration response - abort and return to provisioning mode
                  */
                 device_config.AP_setup_mode = true;     // Come back up in AP mode
-                dcb.wifi_up = false;
+                icb.wifi_up = false;
                 registration.error_code = REGISTRATION_TIMEOUT_ERROR;
                 /*
                  * Failure Show RED LED
                  */
-                set_led( 1, (void *) &LED_OFF );
-                set_led( 0, (void *) &LED_ON );
+                set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
+                set_host_led( IMX_LED_RED, IMX_LED_ON );           // Set RED Led to on
                 registration.reg_timer = current_time;
                 registration.state = REGISTRATION_SHOW_DONE;
             }
@@ -262,12 +263,12 @@ void registration_process(wiced_time_t current_time )
         break;
     case REGISTRATION_SHOW_DONE :
         if( is_later( current_time, registration.reg_timer + REGISTRATION_DISPLAY ) == true ) {
-            set_led( 1, (void *) &LED_OFF );
-            set_led( 0, (void *) &LED_OFF );
+            set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
+            set_host_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED Led to on
             registration.state = REGISTRATION_IDLE;
             device_config.provisioned = true;
-            dcb.registration_in_process = false;
-            save_config();
+            icb.registration_in_process = false;
+            imatrix_save_config();
         }
         break;
     case REGISTRATION_IDLE :

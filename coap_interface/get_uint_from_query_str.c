@@ -65,7 +65,7 @@ wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query
     *value = 0; // If no name is found return 0 for value.
 
     if ( ( name == NULL ) || ( query_str == NULL ) ) {
-        print_status( "error: NULL input to get_uint_from_query_str function.\r\n" );
+        imx_printf( "error: NULL input to get_uint_from_query_str function.\r\n" );
         return WICED_ERROR;
     }
 
@@ -76,18 +76,18 @@ wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query
         option_end = get_length_before( "&=", short_query, strlen( short_query ) );
 
         if ( option_end <= 0 ) {// No token in front of & or =
-            print_status( "error: infinite while loop in function get_group_from_query_str.\n\r" );
+            imx_printf( "error: infinite while loop in function get_group_from_query_str.\n\r" );
             return WICED_ERROR;
         }
         if ( short_query[ option_end ] != '=' ) {// not an option=value pair--invalid
-            print_status( "error: query string contains something other than option=value pairs\n\r" );
+            imx_printf( "error: query string contains something other than option=value pairs\n\r" );
             return WICED_ERROR;
         }
         //option name OK, need value
         value_end = get_length_before( "&", short_query, strlen( short_query ) );
 
         if ( value_end <= option_end + 1 ) { // no value after option=
-            print_status( "error: query string has an option= nothing!\n\r" );
+            imx_printf( "error: query string has an option= nothing!\n\r" );
             return WICED_ERROR;
         }
         // else there is some kind of value
@@ -104,7 +104,7 @@ wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query
                 return WICED_SUCCESS;
             }
             else {
-                print_status( "error: non-numeric expression for %s in query string\n\r", name );
+                imx_printf( "error: non-numeric expression for %s in query string\n\r", name );
                 return WICED_ERROR;
             }
         }
@@ -138,7 +138,7 @@ wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* que
     *value = 0; // If no name is found return 0 for value.
 
     if ( ( name == NULL ) || ( query_str == NULL ) ) {
-        print_status( "error: NULL input to get_uint_from_query_str function.\r\n" );
+        imx_printf( "error: NULL input to get_uint_from_query_str function.\r\n" );
         return WICED_ERROR;
     }
 
@@ -149,18 +149,18 @@ wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* que
         option_end = get_length_before( "&=", short_query, strlen( short_query ) );
 
         if ( option_end <= 0 ) {// No token in front of & or =
-            print_status( "error: infinite while loop in function get_group_from_query_str.\n\r" );
+            imx_printf( "error: infinite while loop in function get_group_from_query_str.\n\r" );
             return WICED_ERROR;
         }
         if ( short_query[ option_end ] != '=' ) {// not an option=value pair--invalid
-            print_status( "error: query string contains something other than option=value pairs\n\r" );
+            imx_printf( "error: query string contains something other than option=value pairs\n\r" );
             return WICED_ERROR;
         }
         //option name OK, need value
         value_end = get_length_before( "&", short_query, strlen( short_query ) );
 
         if ( value_end <= option_end + 1 ) { // no value after option=
-            print_status( "error: query string has an option= nothing!\n\r" );
+            imx_printf( "error: query string has an option= nothing!\n\r" );
             return WICED_ERROR;
         }
         // else there is some kind of value
@@ -177,7 +177,7 @@ wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* que
                 return WICED_SUCCESS;
             }
             else {
-                print_status( "error: non-numeric expression for %s in query string\n\r", name );
+                imx_printf( "error: non-numeric expression for %s in query string\n\r", name );
                 return WICED_ERROR;
             }
         }

@@ -45,11 +45,10 @@
 
 #include "wiced.h"
 
-#include "../system.h"
-#include "../hal.h"
+#include "../storage.h"
 #include "../cli/interface.h"
 #include "../device/config.h"
-#include "../device/dcb_def.h"
+#include "../device/icb_def.h"
 #include "../imatrix/registration.h"
 #include "../networking/utility.h"
 
@@ -80,7 +79,7 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern dcb_t dcb;   // Defined in device/dcb_def.h and initialized in device.c
+extern iMatrix_Control_Block_t icb;
 extern IOT_Device_Config_t device_config;   // Defined in device\config.h
 /******************************************************
  *               Function Definitions
@@ -96,7 +95,7 @@ void add_registration( upload_data_t **upload_data, uint16_t *remaining_data_len
     uint32_t foo32bit;
     bits_t header_bits;
 
-    print_status( "Registering product: %s - %s ", device_config.device_name, device_config.device_serial_number );
+    imx_printf( "Registering product: %s - %s ", device_config.device_name, device_config.device_serial_number );
     /*
      * Set the data type to UINT32 and load the entry
      *
@@ -105,10 +104,10 @@ void add_registration( upload_data_t **upload_data, uint16_t *remaining_data_len
     /*
      * Registration
      */
-    (*upload_data)->header.id = htonl( INTERNAL_SENSOR_THING_EVENT );
-    header_bits.bits.data_type = DI_UINT32;  // Floating point data for GPS
+    (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_THING_EVENT );
+    header_bits.bits.data_type = IMX_DI_UINT32;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htonl( 0 );
-    header_bits.bits.block_type = BLOCK_EVENT_SENSOR;
+    header_bits.bits.block_type = IMX_BLOCK_EVENT_SENSOR;
 
     header_bits.bits.no_samples = 2;
     header_bits.bits.warning = 0;
@@ -123,11 +122,11 @@ void add_registration( upload_data_t **upload_data, uint16_t *remaining_data_len
     (*upload_data)->header.last_utc_ms_sample_time = 0;
     (*upload_data)->data[ 0 ].uint_32bit = 0;
 
-    if( dcb.time_set_with_NTP == true ) {
+    if( icb.time_set_with_NTP == true ) {
         (*upload_data)->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
         (*upload_data)->data[ 0 ].uint_32bit = htonl( (uint32_t) ( upload_utc_ms_time / 1000L ) );  // Time in UTC Sec
     }
-    (*upload_data)->data[ 1 ].uint_32bit = htonl( EVENT_REGISTRATION );
+    (*upload_data)->data[ 1 ].uint_32bit = htonl( IMX_EVENT_REGISTRATION );
     /*
     * Update the pointer and amount number of bytes left in buffer
     */
@@ -140,7 +139,7 @@ void add_registration( upload_data_t **upload_data, uint16_t *remaining_data_len
     foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH );
     (*upload_data) = ( upload_data_t *) ( ( uint32_t) ( *upload_data ) + foo32bit );
     *remaining_data_length -= foo32bit;
-    print_status( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit * 3, *remaining_data_length );
+    imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit * 3, *remaining_data_length );
 
     ack_registration();     // This needs to be set when the response is received
     return;
@@ -166,17 +165,17 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     uint32_t foo32bit;
     bits_t header_bits;
 
-    print_status( "Adding GPS Location - Latitude: %f, Longitude: %f, Altitude: %f ", dcb.lattitude, dcb.longitude, dcb.elevation );
+    imx_printf( "Adding GPS Location - Latitude: %f, Longitude: %f, Altitude: %f ", icb.latitude, icb.longitude, icb.elevation );
     /*
      * Set the data type to float and load the 3 entries
      */
     /*
      * Latitude
      */
-    (*upload_data)->header.id = htonl( INTERNAL_SENSOR_GPS_LATITUDE );
-    header_bits.bits.data_type = AI_FLOAT;  // Floating point data for GPS
+    (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_GPS_LATITUDE );
+    header_bits.bits.data_type = IMX_AI_FLOAT;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htons( 0 );
-    header_bits.bits.block_type = BLOCK_GPS_COORDINATES;
+    header_bits.bits.block_type = IMX_BLOCK_GPS_COORDINATES;
 
     header_bits.bits.no_samples = 1;
     header_bits.bits.warning = 0;
@@ -186,9 +185,9 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     (*upload_data)->header.bits.bit_data = htonl( header_bits.bit_data );
 
     (*upload_data)->header.last_utc_ms_sample_time = 0;
-    if( dcb.time_set_with_NTP == true )
+    if( icb.time_set_with_NTP == true )
         (*upload_data)->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-    memcpy( &foo32bit, &dcb.lattitude, SAMPLE_LENGTH );
+    memcpy( &foo32bit, &icb.latitude, SAMPLE_LENGTH );
     (*upload_data)->data[ 0 ].uint_32bit = htonl( foo32bit );
     /*
     * Update the pointer and amount number of bytes left in buffer
@@ -199,10 +198,10 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     /*
      * Longitude
      */
-    (*upload_data)->header.id = htonl( INTERNAL_SENSOR_GPS_LONGITUDE );
-    header_bits.bits.data_type = AI_FLOAT;  // Floating point data for GPS
+    (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_GPS_LONGITUDE );
+    header_bits.bits.data_type = IMX_AI_FLOAT;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htons( 0 );
-    header_bits.bits.block_type = BLOCK_GPS_COORDINATES;
+    header_bits.bits.block_type = IMX_BLOCK_GPS_COORDINATES;
 
     header_bits.bits.no_samples = 1;
     header_bits.bits.warning = 0;
@@ -212,9 +211,9 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     (*upload_data)->header.bits.bit_data = htonl( header_bits.bit_data );
 
     (*upload_data)->header.last_utc_ms_sample_time = 0;
-    if( dcb.time_set_with_NTP == true )
+    if( icb.time_set_with_NTP == true )
         (*upload_data)->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-    memcpy( &foo32bit, &dcb.longitude, SAMPLE_LENGTH );
+    memcpy( &foo32bit, &icb.longitude, SAMPLE_LENGTH );
     (*upload_data)->data[ 0 ].uint_32bit = htonl( foo32bit );
     /*
     * Update the pointer and amount number of bytes left in buffer
@@ -225,10 +224,10 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     /*
      * Elevation
      */
-    (*upload_data)->header.id = htonl( INTERNAL_SENSOR_GPS_ELEVATION );
-    header_bits.bits.data_type = AI_FLOAT;  // Floating point data for GPS
+    (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_GPS_ELEVATION );
+    header_bits.bits.data_type = IMX_AI_FLOAT;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htons( 0 );
-    header_bits.bits.block_type = BLOCK_GPS_COORDINATES;
+    header_bits.bits.block_type = IMX_BLOCK_GPS_COORDINATES;
 
     header_bits.bits.no_samples = 1;
     header_bits.bits.warning = 0;
@@ -238,9 +237,9 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     (*upload_data)->header.bits.bit_data = htonl( header_bits.bit_data );
 
     (*upload_data)->header.last_utc_ms_sample_time = 0;
-    if( dcb.time_set_with_NTP == true )
+    if( icb.time_set_with_NTP == true )
         (*upload_data)->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-    memcpy( &foo32bit, &dcb.elevation, SAMPLE_LENGTH );
+    memcpy( &foo32bit, &icb.elevation, SAMPLE_LENGTH );
     (*upload_data)->data[ 0 ].uint_32bit = htonl( foo32bit );
     /*
     * Update the pointer and amount number of bytes left in buffer
@@ -248,7 +247,7 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH );
     (*upload_data) = ( upload_data_t *) ( ( uint32_t) ( *upload_data ) + foo32bit );
     *remaining_data_length -= foo32bit;
-    print_status( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit * 3, *remaining_data_length );
+    imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit * 3, *remaining_data_length );
 
     return;
 

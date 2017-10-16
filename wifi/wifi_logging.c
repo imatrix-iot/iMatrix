@@ -28,6 +28,63 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
+
+/** @file wifi_loggin.c
+ *
+ *
+ *
+ */
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "wiced.h"
+
+
+#include "../device/icb_def.h"
+#include "../device/hal_wifi.h"
+
+
+/******************************************************
+ *                      Macros
+ ******************************************************/
+#ifdef PRINT_DEBUGS_FOR_HISTORY
+    #undef PRINTF
+    #define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_HISTORY ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+#elif !defined PRINTF
+    #define PRINTF(...)
+#endif
+
+/******************************************************
+ *                    Constants
+ ******************************************************/
+
+/******************************************************
+ *                   Enumerations
+ ******************************************************/
+
+/******************************************************
+ *                 Type Definitions
+ ******************************************************/
+
+/******************************************************
+ *                    Structures
+ ******************************************************/
+
+extern dcb_t dcb;
+extern history_data_t history;
+/******************************************************
+ *               Function Declarations
+ ******************************************************/
+
+/******************************************************
+ *               Variable Definitions
+ ******************************************************/
+
+/******************************************************
+ *               Function Definitions
+ ******************************************************/
+
 /**
   * @brief  measure and store the RSSI and Noise levels for Wi Fi
   *

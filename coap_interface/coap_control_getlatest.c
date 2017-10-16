@@ -125,7 +125,7 @@ uint16_t coap_post_control_otagetlatest(coap_message_t *msg, CoAP_msg_detail_t *
      * Do not reenter OTA if already in progress
      */
 
-	print_status( "Attempting to get latest firmware\r\n" );
+	imx_printf( "Attempting to get latest firmware\r\n" );
 	/*
 	if( strcmp( image, "master" ) == 0x00 ) {
 		setup_get_latest_version( OTA_IMAGE_MASTER, SITE );

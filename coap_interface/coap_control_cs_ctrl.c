@@ -66,7 +66,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-    #define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+    #define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -140,8 +140,8 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
         response_type = ACKNOWLEDGEMENT;
     }
 
-    print_status( "Get Configuration - '/control/cs_ctrl'\r\n");
-    print_status( "URI Query: %s\r\n", coap_cd->uri_query );
+    imx_printf( "Get Configuration - '/control/cs_ctrl'\r\n");
+    imx_printf( "URI Query: %s\r\n", coap_cd->uri_query );
 
     if ( WICED_SUCCESS != get_uint_from_query_str( "type", &type, coap_cd->uri_query ) ) {// Require type
         if( coap_store_response_header( msg, BAD_REQUEST, response_type, NULL )  != WICED_SUCCESS ) {
@@ -163,7 +163,7 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
             /*
              * Scan array for entry
              */
-            print_status( "Scanning for %u, id: %lu, 0x%08lx\r\n", type, id, id );
+            imx_printf( "Scanning for %u, id: %lu, 0x%08lx\r\n", type, id, id );
             if( type == IMX_CONTROLS ) {
                 for( i = 0; i < device_config.no_controls; i++ )
                     if( device_config.ccb[ i ].id == id ) {
@@ -290,7 +290,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     /*
      * Scan array for entry
      */
-    // print_status( "Updating: %lu, 0x%08lx - to: %lu, %ld, %f, %s\r\n", id, id, uint_value, int_value, float_value, string_value );
+    // imx_printf( "Updating: %lu, 0x%08lx - to: %lu, %ld, %f, %s\r\n", id, id, uint_value, int_value, float_value, string_value );
     for( i = 0; i < device_config.no_controls; i++ )
         if( device_config.ccb[ i ].id == id ) {
             switch( device_config.ccb[ i ].data_type ) {

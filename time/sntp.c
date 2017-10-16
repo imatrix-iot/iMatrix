@@ -230,13 +230,13 @@ wiced_result_t sntp_get_time( const wiced_ip_address_t* address, ntp_timestamp_t
     {
         if (client_sent_timestamp != data->originate_timestamp_seconds)
         {
-            print_status( " Server Returned Bad Originate TimeStamp \n" );
+            imx_printf( " Server Returned Bad Originate TimeStamp \n" );
             wiced_packet_delete( packet );
             return WICED_ERROR;
         }
         if (data->li > 2 || data->vn != 3 || data->stratum == 0 || data->stratum > 15 || data->transmit_timestamp_seconds == 0 || data->mode != 4)
         {
-            print_status( " Invalid Protocol Parameters returned n" );
+            imx_printf( " Invalid Protocol Parameters returned n" );
             wiced_packet_delete( packet );
             return WICED_ERROR;
         }
@@ -264,7 +264,7 @@ wiced_result_t sync_ntp_time( void* arg )
     UNUSED_PARAMETER( arg );
 
     /* Get the time */
-    print_status( "Getting NTP time... ");
+    imx_printf( "Getting NTP time... ");
 
     for ( a = 0; a < MAX_NTP_ATTEMPTS; ++a )
     {
@@ -273,12 +273,12 @@ wiced_result_t sync_ntp_time( void* arg )
         /* First check if there are local servers to use */
         if (ntp_server[0].version != 0)
         {
-            print_status( "Sending request primary ..." );
+            imx_printf( "Sending request primary ..." );
             result = sntp_get_time ( &ntp_server[0], &current_time );
         }
         if (result != WICED_SUCCESS && (ntp_server[1].version != 0))
         {
-            print_status( "Sending request secondary ...");
+            imx_printf( "Sending request secondary ...");
             result = sntp_get_time ( &ntp_server[1], &current_time );
         }
         /* only fall back to global servers if we can't get local */
@@ -286,7 +286,7 @@ wiced_result_t sync_ntp_time( void* arg )
         while ( ( result != WICED_SUCCESS ) && ( s < 4 ) ) {
             char ntp_url[ strlen( "?.pool.ntp.org" ) + 1 ];
             sprintf( ntp_url, "%u.pool.ntp.org", s );
-            print_status( "Sending global request to %s ... ", ntp_url );
+            imx_printf( "Sending global request to %s ... ", ntp_url );
             if( get_site_ip( ntp_url, &ntp_server_ip ) )
             {
                 result = sntp_get_time( &ntp_server_ip, &current_time );
@@ -297,20 +297,20 @@ wiced_result_t sync_ntp_time( void* arg )
         if ( result == WICED_SUCCESS )
         {
             ntp_successful_count++;
-            print_status( ( "success\n" ) );
+            imx_printf( ( "success\n" ) );
             break;
         }
         else
         {
             ntp_failed_count++;
             wiced_rtos_delay_milliseconds(TIME_BTW_ATTEMPTS);
-            print_status( "\nfailed, trying again...\n" );
+            imx_printf( "\nfailed, trying again...\n" );
         }
     }
 
     if ( a >= MAX_NTP_ATTEMPTS )
     {
-        print_status( "Give up getting NTP time\n");
+        imx_printf( "Give up getting NTP time\n");
         memset( &current_time, 0, sizeof( current_time ) );
         return WICED_TIMEOUT;
     }
@@ -326,7 +326,7 @@ wiced_result_t sync_ntp_time( void* arg )
     }
 
     wiced_time_get_iso8601_time( &iso8601_time );
-    print_status( "Current time is: %.26s\n", (char*)&iso8601_time);
+    imx_printf( "Current time is: %.26s\n", (char*)&iso8601_time);
 
     ntp_success();
     return WICED_SUCCESS;

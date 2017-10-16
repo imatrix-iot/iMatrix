@@ -60,7 +60,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-    #define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+    #define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -126,7 +126,7 @@ uint16_t handle_request(message_t* msg) {
 
         if ( coap_store_response_header( &(msg->coap), NOT_FOUND, response_type, NULL ) != WICED_SUCCESS )
         {
-            print_status( "Unable to create response header in handle_request function.\r\n");
+            imx_printf( "Unable to create response header in handle_request function.\r\n");
             return COAP_NO_RESPONSE;
         }
     }
@@ -152,7 +152,7 @@ uint16_t handle_request(message_t* msg) {
         }
         if ( coap_store_response_header( &(msg->coap), METHOD_NOT_ALLOWED, response_type, NULL ) != WICED_SUCCESS )
         {
-            print_status( "Unable to create response header in function coap_delete.\r\n");
+            imx_printf( "Unable to create response header in function coap_delete.\r\n");
             return COAP_NO_RESPONSE;
         }
     }
@@ -215,14 +215,14 @@ void coap_recv(uint16_t process_to_end )
             /*
              * We have a message - process it
              */
-            print_status( "UDP from IP %u.%u.%u.%u:%d Data: ",
+            imx_printf( "UDP from IP %u.%u.%u.%u:%d Data: ",
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 24 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 16 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >>  8 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >>  0 ) & 0xff ),
                     msg->coap.port );
 
-            print_status( "\r\nCoap MSG Version: %u, Type: %u, Token Length: %u, Code: %u.%02u, Message ID: %.4x, Length: %u\r\n",
+            imx_printf( "\r\nCoap MSG Version: %u, Type: %u, Token Length: %u, Code: %u.%02u, Message ID: %.4x, Length: %u\r\n",
                     msg->coap.header.ver, msg->coap.header.t, msg->coap.header.tkl, MSG_CLASS(msg->coap.header.code), MSG_DETAIL(msg->coap.header.code),
                     msg->coap.header.id, msg->coap.msg_length );
 
@@ -259,7 +259,7 @@ void coap_recv(uint16_t process_to_end )
                         response = COAP_NO_RESPONSE;
                         break;
                 }
-                print_status( "Return Value: %u, Response: %x Confirmable: %s, Reset condition: %s\r\n", response, msg->coap.header.code, confirmable ? "true" : "false", reset_condition ? "true" : "false" );
+                imx_printf( "Return Value: %u, Response: %x Confirmable: %s, Reset condition: %s\r\n", response, msg->coap.header.code, confirmable ? "true" : "false", reset_condition ? "true" : "false" );
                 /*
                  * Generate a response if needed
                  */

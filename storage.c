@@ -32,8 +32,10 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "wiced.h"
+
 #include "storage.h"
 #include "device/icb_def.h"
 /******************************************************

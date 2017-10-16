@@ -58,7 +58,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_XMIT
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) st_log_print_status( __VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) st_log_imx_printf( __VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -129,7 +129,7 @@ void coap_transmit( uint16_t process_to_end )
                 if ( ( msg->coap.next_timestamp == 0 ) &&
                      ( ( msg->coap.my_ip_from_request.ip.v4 & 0xF0000000 ) == 0xE0000000 )) {
                     random_backoff = ms_backoff( 100 );
-                    print_status("MULTICAST ADDRESS %u.%u.%u.%u backoff: %u mS\r\n",
+                    imx_printf("MULTICAST ADDRESS %u.%u.%u.%u backoff: %u mS\r\n",
                             (unsigned char) ( ( msg->coap.my_ip_from_request.ip.v4  >> 24 ) & 0xff ),
                             (unsigned char) ( ( msg->coap.my_ip_from_request.ip.v4  >> 16 ) & 0xff ),
                             (unsigned char) ( ( msg->coap.my_ip_from_request.ip.v4  >>  8 ) & 0xff ),
@@ -139,7 +139,7 @@ void coap_transmit( uint16_t process_to_end )
                     continue;
                     /*
                             if ( ( strstr( (char*)msg->coap.data_block->data, "awake" ) == NULL)) {
-                                print_status("Discarding xmit message that does not have awake in it.\r\n" );
+                                imx_printf("Discarding xmit message that does not have awake in it.\r\n" );
                                 goto free_msg;
                             }
                     */
@@ -147,7 +147,7 @@ void coap_transmit( uint16_t process_to_end )
                 }
 
                 if ( wiced_packet_create_udp( &udp_coap_socket, sizeof( coap_header_t ) + msg->coap.msg_length, &packet, (uint8_t**) &data, &available_data_length ) != WICED_SUCCESS ) {
-                    print_status("UDP TX packet creation failed\r\n");
+                    imx_printf("UDP TX packet creation failed\r\n");
                     icb.ip_stats[ UDP_STATS].packet_creation_failure += 1;
                     goto free_msg;
                 } else
@@ -220,7 +220,7 @@ void coap_transmit( uint16_t process_to_end )
 
             if( protocol == COMM_UDP ) {
                 /* Send the UDP packet */
-                print_status( "Sending UDP Packet to: %u.%u.%u.%u data length: %u \r\n",
+                imx_printf( "Sending UDP Packet to: %u.%u.%u.%u data length: %u \r\n",
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 24 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 16 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >>  8 ) & 0xff ),
@@ -229,7 +229,7 @@ void coap_transmit( uint16_t process_to_end )
 
                 wiced_result = wiced_udp_send( &udp_coap_socket, &msg->coap.ip_addr, msg->coap.port, packet );
                 if ( wiced_result != WICED_SUCCESS ) {
-                    print_status("UDP packet send failed: %u\r\n", wiced_result );
+                    imx_printf("UDP packet send failed: %u\r\n", wiced_result );
                     icb.ip_stats[ UDP_STATS].fail_to_send_packet += 1;
 
                     wiced_packet_delete( packet );  // Delete packet, since the send failed

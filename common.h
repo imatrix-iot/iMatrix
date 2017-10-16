@@ -33,6 +33,8 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include <stdint.h>
+#include <stdbool.h>
 /*
  *	Defines for common structures and defines with iMatrix system and Interface used by host App
  *
@@ -149,20 +151,24 @@
 /******************************************************
  *                   Enumerations
  ******************************************************/
+
+/******************************************************
+ *                 Type Definitions
+ ******************************************************/
 /*
  * Tsunami Warning codes
  */
-enum {
-    IMX_INFORMATIONAL,
+typedef enum {
+    IMX_INFORMATIONAL = 0,
     IMX_WATCH,
     IMX_ADVISORY,
     IMX_WARNING,
     IMX_WARNING_LEVELS
-};
+} imx_tsnumai_warning_t;
 /*
  * Define Control and Sensor Errors
  */
-enum {
+typedef enum {
     IMX_NO_ERROR = 0,
     IMX_GENERAL_FAILURE,
     IMX_INIT_ERROR,
@@ -171,41 +177,65 @@ enum {
     IMX_INVALID_READING,
     IMX_FAIL_CRC,
     IMX_BAD_ARDUINO
-};
+} imx_errors_t;
 
 /*
  * Define data types for Controls
  */
-enum {
+typedef enum {
     IMX_DO_UINT32 = 0,
     IMX_DO_INT32,
     IMX_AO_FLOAT,
     IMX_DO_VARIABLE_LENGTH,
-};
+} imx_do_types_t;
 /*
  * Define data types for Sensors
  */
-enum {
+typedef enum {
     IMX_DI_UINT32 = 0,
     IMX_DI_INT32,
     IMX_AI_FLOAT,
     IMX_DI_VARIABLE_LENGTH,
-};
-enum AT_versbose_mode_t {
-    IMX_AT_VERBOSE_NONE,
+} imx_di_types_t;
+
+typedef enum {
+    IMX_AT_VERBOSE_NONE = 0,
     IMX_AT_VERBOSE_STANDARD,
     IMX_AT_VERBOSE_STANDARD_STATUS
-};
+} imx_AT_versbose_mode_t;
 
-/******************************************************
- *                 Type Definitions
- ******************************************************/
+typedef enum {
+    IMX_LED_OFF = 0,
+    IMX_LED_ON,
+    IMX_LED_BLINK_1,
+    IMX_LED_BLINK_2,
+    IMX_LED_BLINK_3,
+    IMX_LED_BLINK_4,
+    IMX_LED_BLINK_5,
+    IMX_LED_BLINK_6,
+    IMX_LED_BLINK_7,
+    IMX_LED_BLINK_8,
+    IMX_LED_BLINK_9,
+    IMX_LED_BLINK_10,
+} imx_led_state_t;
+
+typedef enum {
+    IMX_LED_RED = 0,
+    IMX_LED_GREEN,
+    IMS_LED_BLUE,
+    IMX_LED_RED_GREEN,
+    IMX_LED_RED_BLUE,
+    IMX_LED_GREEN_BLUE,
+} imx_led_t;
+
 typedef uint32_t imx_status_t;
+
 typedef struct {
     char product_name[ IMX_PRODUCT_NAME_LENGTH + 1 ];
     char device_name[ IMX_DEVICE_NAME_LENGTH + 1 ];
     char imatrix_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char ota_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
+    char manufacturing_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     uint16_t no_sensors;
     uint16_t no_controls;
     uint16_t no_arduino_sensors;
@@ -228,6 +258,7 @@ typedef struct {
     float longitude;
     float latitude;
     float elevation;
+    bool (*set_led)( imx_led_t led, uint16_t state );
 } imx_imatrix_init_config_t;
 /******************************************************
  *                    Structures

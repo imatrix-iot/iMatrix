@@ -47,7 +47,7 @@
 
 #include "wiced.h"
 
-#include "../defines.h"
+#include "../storage.h"
 #include "../cli/interface.h"
 #include "../device/config.h"
 
@@ -120,14 +120,14 @@ void mfg_test( uint16_t arg )
             /*
              * Print Help
              */
-            print_status( "0    - Notify iMatrix Production Management System Test 0 started    - First Power Up and in test fixture testing\r\n" );
-            print_status( "1    - Notify iMatrix Production Management System Test 0 completed\r\n" );
-            print_status( "2    - Notify iMatrix Production Management System Test 1 started    - Download latest Production Code\r\n" );
-            print_status( "3    - Notify iMatrix Production Management System Test 1 completed\r\n" );
-            print_status( "4    - Notify iMatrix Production Management System Test 2 started    - Commence Final Production Testing\r\n" );
-            print_status( "5    - Notify iMatrix Production Management System Test 2 completed\r\n" );
-            print_status( "9    - Set to self provisioning mode, on next reboot\r\n" );
-            print_status( "10   - Set to Client Wi-Fi Mode - ensure SSID are set, on next reboot\r\n" );
+            imx_printf( "0    - Notify iMatrix Production Management System Test 0 started    - First Power Up and in test fixture testing\r\n" );
+            imx_printf( "1    - Notify iMatrix Production Management System Test 0 completed\r\n" );
+            imx_printf( "2    - Notify iMatrix Production Management System Test 1 started    - Download latest Production Code\r\n" );
+            imx_printf( "3    - Notify iMatrix Production Management System Test 1 completed\r\n" );
+            imx_printf( "4    - Notify iMatrix Production Management System Test 2 started    - Commence Final Production Testing\r\n" );
+            imx_printf( "5    - Notify iMatrix Production Management System Test 2 completed\r\n" );
+            imx_printf( "9    - Set to self provisioning mode, on next reboot\r\n" );
+            imx_printf( "10   - Set to Client Wi-Fi Mode - ensure SSID are set, on next reboot\r\n" );
             return;
         } else if( strncmp( token, "0x", 2 ) == 0 )
             test_no = strtoul( &token[ 2 ], &foo, 16 );
@@ -135,11 +135,11 @@ void mfg_test( uint16_t arg )
             test_no = strtoul( token, &foo, 10 );
     }
     else {
-        print_status( "Test / Function number needed.\r\n" );
+        imx_printf( "Test / Function number needed.\r\n" );
         return;
     }
 
-    print_status( "Manufacturing Test/Function: %lu\r\n", test_no );
+    imx_printf( "Manufacturing Test/Function: %lu\r\n", test_no );
     switch( test_no ) {
         case 0 :
             break;
@@ -154,14 +154,14 @@ void mfg_test( uint16_t arg )
         case 5 :
             break;
         case 9 :    // Set to self provisioning mode
-            print_status( "Setting to AP Mode - Provisioning\r\n" );
+            imx_printf( "Setting to AP Mode - Provisioning\r\n" );
             device_config.AP_setup_mode = true;
-            save_config();
+            imatrix_save_config();
             break;
         case 10 :    // Set to self provisioning mode
-            print_status( "Setting to Client Mode - Normal Network Connection assumed\r\n" );
+            imx_printf( "Setting to Client Mode - Normal Network Connection assumed\r\n" );
             device_config.AP_setup_mode = false;
-            save_config();
+            imatrix_save_config();
             break;
     }
 }

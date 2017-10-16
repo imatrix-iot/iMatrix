@@ -103,7 +103,7 @@ void cli_status( uint16_t arg )
 	cli_print( "Running WICED: %s, Name: %s, ", WICED_VERSION, device_config.product_name );
 	cli_print( "Serial Number: %s (%08lX%08lX%08lX) - %s\r\n", device_config.device_serial_number,
 			device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.provisioned == true ? "Provisioned" : "Not provisioned" );
-	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.lattitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
+	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
 	wiced_time_get_utc_time( &utc_time );
 	wiced_time_get_iso8601_time( &iso8601_time );
 	cli_print( "System UTC time is: %lu -> %.26s Current Status:\r\n", utc_time, (char*)&iso8601_time );

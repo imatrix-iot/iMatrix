@@ -26,24 +26,25 @@
  * significant property damage, injury or death ("High Risk Product"). By
  * including Sierra's product in a High Risk Product, the manufacturer
  * of such system or application assumes all risk of such use and in doing
- * so agrees to indemnity Sierra against all liability.
+ * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file utility.c
+/** @file
  *
- *  Created on: May 7, 2017
- *      Author: greg.phillips
+ * hal_leds.c
+ *
+ *  Call the Host App to set the LED.
+ *
+ *  If the function is non null then call it with the passed parameters
+ *
  */
-
-
-
-
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <stdbool.h>
 
-#include "wiced.h"
-
-#include "../cli/interface.h"
+#include "../storage.h"
 
 /******************************************************
  *                      Macros
@@ -52,8 +53,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define MAX_DNS_RETRY_COUNT     3
-#define DNS_WAIT                5000
+
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -73,50 +73,21 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-
+extern imx_imatrix_init_config_t imatrix_init_config;
 /******************************************************
  *               Function Definitions
  ******************************************************/
 /**
-  * @brief printf_my_mac_address
-  * @param  pointer to mac address
+  * @brief set a LED state
+  * @param  None
   * @retval : None
   */
 
-void print_my_mac_address( wiced_mac_t* mac )
+bool set_host_led( imx_led_t led, imx_led_state_t value )
 {
-    cli_print( "%02X:%02X:%02X:%02X:%02X:%02X", mac->octet[0],
-            mac->octet[1],
-            mac->octet[2],
-            mac->octet[3],
-            mac->octet[4],
-            mac->octet[5] );
-}
-
-bool get_site_ip( char *site, wiced_ip_address_t *address )
-{
-    uint16_t retry_count;
-    wiced_result_t result;
-
-    retry_count = 0;
-    while ( retry_count < MAX_DNS_RETRY_COUNT ) {
-        result = wiced_hostname_lookup( site, address, DNS_WAIT, WICED_STA_INTERFACE );
-        if ( result == WICED_TCPIP_SUCCESS ) {
-            return true;
-        } else  {
-            retry_count++;
-        }
-    }
-    return false;
-}
-
-uint64_t htonll(uint64_t n)
-{
-#if __BYTE_ORDER == __BIG_ENDIAN
-//    printf( "Time stamp BE: 0x%08lx%08lx", (uint32_t) ( ( n & 0xFFFFFFFF00000000 ) >> 32), (uint32_t) ( n & 0xFFFFFFFF) );
-    return n;
-#else
-//    printf( "Time stamp SE: 0x%08lx%08lx", htonl( (uint32_t) ( ( n & 0xFFFFFFFF00000000 ) >> 32) ), htonl( (uint32_t) ( n & 0xFFFFFFFF) ) );
-    return (((uint64_t)htonl(n)) << 32) + htonl(n >> 32);
-#endif
+    if( imatrix_init_config.set_led != NULL ) {
+        (*imatrix_init_config.set_led)( led, value );
+        return true;
+    } else
+        return false;
 }

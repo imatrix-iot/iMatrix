@@ -22,12 +22,8 @@
 #include "wiced_crypto.h"
 #include "sntp.h"
 
-#include "../system.h"
-#include "../defines.h"
-#include "../hal.h"
+#include "../storage.h"
 #include "../cli/interface.h"
-#include "../device/device_app_dct.h"
-#include "../device/dcb_def.h"
 #include "../device/config.h"
 #include "ck_time.h"
 
@@ -302,16 +298,16 @@ void sunrise_sunset( wiced_utc_time_t any_utc_time_on_day, wiced_utc_time_t* sun
     }
 
     //H = | (1/15)*arccos[-tan(L)*tan(23.44*sin(360(D+284)/365))] |. equation from http://www.had2know.com/society/sunrise-sunset-time-calculator-formula.html
-    float cos_hr =  -tan( device_config.lattitude * PI / 180 ) * tan( (23.44 * PI/180.0) * sin(2.0 * PI * ( days_since_beginning + 284.0)/365.0));
+    float cos_hr =  -tan( device_config.latitude * PI / 180 ) * tan( (23.44 * PI/180.0) * sin(2.0 * PI * ( days_since_beginning + 284.0)/365.0));
 
     // Check for abs(cos_hr) > 1
     if ( cos_hr > 1 ) { // the sun never rises
-        print_status("The sun never rises.\r\n");
+        imx_printf("The sun never rises.\r\n");
         *sunrise = 0xFFFFFFFF;
         *sunset = 0;
     }
     else if ( cos_hr < -1 ) { // the sun never sets
-        print_status("The sun never sets.\r\n");
+        imx_printf("The sun never sets.\r\n");
         *sunrise = 0;
         *sunset = 0xFFFFFFFF;
     }
@@ -321,7 +317,7 @@ void sunrise_sunset( wiced_utc_time_t any_utc_time_on_day, wiced_utc_time_t* sun
         wiced_utc_time_t noon = (((days_since_1969 * 24) + 12) * 3600) - solar_time_offset_from_utc;
         *sunrise = noon - seconds_from_noon;
         *sunset = noon + seconds_from_noon;
-//        print_status("Longitude/latitude: hour angle %f/%f: %f\r\n", dct_config->header->longitude, dct_config->header->latitude, acos(cos_hr));
+//        imx_printf("Longitude/latitude: hour angle %f/%f: %f\r\n", dct_config->header->longitude, dct_config->header->latitude, acos(cos_hr));
 
     }
 }

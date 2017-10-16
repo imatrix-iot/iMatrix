@@ -73,11 +73,11 @@ static void free_oldest_msg();
 wiced_result_t get_sent_msg_token( sent_message_t sent, token_buffer_t token, uint16_t* token_length )
 {
 	if ( ( token == NULL ) || ( token_length == NULL ) || sent_message_list_requires_creation ) {
-		print_status("Null value passed to get_sent_msg_token function or No list from which to get messages.\r\n");
+		imx_printf("Null value passed to get_sent_msg_token function or No list from which to get messages.\r\n");
 		return WICED_ERROR;
 	}
 	if ( sent.id >= SENT_MESSAGE_LIST_SIZE ) {
-		print_status("Index(%u) out of array bounds(%u) in get_sent_msg_token.\r\n", sent.id, SENT_MESSAGE_LIST_SIZE );
+		imx_printf("Index(%u) out of array bounds(%u) in get_sent_msg_token.\r\n", sent.id, SENT_MESSAGE_LIST_SIZE );
 		return WICED_ERROR;
 	}
 	if ( ( sent.may_resend == 0 ) && ( sent.id != NOT_FOUND_IN_LIST ) ) {
@@ -85,7 +85,7 @@ wiced_result_t get_sent_msg_token( sent_message_t sent, token_buffer_t token, ui
 		memmove( token, messages_awaiting_response.list[ sent.id ].token, *token_length );
 		return WICED_SUCCESS;
 	}
-	print_status("Message not found in get_sent_msg_token.\r\n");
+	imx_printf("Message not found in get_sent_msg_token.\r\n");
 	return WICED_ERROR;// Returning data from coap xmit list isn't supported yet.
 }
 
@@ -98,13 +98,13 @@ wiced_result_t get_sent_msg_token( sent_message_t sent, token_buffer_t token, ui
 uint16_t sent_msg_is_multicast( sent_message_t sent )
 {
 	if ( sent.id >= SENT_MESSAGE_LIST_SIZE ) {
-		print_status("Index(%u) out of array bounds(%u) in sent_msg_is_multicast.\r\n", sent.id, SENT_MESSAGE_LIST_SIZE );
+		imx_printf("Index(%u) out of array bounds(%u) in sent_msg_is_multicast.\r\n", sent.id, SENT_MESSAGE_LIST_SIZE );
 		return 0;//false
 	}
 	if ( ( sent.may_resend == 0 ) && ( sent.id != NOT_FOUND_IN_LIST ) && ( sent_message_list_requires_creation == false ) ) {
 		return messages_awaiting_response.list[ sent.id ].sent_as_multicast;
 	}
-	print_status("Message not found or no list from which to get message in sent_msg_is_multicast.\r\n");
+	imx_printf("Message not found or no list from which to get message in sent_msg_is_multicast.\r\n");
 	return 0;// Returning data from coap xmit list isn't supported yet.
 }
 
@@ -117,13 +117,13 @@ uint16_t sent_msg_is_multicast( sent_message_t sent )
 uint8_t sent_msg_processing_method( sent_message_t sent )
 {
 	if ( sent.id >= SENT_MESSAGE_LIST_SIZE ) {
-		print_status("Index(%u) out of array bounds(%u) in sent_msg_processing_method.\r\n", sent.id, SENT_MESSAGE_LIST_SIZE );
+		imx_printf("Index(%u) out of array bounds(%u) in sent_msg_processing_method.\r\n", sent.id, SENT_MESSAGE_LIST_SIZE );
 		return IGNORE_RESPONSE;
 	}
 	if ( ( sent.may_resend == 0 ) && ( sent.id != NOT_FOUND_IN_LIST ) && ( sent_message_list_requires_creation == false ) ) {
 		return messages_awaiting_response.list[ sent.id ].response_processing_method;
 	}
-	print_status("Message not found or no list from which to get message in sent_msg_processing_method.\r\n");
+	imx_printf("Message not found or no list from which to get message in sent_msg_processing_method.\r\n");
 	return IGNORE_RESPONSE;// Returning data from coap xmit list isn't supported yet.
 }
 
@@ -143,14 +143,14 @@ void expect_response_from( coap_message_t* msg )
     uint16_t i;
 
 	if ( msg == NULL ) {
-		print_status( "Null passed to expect_response_from function.\r\n");
+		imx_printf( "Null passed to expect_response_from function.\r\n");
 		return;
 	}
 	if ( sent_message_list_requires_creation ) {
 		create_free_list_by_connecting_next_indexes_in_sent_msg_list();
 	}
 	if ( msg->header.tkl > MAX_TOKEN_LENGTH ) {
-		print_status("Token length out of bounds in find_sent_msg.\r\n");
+		imx_printf("Token length out of bounds in find_sent_msg.\r\n");
 		return;
 	}
 
@@ -159,15 +159,15 @@ void expect_response_from( coap_message_t* msg )
 	sent = find_sent_msg( msg );
 	if ( sent.id != NOT_FOUND_IN_LIST ) {
 
-		print_status("Attempt to save a new message with the same token as a message that is already in the sent message list.\r\n");
+		imx_printf("Attempt to save a new message with the same token as a message that is already in the sent message list.\r\n");
 
 		// If the matching message in the list is more recent, discard the passed in message without saving anything.
 
 		if ( is_later( messages_awaiting_response.list[ sent.id ].initial_timestamp, msg->initial_timestamp ) ) {
-			print_status("Rejecting new message because it is too old.");
+			imx_printf("Rejecting new message because it is too old.");
 			return;
 		}
-		else print_status("Keeping new message.\r\n");
+		else imx_printf("Keeping new message.\r\n");
 	}
 	else {// Find a free message into which to save the passed in message.
 
@@ -181,7 +181,7 @@ void expect_response_from( coap_message_t* msg )
 		}
 
 		if ( messages_awaiting_response.free == NOT_FOUND_IN_LIST ) {
-			print_status("No free messages available in expect_response_from.\r\n");
+			imx_printf("No free messages available in expect_response_from.\r\n");
 			return;
 		}
 		else {// Use the first free message.
@@ -223,12 +223,12 @@ sent_message_t find_sent_msg( coap_message_t* response_msg  )
     sent_message_t entry = { .may_resend = 0, .id = NOT_FOUND_IN_LIST };
 
 	if ( ( response_msg == NULL ) || ( response_msg->data_block == NULL ) ) {
-		print_status("Null found or sent message list has not been created in find_sent_msg.\r\n");
+		imx_printf("Null found or sent message list has not been created in find_sent_msg.\r\n");
 		return entry;// NOT FOUND.
 	}
 
 	if ( response_msg->header.tkl > MAX_TOKEN_LENGTH ) {
-		print_status("Token length out of bounds in find_sent_msg.\r\n");
+		imx_printf("Token length out of bounds in find_sent_msg.\r\n");
 		return entry;// NOT FOUND.
 	}
 
@@ -260,7 +260,7 @@ void free_all_expired_sent_msg()
 	wiced_time_t now;
 
 	if ( sent_message_list_requires_creation ) {
-//		print_status("No list from which to free messages in free_all_expired_sent_msg.\r\n");//This can legitimately happen, so don't send an error message.
+//		imx_printf("No list from which to free messages in free_all_expired_sent_msg.\r\n");//This can legitimately happen, so don't send an error message.
 		return;
 	}
 
@@ -366,7 +366,7 @@ static void free_oldest_msg()
 	//sent_message_t oldest = entry;
 
 	if ( sent_message_list_requires_creation ) {
-//		print_status("No list from which to free messages in free_oldest_msg.\r\n");//This can legitimately happen, so don't send an error message.
+//		imx_printf("No list from which to free messages in free_oldest_msg.\r\n");//This can legitimately happen, so don't send an error message.
 		return;
 	}
 
@@ -413,10 +413,10 @@ static void free_oldest_msg()
 
 void test_is_later()
 {
-	print_status("Initial time[0] %lu ",  messages_awaiting_response.list[ 0 ].initial_timestamp);
+	imx_printf("Initial time[0] %lu ",  messages_awaiting_response.list[ 0 ].initial_timestamp);
 	if ( is_later( messages_awaiting_response.list[ 0 ].initial_timestamp,
 					messages_awaiting_response.list[ 49].initial_timestamp ) ) {
-		print_status(">");
-	} else print_status("<=");
-	print_status(" %lu time[49]",  messages_awaiting_response.list[ 49 ].initial_timestamp);
+		imx_printf(">");
+	} else imx_printf("<=");
+	imx_printf(" %lu time[49]",  messages_awaiting_response.list[ 49 ].initial_timestamp);
 }

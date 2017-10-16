@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "imatrix.h"
 #include "storage.h"
 #include "device/config.h"
 #include "device/icb_def.h"

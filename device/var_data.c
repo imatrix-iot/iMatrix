@@ -42,11 +42,7 @@
 
 #include "wiced.h"
 
-#include "../system.h"
-#include "../defines.h"
-#include "../system.h"
-#include "../device_app_dct.h"
-#include "../hal.h"
+#include "../storage.h"
 #include "../cli/interface.h"
 #include "var_data.h"
 
@@ -111,7 +107,7 @@ void init_var_pool(void)
      * Assign space for the variable length data pools from the space defined in the above storage for them. Structure as per configuration.
      * Note: Configuration can be changed and pools reinitialized.
      */
-    print_status( "Initializing Variable length data pool, pool size: %u Bytes\r\n", VAR_POOL_SIZE );
+    imx_printf( "Initializing Variable length data pool, pool size: %u Bytes\r\n", VAR_POOL_SIZE );
     memset( var_pool_data, 0x00, sizeof( var_pool_data ) );
     memset( var_data_block, 0x00, sizeof( var_data_block ) );
 
@@ -146,7 +142,7 @@ void add_var_free_pool( var_data_entry_t *var_data_ptr )
 {
     var_data_entry_t *temp_ptr;
 
-    print_status( "Adding entry to Pool: %u (%u Byte pool)\r\n", var_data_ptr->header.pool_id, device_config.var_data_config[ var_data_ptr->header.pool_id ].size );
+    imx_printf( "Adding entry to Pool: %u (%u Byte pool)\r\n", var_data_ptr->header.pool_id, device_config.var_data_config[ var_data_ptr->header.pool_id ].size );
     /*
      * Clear all data from entry
      */
@@ -200,6 +196,6 @@ var_data_entry_t *get_var_data( uint16_t length )
     /*
      * None found.
      */
-    print_status( "No free variable length data available, (requesting: %u Bytes)\r\n", length );
+    imx_printf( "No free variable length data available, (requesting: %u Bytes)\r\n", length );
     return NULL;
 }

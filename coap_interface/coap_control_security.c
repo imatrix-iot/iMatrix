@@ -64,7 +64,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -162,10 +162,10 @@ uint16_t coap_get_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, u
     			cert_length = convert_certificate_to_bin( buffer, MAX_CERT_LENGTH, (uint8_t*) ( (uint32_t) (icb.root_certificate) + BEGIN_CERT_LENGTH ),
     					(uint32_t) ( strlen( (char *) icb.root_certificate) - BEGIN_END_CERT_LENGTH ), IS_CERTIFICATE );
     			if( cert_length == 0 ) {
-    				print_status( "Certificate is 0 length\r\n" );
+    				imx_printf( "Certificate is 0 length\r\n" );
     			}
     		} else {
-    			print_status( "Certificate is invalid\r\n" );
+    			imx_printf( "Certificate is invalid\r\n" );
     			return COAP_NO_RESPONSE;
     		}
     		break;
@@ -177,10 +177,10 @@ uint16_t coap_get_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, u
     			cert_length = convert_certificate_to_bin( buffer, MAX_CERT_LENGTH, (uint8_t*) ( icb.wifi_8021X_key + BEGIN_KEY_LENGTH ),
     					(uint32_t) ( strlen( (char *) icb.wifi_8021X_key) - BEGIN_END_KEY_LENGTH ), IS_KEY );
     			if( cert_length == 0 ) {
-    				print_status( "Certificate is 0 length\r\n" );
+    				imx_printf( "Certificate is 0 length\r\n" );
     			}
     		} else {
-    			print_status( "Certificate is invalid\r\n" );
+    			imx_printf( "Certificate is invalid\r\n" );
     			return COAP_NO_RESPONSE;
     		}
     		break;
@@ -192,10 +192,10 @@ uint16_t coap_get_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, u
     			cert_length = convert_certificate_to_bin( buffer, MAX_CERT_LENGTH, (uint8_t*) ( icb.wifi_8021X_certificate + BEGIN_CERT_LENGTH ),
     					(uint32_t) ( strlen( (char *) icb.wifi_8021X_certificate) - BEGIN_END_CERT_LENGTH ), IS_CERTIFICATE );
     			if( cert_length == 0 ) {
-    				print_status( "Certificate is 0 length\r\n" );
+    				imx_printf( "Certificate is 0 length\r\n" );
     			}
     		} else {
-    			print_status( "Certificate is invalid\r\n" );
+    			imx_printf( "Certificate is invalid\r\n" );
     			return COAP_NO_RESPONSE;
     		}
     		break;
@@ -207,10 +207,10 @@ uint16_t coap_get_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, u
     			cert_length = convert_certificate_to_bin( buffer, MAX_CERT_LENGTH, (uint8_t*) ( icb.dtls_certificate + BEGIN_CERT_LENGTH ),
     					(uint32_t) ( strlen( (char *) icb.dtls_certificate ) - BEGIN_END_CERT_LENGTH ), IS_CERTIFICATE );
     			if( cert_length == 0 ) {
-    				print_status( "Certificate is 0 length\r\n" );
+    				imx_printf( "Certificate is 0 length\r\n" );
     			}
     		} else {
-    			print_status( "Certificate is invalid\r\n" );
+    			imx_printf( "Certificate is invalid\r\n" );
     			return COAP_NO_RESPONSE;
     		}
     		break;
@@ -282,7 +282,7 @@ uint16_t coap_post_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, 
      */
     result = WICED_SUCCESS;
     update_cert_pointers();
-    print_status( "Processing new credentials: %u Bytes\r\n", cd->payload_length - 1 );
+    imx_printf( "Processing new credentials: %u Bytes\r\n", cd->payload_length - 1 );
 
     /*
      * Note the +2 for the write includes 2 null bytes put on in the bin -> certs function
@@ -290,7 +290,7 @@ uint16_t coap_post_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, 
     switch( cd->payload[ 0 ] ) {
     	case CA_ROOT_CERTIFICATE :
     		convert_bin_to_certificate( (uint8_t *)&cd->payload[ 1 ], (uint32_t) cd->payload_length - 1, new_certificate, (uint32_t) MAX_CERT_LENGTH, IS_CERTIFICATE );
-    		print_status( "New Root certificate: \r\n%s\r\n", new_certificate );
+    		imx_printf( "New Root certificate: \r\n%s\r\n", new_certificate );
     		/*
     		 * Save to DCT
     		 */
@@ -298,7 +298,7 @@ uint16_t coap_post_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, 
     		break;
     	case WIFI_CERTIFICATE :
     		convert_bin_to_certificate( (uint8_t *)&cd->payload[ 1 ], (uint32_t) cd->payload_length - 1, new_certificate, (uint32_t) MAX_CERT_LENGTH, IS_CERTIFICATE );
-    		print_status( "New WiFi certificate: \r\n%s\r\n", new_certificate );
+    		imx_printf( "New WiFi certificate: \r\n%s\r\n", new_certificate );
     		/*
     		 * Save to DCT
     		 */
@@ -306,14 +306,14 @@ uint16_t coap_post_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, 
     		break;
     	case WIFI_CERTIFICATE_KEY :
     		convert_bin_to_certificate( (uint8_t *)&cd->payload[ 1 ], (uint32_t) cd->payload_length - 1, new_certificate, (uint32_t) MAX_CERT_LENGTH, IS_KEY );
-    		print_status( "New WiFi Key : \r\n%s\r\n", new_certificate );
+    		imx_printf( "New WiFi Key : \r\n%s\r\n", new_certificate );
     		/*
     		 * Save to DCT
     		 */
     		result = wiced_dct_write( (const void*) new_certificate, DCT_SECURITY_SECTION, OFFSETOF(platform_dct_security_t, private_key), strlen( (char *) new_certificate ) + 2 );
     		break;
     	case DTLS_CERTIFICATE :
-    		print_status( "Ignoring DTLS Certificate - Using WiFi instead\r\n" );
+    		imx_printf( "Ignoring DTLS Certificate - Using WiFi instead\r\n" );
 			break;
     	default:
             response_code = BAD_REQUEST;
@@ -322,7 +322,7 @@ uint16_t coap_post_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, 
     }
 
     if( result != WICED_SUCCESS )
-    	print_status( "Failed to write credentials to DCT\r\n" );
+    	imx_printf( "Failed to write credentials to DCT\r\n" );
 
     response_code = CHANGED;
 

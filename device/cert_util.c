@@ -99,29 +99,29 @@ extern iMatrix_Control_Block_t icb;
   */
 uint16_t verify_certificate( uint8_t *certificate, uint16_t type )
 {
-	// print_status( "Verifying certificate length: %u, Certificate:\r\n%s", strlen( (char *) certificate ), (char * ) certificate );
+	// imx_printf( "Verifying certificate length: %u, Certificate:\r\n%s", strlen( (char *) certificate ), (char * ) certificate );
 	if( ( strlen( (char *) certificate ) < MAX_CERTIFICATE_LENGTH ) ) {
-		// print_status( "Looking for ->%s<-, in ->%s<-/r/n", CERT_BEGIN, ( char *) certificate );
+		// imx_printf( "Looking for ->%s<-, in ->%s<-/r/n", CERT_BEGIN, ( char *) certificate );
 		if( type == IS_CERTIFICATE ) {
 			if( strstr( (char *) certificate, CERT_BEGIN ) != 0x00 ) {	// Found
 				if( strstr( (char *) certificate, CERT_END ) != 0x00 ) {	// Found
 					return true;
 				} else
-					print_status( "Could not fined END of Certificate\r\n" );
+					imx_printf( "Could not fined END of Certificate\r\n" );
 			} else
-				print_status( "Could not fined BEGIN of Certificate\r\n" );
+				imx_printf( "Could not fined BEGIN of Certificate\r\n" );
 		} else if( type == IS_KEY ) {
 			if( strstr( (char *) certificate, KEY_BEGIN ) != 0x00 ) {	// Found
 				if( strstr( (char *) certificate, KEY_END ) != 0x00 ) {	// Found
 					return true;
 				} else
-					print_status( "Could not fined END of Certificate\r\n" );
+					imx_printf( "Could not fined END of Certificate\r\n" );
 			} else
-				print_status( "Could not fined BEGIN of Certificate\r\n" );
+				imx_printf( "Could not fined BEGIN of Certificate\r\n" );
 		} else
-			print_status( "Unknown type\r\n" );
+			imx_printf( "Unknown type\r\n" );
 	} else
-		print_status( "Certificate is too long\r\n" );
+		imx_printf( "Certificate is too long\r\n" );
 	return false;
 }
 /**
@@ -156,7 +156,7 @@ uint32_t convert_certificate_to_bin( uint8_t *buffer, uint32_t buffer_length, ui
 				done = true;
 			}
 		} else {
-			print_status( "Unknown type\r\n" );
+			imx_printf( "Unknown type\r\n" );
 			done = true;
 		}
 		/*
@@ -165,15 +165,15 @@ uint32_t convert_certificate_to_bin( uint8_t *buffer, uint32_t buffer_length, ui
 		if( !done ) {
 			ptr = strstr( (char *) &certificate[ cert_index ], CRLF );
 			if( ptr == NULL ) {
-				print_status( "End of line not found\r\n" );
+				imx_printf( "End of line not found\r\n" );
 				done = true;
 			} else {
 				process_length = (uint32_t) ptr - (uint32_t) &certificate[ cert_index ];
-				// print_status( "Processing: %lu characters\r\n", process_length );
+				// imx_printf( "Processing: %lu characters\r\n", process_length );
 				result = base64_decode( ( unsigned char *) &certificate[ cert_index], ( int32_t ) process_length,
 										( unsigned char *) &buffer[ buffer_index ], ( (uint32_t) buffer_length ) - buffer_index , BASE64_STANDARD );
 				if( result == -1 ) {	// Something failed
-					print_status( "base64 decode failed\r\n" );
+					imx_printf( "base64 decode failed\r\n" );
 					return 0;
 				} else {
 					buffer_index += result;
@@ -259,7 +259,7 @@ void cert_test(void)
 		cert_length = convert_certificate_to_bin( buffer, MAX_CERT_LENGTH, (uint8_t*) ( icb.root_certificate + BEGIN_CERT_LENGTH ),
 				(uint32_t) ( strlen( (char *) icb.root_certificate) - BEGIN_END_CERT_LENGTH ), IS_CERTIFICATE );
 		if( cert_length == 0 ) {
-			print_status( "Certificate is 0 length\r\n" );
+			imx_printf( "Certificate is 0 length\r\n" );
 			return;
 		}
 		cli_print( "Certificate is: %u long\r\n", cert_length );
@@ -278,7 +278,7 @@ void cert_test(void)
 				process_count = CERT_RECORD_LENGTH;
 			if( process_count > 0 ) {
 				/*
-				 print_status( "Encoding block %lu bytes, @ 0x%08lx, to: 0x%08lx, with %lu space available\r\n",
+				 imx_printf( "Encoding block %lu bytes, @ 0x%08lx, to: 0x%08lx, with %lu space available\r\n",
 						process_count, (uint32_t) &buffer[ buffer_index ], (uint32_t) &certificate[ cert_index ], MAX_CERT_LENGTH - cert_index );
 				 */
 				encode_count = base64_encode( (unsigned char*) &buffer[ buffer_index ], process_count, (unsigned char *) &certificate[ cert_index ], MAX_CERT_LENGTH - cert_index, BASE64_STANDARD );

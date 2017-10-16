@@ -41,11 +41,8 @@
 
 #include "wiced.h"
 
-#include "../system.h"
-#include "../defines.h"
-#include "../device/dcb_def.h"
+#include "../device/icb_def.h"
 #include "../device/config.h"
-#include "../hal_support.h"
 #include "ntp_success.h"
 
 /******************************************************
@@ -75,8 +72,7 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern dcb_t dcb;
-extern IOT_Device_Config_t device_config;
+extern iMatrix_Control_Block_t icb;
 uint32_t ntp_succeeded_since_boot = WICED_FALSE;
 uint32_t save_time_to_sflash = WICED_FALSE;// To avoid multithreading problems use a 32 bit number.
                                            // Thus a single machine instruction is all that is required to store this value.
@@ -95,7 +91,7 @@ void ntp_success(void)
     // uint32_t local_time;
     ntp_succeeded_since_boot = WICED_TRUE;
     save_time_to_sflash = WICED_TRUE;
-    dcb.time_set_with_NTP = true;
+    icb.time_set_with_NTP = true;
     /*
      * Set the time for AT Host devices
      */

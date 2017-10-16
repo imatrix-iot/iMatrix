@@ -39,12 +39,10 @@
 #include <stdbool.h>
 #include "wiced.h"
 
-#include "../system.h"
-#include "../defines.h"
-#include "../hal.h"
+#include "../storage.h"
 #include "../cli/interface.h"
 #include "../device/config.h"
-#include "../device/dcb_def.h"
+#include "../device/icb_def.h"
 #include "../time/ck_time.h"
 /******************************************************
  *                      Macros
@@ -78,7 +76,7 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
-extern dcb_t dcb;							// Defined in device/dcb_def.h and initialized in device.c
+extern iMatrix_Control_Block_t icb;
 static wiced_time_t dns_update_time;
 static uint16_t local_dns_failure_count = 0;
 /******************************************************
@@ -94,44 +92,44 @@ uint16_t get_imatrix_ip_address( wiced_time_t current_time )
 	bool result;
 
 	result = false;
-	if( ( is_later( current_time, dns_update_time + DNS_UPDATE_RATE ) == true ) || dcb.dns_lookup == false ) {
+	if( ( is_later( current_time, dns_update_time + DNS_UPDATE_RATE ) == true ) || icb.dns_lookup == false ) {
 		dns_update_time = current_time;
 #ifdef USE_FIXED_SERVER
 
-		dcb.imatrix_public_ip_address.ip.v4 = MAKE_IPV4_ADDRESS( 193, 93, 13, 64 );
-		dcb.imatrix_public_ip_address.version = WICED_IPV4;
+		icb.imatrix_public_ip_address.ip.v4 = MAKE_IPV4_ADDRESS( 193, 93, 13, 64 );
+		icb.imatrix_public_ip_address.version = WICED_IPV4;
 		result = true;
 
 #else
 #ifdef USE_GREG_TEST_SERVER
 
-		        dcb.imatrix_public_ip_address.ip.v4 = MAKE_IPV4_ADDRESS( 10, 3, 0, 250 );
-		        dcb.imatrix_public_ip_address.version = WICED_IPV4;
+		        icb.imatrix_public_ip_address.ip.v4 = MAKE_IPV4_ADDRESS( 10, 3, 0, 250 );
+		        icb.imatrix_public_ip_address.version = WICED_IPV4;
 		        result = true;
 #else
-		if ( wiced_hostname_lookup( device_config.imatrix_public_url, &dcb.imatrix_public_ip_address, 3 * SECONDS, WICED_STA_INTERFACE ) == WICED_SUCCESS ) {
-			print_status( "iMatrix DNS IP Address lookup successful " );
+		if ( wiced_hostname_lookup( device_config.imatrix_public_url, &icb.imatrix_public_ip_address, 3 * SECONDS, WICED_STA_INTERFACE ) == WICED_SUCCESS ) {
+			imx_printf( "iMatrix DNS IP Address lookup successful " );
 			result = true;
 		} else {
-			print_status( "iMatrix IP Address DNS lookup failed " );
-			dcb.dns_failure_count += 1;
+			imx_printf( "iMatrix IP Address DNS lookup failed " );
+			icb.dns_failure_count += 1;
 			local_dns_failure_count += 1;
 			if( local_dns_failure_count >= MAX_DNS_FAILURE ) {
 			    local_dns_failure_count = 0;    // Restart at 0
 				/*
 				 * Restart the Wi Fi to see if we can resolve this
 				 */
-				dcb.wifi_up = false;	// This will cause it to teardown and retry
+				icb.wifi_up = false;	// This will cause it to teardown and retry
 			}
 		}
 #endif
 #endif
-		print_status( "set to iMatrix Server: %03u.%03u.%03u.%03u\r\n",
-			(unsigned int ) ( ( dcb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
-			(unsigned int ) ( ( dcb.imatrix_public_ip_address.ip.v4 & 0x00ff0000 ) >> 16 ),
-			(unsigned int ) ( ( dcb.imatrix_public_ip_address.ip.v4 & 0x0000ff00 ) >> 8 ),
-			(unsigned int ) ( ( dcb.imatrix_public_ip_address.ip.v4 & 0x000000ff ) ) );
-		dcb.dns_lookup = result;
+		imx_printf( "set to iMatrix Server: %03u.%03u.%03u.%03u\r\n",
+			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
+			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x00ff0000 ) >> 16 ),
+			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x0000ff00 ) >> 8 ),
+			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x000000ff ) ) );
+		icb.dns_lookup = result;
 		return result;
 	} else
 		return true;

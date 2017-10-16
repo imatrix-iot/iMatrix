@@ -201,7 +201,7 @@ uint16_t make_str_uint( char* str, int length ) {
    int base = 1; 
 
    if ( ( length < 1 ) || ( length > 5 ) ) {// invalid length: max 5 digits in 65535
-      print_status("Length of string being converted to an integer is invalid\n\r");
+      imx_printf("Length of string being converted to an integer is invalid\n\r");
       return 0;
    }
    
@@ -211,14 +211,14 @@ uint16_t make_str_uint( char* str, int length ) {
 	   digit = str[n] - '0';
 	   
 	   if ( ( digit < 0 ) || ( 9 < digit ) ) {
-		   print_status("Attempted to convert non-numeric ASCII character to integer.\n\r");
+		   imx_printf("Attempted to convert non-numeric ASCII character to integer.\n\r");
 		   return 0;
 	   }
 	   
 	   if ( ( length - n ) == 5 ) {//check for max size of int
 		   
 	      if ( ( ( digit == 6 ) && ( result > 5535 ) ) || ( digit > 6 ) ) {
-			  print_status("Number being converted to unsigned 16 bit integer is too large.\n\r");
+			  imx_printf("Number being converted to unsigned 16 bit integer is too large.\n\r");
 			  return 0;
 		  }
 	   }
@@ -247,7 +247,7 @@ uint32_t make_str_uint32( char* str, int length ) {
     int base = 1;
 
     if ( ( length < 1 ) || ( length > 10 ) ) {// invalid length: max 10 digits in 4294967295
-        print_status("Length of string being converted to an integer is invalid\n\r");
+        imx_printf("Length of string being converted to an integer is invalid\n\r");
         return 0;
     }
 
@@ -257,14 +257,14 @@ uint32_t make_str_uint32( char* str, int length ) {
         digit = str[n] - '0';
 
         if ( ( digit < 0 ) || ( 9 < digit ) ) {
-            print_status("Attempted to convert non-numeric ASCII character to integer.\n\r");
+            imx_printf("Attempted to convert non-numeric ASCII character to integer.\n\r");
             return 0;
         }
 
         if ( ( length - n ) == 10 ) {//check for max size of int
 
             if ( ( ( digit == 4 ) && ( result > 294967295 ) ) || ( digit > 4 ) ) {
-                print_status("Number being converted to 32 bit integer is too large.\n\r");
+                imx_printf("Number being converted to 32 bit integer is too large.\n\r");
                 return 0;
             }
         }
@@ -291,7 +291,7 @@ int32_t make_str_int32( char* str, int length ) {
 
     // if invalid length: max 10 digits in 2147483647 + sign
     if ( ( length < 1 ) || ( ( str[0] != '-' ) && ( length > 10 ) ) || ( length > 11 ) ) {
-        print_status("Length of string being converted to an integer is invalid\n\r");
+        imx_printf("Length of string being converted to an integer is invalid\n\r");
         return 0;
     }
 

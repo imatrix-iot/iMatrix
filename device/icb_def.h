@@ -101,7 +101,7 @@ typedef struct {
 	uint32_t spi_errors;
 	uint32_t building_id;
 	uint32_t indoor_x, indoor_y, indoor_level;
-	float longitude, lattitude, elevation;
+	float longitude, latitude, elevation;
 	ip_stats_t ip_stats[ NO_PROTOCOL_STATS ];
 	wiced_ip_address_t gw_ip;
 	wiced_ip_address_t my_ip;

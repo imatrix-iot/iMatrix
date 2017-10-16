@@ -198,7 +198,7 @@ void cli_at( uint16_t arg )
 	             */
 	            at_register = token[ 3 ] - 0x30;
 	        } else {
-	            print_status( "No Register Supplied\r\n" );
+	            imx_printf( "No Register Supplied\r\n" );
 	            icb.AT_command_errors += 1;
 	            at_print( AT_RESPONSE_ERROR );
 	            return;

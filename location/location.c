@@ -42,13 +42,9 @@
 #include <stdbool.h>
 
 #include "wiced.h"
-
-#include "../defines.h"
-#include "../system.h"
-#include "../hal.h"
-#include "../system.h"
+#include "../storage.h"
 #include "../device/config.h"
-#include "../device/dcb_def.h"
+#include "../device/icb_def.h"
 #include "../time/ck_time.h"
 
 /******************************************************
@@ -84,7 +80,7 @@ typedef struct {
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-extern dcb_t dcb;
+extern iMatrix_Control_Block_t icb;
 
 #ifdef SIMULATE_GPS
 static gps_update_entry_t simple_gps_route[ NO_GPS_ENTRIES ] =
@@ -137,13 +133,13 @@ void init_location_system(void)
 	 *
 	 * If the GPS location for this device is set - send it out at boot
 	 */
-	if( ( device_config.lattitude == 0 ) && ( device_config.longitude == 0 ) )
+	if( ( device_config.latitude == 0 ) && ( device_config.longitude == 0 ) )
 		return;
 
 	wait_for_update = 0;
 	last_gps_update = 0;
 	gps_index = 0;
-	dcb.send_gps_coords = true;
+	icb.send_gps_coords = true;
 }
 /**
   * @brief process the location system
@@ -156,13 +152,13 @@ void process_location( wiced_time_t current_time )
 #ifdef SIMULATE_GPS
 
 	if( is_later( current_time, wait_for_update + simple_gps_route[ gps_index ].delay ) == true ) {
-		dcb.lattitude = simple_gps_route[ gps_index ].lattitude;
-		dcb.longitude = simple_gps_route[ gps_index ].longitude;
+		icb.lattitude = simple_gps_route[ gps_index ].lattitude;
+		icb.longitude = simple_gps_route[ gps_index ].longitude;
         gps_index += 1;
         if( gps_index >= NO_GPS_ENTRIES )
             gps_index = 0;
 	}
 	if( is_later( current_time, last_gps_update + device_config.location_update_rate ) == true )
-		dcb.send_gps_coords = true;
+		icb.send_gps_coords = true;
 #endif
 }

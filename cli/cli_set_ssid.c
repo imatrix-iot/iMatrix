@@ -44,6 +44,7 @@
 #include "../cli/interface.h"
 #include "../device/config.h"
 #include "../device/icb_def.h"
+#include "../device/hal_leds.h"
 #include "../wifi/wifi.h"
 
 #include "cli_set_ssid.h"
@@ -113,7 +114,7 @@ void cli_set_ssid( uint16_t arg)
 			set_wifi_ap_ssid( buffer1, buffer2, IMX_DEFAULT_AP_SECURITY );
 			icb.wifi_up = false;
 			if( device_config.AP_setup_mode == true ) { // We were in set up mode - turn off the blinking led
-			    imx_update_led_red_status( false );
+			    set_host_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED Led to off
 			    device_config.AP_setup_mode = false;
 			}
 			imatrix_save_config();

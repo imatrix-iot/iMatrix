@@ -62,6 +62,8 @@
 
 #define IMX_MAX_CONNECTION_RETRY_COUNT      2
 
+#define HISTORY_SIZE                        16
+
 /*
  * Common characters and strings
  */
@@ -130,19 +132,19 @@
 /******************************************************
  *                   Enumerations
  ******************************************************/
-enum comm_mode_t {
+enum {
     COMM_UDP,
     COMM_UDP_DTLS,
     COMM_TCP,
     COMM_TCP_TLS,
-};
-enum security_mode_t {
+} comm_mode_t;
+enum {
     SECURITY_WEP,
     SECURITY_WPA2,
     SECURITY_8021X_EAP_TLS,
     SECURITY_8021X_PEAP,
     SECURITY_MAX
-};
+} security_mode_t;
 /*
  * iMatrix Block formats
  */
@@ -162,7 +164,7 @@ enum {
 /*
  * Define well know system controls/sensors
  */
-enum internal_predefined_sensors_t {
+enum  {
     IMX_INTERNAL_SENSOR_RF_SCAN = 0,
     IMX_INTERNAL_SENSOR_GPS_LATITUDE,
     IMX_INTERNAL_SENSOR_GPS_LONGITUDE,
@@ -181,24 +183,35 @@ enum internal_predefined_sensors_t {
     IMX_INTERNAL_SENSOR_RF_SECURITY,
     IMX_INTERNAL_SENSOR_THING_EVENT,
     IMX_NO_INTERNAL_SENSORS
-};
+} internal_predefined_sensors_t;
 /*
  * Types of Internal Events
  */
-
-enum internal_events_t {
-    IMX_EVENT_NONE = 0,
-    IMX_EVENT_REGISTRATION,
-    IMX_NO_EVENTS,
-};
 
 /******************************************************
  *                 Type Definitions
  ******************************************************/
 typedef enum {
-    IMX_CONTROLS,
+    IMX_EVENT_NONE = 0,
+    IMX_EVENT_REGISTRATION,
+    IMX_NO_EVENTS,
+} internal_events_t;
+
+typedef enum {
+    IMATRIX_VERSION_0 = 0,
+    IMATRIX_VERSION_1 = 1,  // Current
+    IMATRIX_VERSION_2 = 2,
+    IMATRIX_VERSION_3 = 3,
+    IMATRIX_VERSION_4 = 4,
+    IMATRIX_VERSION_5 = 5,
+    IMATRIX_VERSION_6 = 6,
+    IMATRIX_VERSION_7 = 7,
+} imatrix_version_t;
+
+typedef enum {
+    IMX_CONTROLS = 0,
     IMX_SENSORS,
-    NO_PERIPHERAL_TYPES,
+    IMX_NO_PERIPHERAL_TYPES,
 } peripheral_type_t;
 
 typedef struct {
@@ -379,6 +392,7 @@ typedef struct {
     char password[ IMX_PASSWORD_LENGTH + 1 ];
     char imatrix_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char ota_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
+    char manufacturing_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     uint16_t reboots;// Space for a reboot counter if we want it for Known Good Configuration Logic that involves the bootloader.
     uint16_t no_sensors;
     uint16_t no_controls;

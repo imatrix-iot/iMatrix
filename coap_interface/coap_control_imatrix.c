@@ -61,7 +61,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -178,7 +178,7 @@ uint16_t coap_post_control_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, u
     icb.wifi_up = false;
     device_config.AP_setup_mode = false;
     imatrix_save_config();
-    print_status( "System will attempt connection to iMatrix\r\n" );
+    imx_printf( "System will attempt connection to iMatrix\r\n" );
 
     response = CHANGED;
 

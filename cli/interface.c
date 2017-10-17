@@ -123,7 +123,7 @@ uint16_t imx_get_ch( char *ch )
 		return false;
 }
 
-void print_status( char *format, ... )
+void imx_printf( char *format, ... )
 {
     /*
      * Check if output for status messages is enabled.
@@ -157,19 +157,19 @@ void cli_print( char *format, ... )
 
     	if( size > SPRINTF_BUFFER_LENGTH ) {
     		sprintf( buffer, "Message length(%u) for Telnet exceeds buffer length: %u\r\n", size, SPRINTF_BUFFER_LENGTH );
-    		print_status( "Telnet Buffer Could Overflow with this message:\r\n");
+    		imx_printf( "Telnet Buffer Could Overflow with this message:\r\n");
     	    vprintf( format, args );
     	} else
     		vsprintf( buffer, format, args );
     	if( telnetd_write( buffer, strlen( buffer ) ) == false ) {
-    		print_status( "Telnet stream failure, closing session\r\n" );
+    		imx_printf( "Telnet stream failure, closing session\r\n" );
     		telnetd_deinit();
     	}
     }
     va_end( args );
 }
 
-int st_log_print_status( char *format, ... )
+int st_log_imx_printf( char *format, ... )
 {
 	if ( ( icb.print_debugs != 0 ) ) {
 		char buffer[ SPRINTF_BUFFER_LENGTH ];
@@ -181,25 +181,25 @@ int st_log_print_status( char *format, ... )
 	    va_start( args, format );// Initialize list of arguments.
 
     	uint16_t size = vsnprintf( NULL, 0, format, args ) + 1;	// Get length with room for null terminator.
-		print_status( "%06lu: ", (uint32_t) ( utc_time % IMX_SEC_IN_DAY  ) );
+		imx_printf( "%06lu: ", (uint32_t) ( utc_time % IMX_SEC_IN_DAY  ) );
 	    vprintf( format, args );
 	    fflush(stdout);
 
     	if( size > SPRINTF_BUFFER_LENGTH ) {
     		sprintf( buffer, "Message length(%u) for Telnet exceeds write buffer length: %u\r\n", size, SPRINTF_BUFFER_LENGTH );
-    		print_status( "log buffer Could Overflow with this message: %s\r\n", buffer );
+    		imx_printf( "log buffer Could Overflow with this message: %s\r\n", buffer );
     	} else {
 	    	if( telnet_active() == true ) {	// Output to telnet session as well
 		    	sprintf( buffer, "%06lu: ", (uint32_t) ( utc_time % IMX_SEC_IN_DAY  ) );
 		    	if( telnetd_write( buffer, strlen( buffer ) ) == false ) {
-		    		print_status( "Telnet stream failure, closing session\r\n" );
+		    		imx_printf( "Telnet stream failure, closing session\r\n" );
 		    		telnetd_deinit();
 		    	}
 	    	}
 	    	vsprintf( buffer, format, args );
 	    	if( telnet_active() == true ) {	// Output to telnet session as well
 		    	if( telnetd_write( buffer, strlen( buffer ) ) == false ) {
-		    		print_status( "Telnet stream failure, closing session\r\n" );
+		    		imx_printf( "Telnet stream failure, closing session\r\n" );
 		    		telnetd_deinit();
 		    	}
 	    	}

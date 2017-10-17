@@ -75,7 +75,7 @@ manufacturing/manufacturing.c manufacturing/manufacturing.h \
 networking/get_inbound_destination_ip.c networking/get_inbound_destination_ip.h networking/http_get_sn_mac_address.c networking/http_get_sn_mac_address.h \
 networking/keep_alive.c networking/keep_alive.h networking/utility.c networking/utility.h \
 time/ck_time.c time/ck_time.h time/ntp_success.c time/ntp_success.h time/sntp.c time/sntp.h \
-wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/process_wifi.c wifi/process_wifi.h wifi/wifi/c wifi/wifi/h
+wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/imx_wifi.c wifi/process_wifi.c wifi/process_wifi.h wifi/wifi/c wifi/wifi/h
 $(NAME)_DEFINES += IMATRIX_CLIENT
 
 GLOBAL_INCLUDES := .

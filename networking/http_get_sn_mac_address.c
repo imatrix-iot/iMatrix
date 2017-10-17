@@ -185,7 +185,7 @@ uint16_t http_get_sn_mac_address( void )
 				while( retry_count < IMX_MAX_CONNECTION_RETRY_COUNT ) {
 					result = wiced_tcp_connect( &ota_loader_config.socket, &ota_loader_config.address, 80, 1000 );
 					if( result == WICED_TCPIP_SUCCESS ) {
-						imx_printf( "Successfully Connected to: %s on Port: 80\r\n", get_manufacturing_site() );
+						imx_printf( "Successfully Connected to: %s on Port: 80\r\n", device_config.manufacturing_url );
 						/*
 						 * Create the stream
 						 */
@@ -199,7 +199,7 @@ uint16_t http_get_sn_mac_address( void )
 					}
 				}
 				if( retry_count >= IMX_MAX_CONNECTION_RETRY_COUNT ) {
-					imx_printf( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", get_manufacturing_site() );
+					imx_printf( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", device_config.manufacturing_url );
 					state = GET_MAC_CLOSE_SOCKET;
 				}
 				break;
@@ -293,7 +293,7 @@ uint16_t http_get_sn_mac_address( void )
 						        strncpy( device_config.device_serial_number, string_serial_number, IMX_DEVICE_SERIAL_NUMBER_LENGTH );
                                 strncpy( device_config.password, string_password, IMX_PASSWORD_LENGTH );
 
-						        save_config();
+						        imatrix_save_config();
 						    } else {
 						        imx_printf( "Invalid MAC Address Product Name, ID: %s, 0x%08lx - Call for HELP +1 888 545 1007\r\n", device_config.product_name, device_config.product_id ); /* invalid mac */
 						        return false;

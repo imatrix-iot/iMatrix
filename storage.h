@@ -132,13 +132,21 @@
 /******************************************************
  *                   Enumerations
  ******************************************************/
-enum {
+/*
+ * Types of Internal Events
+ */
+
+/******************************************************
+ *                 Type Definitions
+ ******************************************************/
+typedef enum comm_mode {
     COMM_UDP,
     COMM_UDP_DTLS,
     COMM_TCP,
     COMM_TCP_TLS,
 } comm_mode_t;
-enum {
+
+typedef enum security_mode {
     SECURITY_WEP,
     SECURITY_WPA2,
     SECURITY_8021X_EAP_TLS,
@@ -148,7 +156,7 @@ enum {
 /*
  * iMatrix Block formats
  */
-enum {
+typedef enum imx_block {
     IMX_BLOCK_CONTROL = 0,
     IMX_BLOCK_SENSOR,
     IMX_BLOCK_MFG_UPDATE,
@@ -159,12 +167,12 @@ enum {
     IMX_BLOCK_EVENT_CONTROL,
     IMX_BLOCK_EVENT_SENSOR,
     IMX_NO_BLOCK_TYPES
-};
+} imx_block_t;
 
 /*
  * Define well know system controls/sensors
  */
-enum  {
+typedef enum  internal_predefined_sensors {
     IMX_INTERNAL_SENSOR_RF_SCAN = 0,
     IMX_INTERNAL_SENSOR_GPS_LATITUDE,
     IMX_INTERNAL_SENSOR_GPS_LONGITUDE,
@@ -184,20 +192,14 @@ enum  {
     IMX_INTERNAL_SENSOR_THING_EVENT,
     IMX_NO_INTERNAL_SENSORS
 } internal_predefined_sensors_t;
-/*
- * Types of Internal Events
- */
 
-/******************************************************
- *                 Type Definitions
- ******************************************************/
-typedef enum {
+typedef enum internal_events {
     IMX_EVENT_NONE = 0,
     IMX_EVENT_REGISTRATION,
     IMX_NO_EVENTS,
 } internal_events_t;
 
-typedef enum {
+typedef enum imatrix_version {
     IMATRIX_VERSION_0 = 0,
     IMATRIX_VERSION_1 = 1,  // Current
     IMATRIX_VERSION_2 = 2,
@@ -208,52 +210,52 @@ typedef enum {
     IMATRIX_VERSION_7 = 7,
 } imatrix_version_t;
 
-typedef enum {
+typedef enum peripheral_type {
     IMX_CONTROLS = 0,
     IMX_SENSORS,
     IMX_NO_PERIPHERAL_TYPES,
 } peripheral_type_t;
 
-typedef struct {
+typedef struct serial_number {
     uint32_t serial1;
     uint32_t serial2;
     uint32_t serial3;
 } serial_number_t;
 
-typedef struct {
+typedef struct var_data_header {
     uint16_t pool_id;
     uint16_t length;
     void *next;
 } var_data_header_t;
 
-typedef struct {
+typedef struct var_data_entry {
     var_data_header_t header;
     uint8_t data[];
 } var_data_entry_t;
 
-typedef struct {
+typedef struct var_data_t {
     var_data_entry_t *entry;
     var_data_entry_t *next;
-} var_data_ct;
+} var_data_t;
 
-typedef struct {
+typedef struct var_data_block {
     var_data_entry_t *head;
     var_data_entry_t *tail;
 } var_data_block_t;
 
-typedef union {
+typedef union data_32 {
     uint32_t uint_32bit;
     int32_t int_32bit;
     float float_32bit;
     var_data_entry_t *var_data;
 } data_32_t;
 
-typedef struct {
+typedef struct var_data_config {
     uint16_t size;
     uint16_t no_entries;
 } var_data_config_t;
 
-typedef struct {
+typedef struct control_sensor_data {
     unsigned int update_now             : 1;    // 0
     unsigned int warning                : 2;    // 1-2
     unsigned int last_warning           : 2;    // 2-3
@@ -270,7 +272,7 @@ typedef struct {
     data_32_t data[ IMATRIX_HISTORY_SIZE ];
 } control_sensor_data_t;
 
-typedef struct {
+typedef struct control_sensor_block {
     char name[ CONTROL_SENSOR_NAME_LENGTH ];
     uint32_t id;
     uint32_t sample_rate;
@@ -287,7 +289,7 @@ typedef struct {
     data_32_t warning_level_high[ WARNING_LEVELS ];
 } control_sensor_block_t;
 
-typedef struct {
+typedef struct functions {
     void (*load_config_defaults)(uint16_t arg);
     void (*init)(uint16_t arg);
     uint16_t (*update)(uint16_t arg, void *value );
@@ -322,7 +324,7 @@ typedef struct __attribute__((__packed__)) {
 /*
  * Smart Arduino Structures
  */
-typedef struct {
+typedef struct device_configuration {
     unsigned int cfg            : 1;
     unsigned int reserved       : 7;
     unsigned int arduino_code   : 16;
@@ -330,7 +332,7 @@ typedef struct {
     unsigned int no_sensors     : 4;
 } device_configuration_t;
 
-typedef struct {
+typedef struct arduino_config {
     device_configuration_t config;
     uint32_t system_status_code;
     uint32_t arduino_status_code;
@@ -380,7 +382,7 @@ typedef struct {
     data_32_t data_sensors[ MAX_ARDUINO_SENSORS ];
 } arduino_config_t;
 
-typedef struct {
+typedef struct IOT_Device_Config {
     char product_name[ IMX_PRODUCT_NAME_LENGTH + 1 ];
     char device_name[ IMX_DEVICE_NAME_LENGTH + 1 ];
     serial_number_t sn;

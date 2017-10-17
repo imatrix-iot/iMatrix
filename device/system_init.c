@@ -183,7 +183,7 @@ bool system_init(void)
     imx_printf( "Core System Initialized\r\n" );
 
 
-    telnetd_setup();
+    telnetd_init();
 	cli_init();
     // Ensure that it will be night time till Networking is successful.
 

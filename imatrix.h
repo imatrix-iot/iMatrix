@@ -72,6 +72,7 @@ imx_imatrix_init_config_t imatrix_config = {
     .longitude = IMX_LONGITUDE_DEFAULT,
     .Latitude = IMX_LATITUDE_DEFAULT,
     .elevation = IMX_ELEVATION_DEFAULT
+    bool (*set_led)( imx_led_t led, uint16_t state );
 };
  *
  */
@@ -87,7 +88,7 @@ imx_imatrix_init_config_t imatrix_config = {
  *  Define the number of sensors and controls in the system
  *
  */
-#define IMX_MAX_NO_SENSORS              ( 3 + 32 )      // 3 Integrated Wi Fi Channel, RSSI, Noise - 32 User Defined
+#define IMX_MAX_NO_SENSORS              ( 4 + 32 )      // 3 Integrated Wi Fi Channel, RSSI, Noise - 32 User Defined
 #define IMX_MAX_NO_CONTROLS             ( 0 + 8 )       // 8 User Defined
 /*
  *  Define the number of Smart Arduino controls and sensors in the system
@@ -126,12 +127,12 @@ char *imx_get_device_serial_number(void);
 /*
  * Apollo Configuration management
  */
-void *imx_get_config_current_address(void);
+wiced_result_t imx_get_config_current_address( void *config_address );
 wiced_result_t imx_save_config( void *config, uint16_t config_size );
 /*
  * Console I/O
  */
-uint16_t imx_get_ch( char *ch );
+bool imx_get_ch( char *ch );
 void imx_printf( char *format, ... );
 /*
  * Set & Get Control / Sensor data
@@ -141,8 +142,21 @@ imx_status_t imx_get_sensor( uint16_t sensor_entry, void *value );
 imx_status_t imx_set_control( uint16_t sensor_entry, void *value );
 imx_status_t imx_get_control( uint16_t control_entry, void *value );
 /*
- * Support functions from host
+ * Standard Control/Sensor Processing functions
  */
-void imx_update_led_red_status( uint16_t status );
-void imx_update_led_green_status( uint16_t status );
+void load_config_defaults_generic_scb( uint16_t arg );
+void load_config_defaults_generic_ccb( uint16_t arg );
+/*
+ * Additional support Platform code
+ */
+bool imx_ismart_ism43340_set_led( imx_led_t led, imx_led_state_t mode );
+
+/*
+ * CoAP Processing defines
+ */
+#include "coap/coap.h"
+/*
+ * Include JSON library
+ */
+#include "json/mjson.h"
 #endif /* IMX_IMATRIX_H_ */

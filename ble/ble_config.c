@@ -34,7 +34,6 @@
  * Runtime Bluetooth stack configuration parameters
  *
  */
-#include "../system.h"
 #ifdef BLE_ENABLED
 #include "wiced_bt_cfg.h"
 

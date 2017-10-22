@@ -23,20 +23,16 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file imatrix.c
+/** @file imatirx.h
  *
  *  Created on: October 8, 2017
  *      Author: greg.phillips
  *
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#ifndef IMX_IMATRIX_INTERFACE_H_
+#define IMX_IMATRIX_INTERFACE_H_
 
-#include "storage.h"
-#include "device/config.h"
-#include "device/icb_def.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -58,65 +54,12 @@
  ******************************************************/
 
 /******************************************************
- *               Function Declarations
- ******************************************************/
-
-/******************************************************
- *               Variable Definitions
- ******************************************************/
-extern iMatrix_Control_Block_t icb;
-extern IOT_Device_Config_t device_config;
-extern imx_imatrix_init_config_t imatrix_init_config;
-/******************************************************
  *               Function Definitions
  ******************************************************/
-/**
-  * @brief  Initialize the iMatrix System
-  * @param  flag to set up to run in background
-  * @retval : status of initialization
-  */
-imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background )
-{
-
-    init_storage();     // Start clean
-    /*
-     * Save user defined product information to local storage
-     */
-    memcpy( &imatrix_init_config, init_config, sizeof( imx_imatrix_init_config_t ) );
-    /*
-     * Load current config or factory default if none stored
-     */
-
-    imatrix_load_config();
-    if( ( device_config.application_loaded == false ) || ( override_config == true ) ) {
-        /*
-         * Copy factory entries to device_config
-         */
-
-    }
-    /*
-     * Use the provided parameters to set up the system
-     */
-    if( run_in_background ) {
-        /*
-         * Spawn the imx_process as a background process
-         */
-        icb.running_in_background = true;
-    }
-
-    return IMX_NO_ERROR;
-}
-imx_status_t imx_process(void)
-{
-    return IMX_NO_ERROR;
-}
-imx_status_t imx_deinit(void)
-{
-    if( icb.running_in_background == true ) {
-        /*
-         * Shut down background process
-         */
-        ;
-    }
-    return IMX_NO_ERROR;
-}
+/*
+ * Start up and run functions
+ */
+imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background );
+imx_status_t imx_process(void);
+imx_status_t imx_deinit(void);
+#endif /* IMX_IMATRIX_INTERFACE_H_ */

@@ -71,5 +71,5 @@ void imatrix_upload(wiced_time_t current_time);
 void imatrix_production_upload( uint16_t mode );
 void imatrix_log( char *buffer );
 void imatrix_status( uint16_t arg);
-void imatrix_config(void);
+void print_imatrix_config(void);
 #endif /* IMATRIX_H_ */

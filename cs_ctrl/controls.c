@@ -51,8 +51,8 @@
  ******************************************************/
 
 extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
-extern control_sensor_block_t controls_defaults[];
-extern functions_t control_functions[];
+extern control_sensor_block_t imx_controls_defaults[];
+extern functions_t imx_control_functions[];
 extern IOT_Device_Config_t device_config;
 
 /******************************************************
@@ -75,16 +75,16 @@ void reset_controls(void)
 	cli_print( "Adding %u Controls\r\n", count );
 	for( i = 0; i < count; i++ ) {
 /*	    printf( "Loading defaults from Controls Defaults: %u, %s, id: %u, sample rate: %u, batch size: %u, percent change: %u, enabled: %u, send on percent: %u, data type: %u\r\n", i,
-                controls_defaults[ i ].name,
-                (uint16_t) controls_defaults[ i ].id,
-                (uint16_t) controls_defaults[ i ].sample_rate,
-                (uint16_t) controls_defaults[ i ].sample_batch_size,
-                (uint16_t) controls_defaults[ i ].percent_change_to_send,
-                (uint16_t) controls_defaults[ i ].enabled,
-                (uint16_t) controls_defaults[ i ].send_on_percent_change,
-                (uint16_t) controls_defaults[ i ].data_type );
+                imx_controls_defaults[ i ].name,
+                (uint16_t) imx_controls_defaults[ i ].id,
+                (uint16_t) imx_controls_defaults[ i ].sample_rate,
+                (uint16_t) imx_controls_defaults[ i ].sample_batch_size,
+                (uint16_t) imx_controls_defaults[ i ].percent_change_to_send,
+                (uint16_t) imx_controls_defaults[ i ].enabled,
+                (uint16_t) imx_controls_defaults[ i ].send_on_percent_change,
+                (uint16_t) imx_controls_defaults[ i ].data_type );
 */
-		add_control( &controls_defaults[ i ], &ccb_entry );
+		add_control( &imx_controls_defaults[ i ], &ccb_entry );
 
 	}
 }
@@ -108,8 +108,8 @@ void init_controls(void)
 	wiced_time_get_time( &current_time );	// Current time in mS
 
 	for( i = 0; i < device_config.no_controls; i++ ) {
-		if( control_functions[ i ].init != NULL )
-			(control_functions[ i ].init)( control_functions[ i ].arg );	// Initialize control
+		if( imx_control_functions[ i ].init != NULL )
+			(imx_control_functions[ i ].init)( imx_control_functions[ i ].arg );	// Initialize control
 		cd[ i ].update_now = true;
 		cd[ i ].last_sample_time = current_time + ( i * 1000 );
 	}
@@ -132,13 +132,13 @@ uint16_t add_control( control_sensor_block_t *ctrl_blk, uint16_t *entry_no )
 	memcpy( &device_config.ccb[ device_config.no_controls ], ctrl_blk, sizeof( control_sensor_block_t ) );
 	*entry_no = device_config.no_controls;
 
-	print_status( "Added new control: %u%s, %s, ", device_config.no_controls, device_config.ccb[ device_config.no_controls ].enabled ? "" : " (Disabled)", device_config.ccb[ device_config.no_controls ].name );
+	imx_printf( "Added new control: %u%s, %s, ", device_config.no_controls, device_config.ccb[ device_config.no_controls ].enabled ? "" : " (Disabled)", device_config.ccb[ device_config.no_controls ].name );
 
 	if( device_config.ccb[ device_config.no_controls ].sample_rate == 0 )
-	    print_status( "Event Driven" );
+	    imx_printf( "Event Driven" );
 	else
-	    print_status( "Sample Rate Every: %u Sec", device_config.ccb[ device_config.no_controls ].sample_rate );
-	print_status( " Batch size: %u\r\n", device_config.ccb[ device_config.no_controls ].sample_batch_size );
+	    imx_printf( "Sample Rate Every: %u Sec", device_config.ccb[ device_config.no_controls ].sample_rate );
+	imx_printf( " Batch size: %u\r\n", device_config.ccb[ device_config.no_controls ].sample_batch_size );
 
 	device_config.no_controls += 1;
 
@@ -151,7 +151,7 @@ uint16_t add_control( control_sensor_block_t *ctrl_blk, uint16_t *entry_no )
   */
 void load_config_defaults_generic_ccb( uint16_t arg )
 {
-	memcpy( &device_config.ccb[ arg ], &controls_defaults[ arg ], sizeof( control_sensor_block_t ) );
+	memcpy( &device_config.ccb[ arg ], &imx_controls_defaults[ arg ], sizeof( control_sensor_block_t ) );
 }
 void print_controls(void)
 {

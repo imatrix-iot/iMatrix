@@ -33,10 +33,29 @@
 # so agrees to indemnify Sierra against all liability.
 #
 
+# The following global defines enable debug printing in specific modules or collections of modules or All code.
+# A clean make is required to enforce any change in this list.
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_ALL 
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_BLE
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_HAL					# Hardware abstraction layer
+#GLOBAL_DEFINES += PRINT_DEBUGS_FOR_SPI					# SPI - I2C Interface - DO NOT ENABLE UNLESS TESTING SPI
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_SENSORS				# All sensor collection: i2c_*.c & power.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_SFLASH				# Serial Flash
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_APPLICATION_START 	# includes imatrix.c do_everything.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_INIT
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_XMIT
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_RECV 				#includes coap_recv.c coap_get.c coap_post.c match_uri.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_COAP_DEFINES 		#includes coap_def.c coap_config.c coap_provisioning.c coap_remote.c 
+                  										# above includes coap_psoc.c coap_sensor_rssi.c coap.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_BASIC_MESSAGING 		#includes add_coap_option.c coap_msg_get_store.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_HISTORY 				#includes imatrix.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_BUSINESS_HOURS
+
 NAME := iMatix_Library_$(PLATFORM)
 
-$(NAME)_SOURCES := imatrix.c imatrix.h storage.c storage.h \
+$(NAME)_SOURCES := imatrix_interface.c imatrix_interface.h storage.c storage.h \
 at_cmds/at_cmds.c at_cmds/at_cmds.h \
+ble/ble_config.c ble/ble_manager.c ble/ble_manager.h \
 cli/cli.c cli/cli.h cli/cli_help.c cli/cli_help.h cli/cli_reboot.c cli/cli_reboot.h cli/cli_status.c cli/status.h \
 cli/cli_set_ssid.c cli/cli_set_ssid.h cli/cli_dump.c cli/cli_dump.h cli/cli_set_serial.c cli/cli_set_serial.h \
 cli/interface.c cli/interface.h cli/print_dct.c cli/print_dct.h cli/telnetd.c cli/telnetd.h cli/cli_debug.c cli/cli_debug.h \
@@ -65,17 +84,26 @@ coap_interface/coap_sensor_rssi.c coap_interface/coap_sensor_rssi.h \
 coap_interface/get_uint_from_query_str.c coap_interface/get_uint_from_query_str.h \
 coap_interface/match_uri.c coap_interface/match_uri.h \
 coap_interface/token_string.c coap_interface/token_string.h \
-cs_ctrl/controls. cs_ctrl/controls.h cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
+cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
 cs_ctrl/hal_event.c cs_ctrl/hal_event.h cs_ctrl/hal_sample.c cs_ctrl/hal_sample.h  \
-device/cert_util.c device/cert_util.h device/config.c device/config.h device/device.c device/device.h \
-device/hal_wifi.c device/hal_wifi.h device/set_serial.c device/set_serial.h device/system_init.c device/system_init.h device/var_data.c device/var_data.h \
+device/cert_util.c device/cert_util.h device/config.c device/config.h device/device.c device/device.h device/hal_leds.c device/hal_leds.h \
+device/hal_wifi.c device/hal_wifi.h device/imx_config.c device/imx_config.h device/set_serial.c device/set_serial.h device/system_init.c \
+device/system_init.h device/var_data.c device/var_data.h \
 imatrix/add_internal.c imatrix/add_internal.h imatrix/imatrix_get_ip.c imatrix/imatrix_get_ip.h imatrix/imatrix.c imatrix/imatrix.h imatrix/registration.c imatrix/registration.h \
+json/mjson.c json/mjson.h \
 location/location.c location/location.h \
 manufacturing/manufacturing.c manufacturing/manufacturing.h \
 networking/get_inbound_destination_ip.c networking/get_inbound_destination_ip.h networking/http_get_sn_mac_address.c networking/http_get_sn_mac_address.h \
 networking/keep_alive.c networking/keep_alive.h networking/utility.c networking/utility.h \
+ota_loader/load_sflash.c ota_loader/load_sflash.h ota_loader/ota_checksum.c ota_loader/ota_checksum.h ota_loader/ota_loader.c ota_loader/ota_loader.h \
+ota_loader/lut.c \
+platform_functions/ISMART_LEDS.c platform_functions/ISMART_LEDS.h lcb_def.h \
+platform_functions/ISMART_ism43340.c platform_functions/ISMART_ism43340.h \
+sflash/sflash.c sflash/sflash.h \
 time/ck_time.c time/ck_time.h time/ntp_success.c time/ntp_success.h time/sntp.c time/sntp.h \
-wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/imx_wifi.c wifi/process_wifi.c wifi/process_wifi.h wifi/wifi/c wifi/wifi/h
+wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/imx_wifi.c wifi/process_wifi.c wifi/process_wifi.h \
+wifi/wifi.c wifi/wifi.h
+
 $(NAME)_DEFINES += IMATRIX_CLIENT
 
 GLOBAL_INCLUDES := .

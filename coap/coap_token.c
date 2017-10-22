@@ -41,6 +41,8 @@
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
+
 #include "wiced.h"
 #include "coap.h"
 

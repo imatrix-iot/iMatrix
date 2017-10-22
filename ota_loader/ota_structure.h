@@ -52,42 +52,48 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define MAX_DATA_RETRY_COUNT		10
-#define TIMEOUT_WAIT_FOR_DATA		20
-#define BUFFER_LENGTH				2048
-#define VERSION_LENGTH				13
+#define WRITE_SFLASH_APP_AREA(app_image_type)   ( 1 << app_image_type )
+#define WRITE_SFLASH_LUT_AREA                   ( 1 << LUT )
+#define WRITE_SFLASH_CONFIG_AREA                ( 1 << FULL_IMAGE )
+#define WRITE_SFLASH_ANY_AREA                   ( 0xFFFF )
+#define WRITE_SFLASH_UNPARTITIONED_SPACE        ( 1 << NO_IMAGE_TYPES )
 
-#define HTTP_RESPONSE_GOOD			"200 OK\r\n"
-#define HTTP_RESPONSE_PARTIAL		"206 Partial Content\r\n"
-#define HTTP_RESPONSE_BAD			"400 OK\r\n"
-#define HTTP_RESPONSE_NOT_FOUND		"404 Not Found"
+#define MAX_DATA_RETRY_COUNT        10
+#define TIMEOUT_WAIT_FOR_DATA       20
+#define BUFFER_LENGTH               2048
+#define VERSION_LENGTH              13
 
-#define CONTENT_LENGTH				"Content-Length:"
-#define ACCEPT_RANGES				"Accept-Ranges: bytes"
-#define CRLFCRLF					"\r\n\r\n"
+#define HTTP_RESPONSE_GOOD          "200 OK\r\n"
+#define HTTP_RESPONSE_PARTIAL       "206 Partial Content\r\n"
+#define HTTP_RESPONSE_BAD           "400 OK\r\n"
+#define HTTP_RESPONSE_NOT_FOUND     "404 Not Found"
+
+#define CONTENT_LENGTH              "Content-Length:"
+#define ACCEPT_RANGES               "Accept-Ranges: bytes"
+#define CRLFCRLF                    "\r\n\r\n"
 
 enum ota_getlatest_image_types_t {
-	OTA_IMAGE_SFLASH,
-	OTA_IMAGE_MASTER,
-	OTA_IMAGE_SLAVE,
-	OTA_IMAGE_BETA_SFLASH,
-	OTA_IMAGE_BETA_MASTER,
-	OTA_IMAGE_BETA_SLAVE,
-	OTA_IMAGE_NO_IMAGES
+    OTA_IMAGE_SFLASH,
+    OTA_IMAGE_MASTER,
+    OTA_IMAGE_SLAVE,
+    OTA_IMAGE_BETA_SFLASH,
+    OTA_IMAGE_BETA_MASTER,
+    OTA_IMAGE_BETA_SLAVE,
+    OTA_IMAGE_NO_IMAGES
 };
 
 enum image_types_t {// Definitions for the 8 DCT_??_APP_INDEX constants are in WICED/platform/include/platform_dct.h
-	FACTORY_RESET = DCT_FR_APP_INDEX,           // 0
-	DCT           = DCT_DCT_IMAGE_INDEX,        // 1
-	LEGACY_OTA    = DCT_OTA_APP_INDEX,          // 2
-	RESOURCE_FILE = DCT_FILESYSTEM_IMAGE_INDEX, // 3
-	WIFI_DATA     = DCT_WIFI_FIRMWARE_INDEX,    // 4
-	APP0          = DCT_APP0_INDEX,             // 5
-	APP1          = DCT_APP1_INDEX,             // 6
-	APP2          = DCT_APP2_INDEX,             // 7
-	FULL_IMAGE,			// 8 - LUT and FULL_IMAGE are not part of the standard 8 DCT_??_APP_INDEX constants
-	LUT,				// 9
-	NO_IMAGE_TYPES
+    FACTORY_RESET = DCT_FR_APP_INDEX,           // 0
+    DCT           = DCT_DCT_IMAGE_INDEX,        // 1
+    LEGACY_OTA    = DCT_OTA_APP_INDEX,          // 2
+    RESOURCE_FILE = DCT_FILESYSTEM_IMAGE_INDEX, // 3
+    WIFI_DATA     = DCT_WIFI_FIRMWARE_INDEX,    // 4
+    APP0          = DCT_APP0_INDEX,             // 5
+    APP1          = DCT_APP1_INDEX,             // 6
+    APP2          = DCT_APP2_INDEX,             // 7
+    FULL_IMAGE,         // 8 - LUT and FULL_IMAGE are not part of the standard 8 DCT_??_APP_INDEX constants
+    LUT,                // 9
+    NO_IMAGE_TYPES
 };
 
 

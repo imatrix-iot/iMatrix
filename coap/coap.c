@@ -44,13 +44,15 @@
 #include "coap.h"
 #include "coap_udp_recv.h"
 #include "../CoAP_interface/coap_msg_get_store.h"
-
+#include "../cli/interface.h"
+#include "../device/icb_def.h"
+#include "../cli/messages.h"
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( dcb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_print_status( __VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf( __VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -69,6 +71,7 @@
 /******************************************************
  *                    Structures
  ******************************************************/
+
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -84,7 +87,7 @@ message_list_t list_tcp_coap_xmit;
 wiced_thread_t coap_rx_thread;
 
 wiced_udp_socket_t udp_coap_socket;
-
+extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/

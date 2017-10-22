@@ -38,6 +38,7 @@
 
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "wiced.h"
@@ -48,13 +49,20 @@
 #include "../device/hal_wifi.h"
 #include "coap_sensor_rssi.h"
 #include "coap_msg_get_store.h"
+#include "../cli/messages.h"
+#include "../device/icb_def.h"
+#include "../cli/messages.h"
+#include "../device/icb_def.h"
+#include "../cli/interface.h"
+#include "../cli/messages.h"
+#include "../device/icb_def.h"
 
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif

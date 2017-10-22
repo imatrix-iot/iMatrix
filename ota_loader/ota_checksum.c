@@ -43,6 +43,8 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "../cli/interface.h"
 
 #define CRCPOLY 0xEDB88320
@@ -68,7 +70,7 @@ void start_ota_checksum()
 void calc_ota_checksum_partial( uint8_t *buf, uint16_t length )
 {
 	if ( ( ota_checksum_status == CHECKSUM_UNINITIALIZED ) || ( ota_checksum_status == CHECKSUM_FINALIZED ) ) {
-		print_status( "Attempted to calculate checksum for OTA without initializing it.\r\n" );
+		imx_printf( "Attempted to calculate checksum for OTA without initializing it.\r\n" );
 		return;
 	}
     uint16_t i, j;
@@ -88,7 +90,7 @@ void calc_ota_checksum_partial( uint8_t *buf, uint16_t length )
 uint32_t get_ota_checksum()
 {
 	if ( ota_checksum_status == CHECKSUM_UNINITIALIZED ) {
-		print_status( "Attempted to retrieve checksum for OTA without calculating it.\r\n" );
+		imx_printf( "Attempted to retrieve checksum for OTA without calculating it.\r\n" );
 		return INITXOR;
 	}
 	if ( ota_checksum_status == CHECKSUM_FINALIZED ) {

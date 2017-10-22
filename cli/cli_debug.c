@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, Sierra Telecom. All Rights Reserved.
+ * Copyright 2017, Sierra Telecom inc. All Rights Reserved.
  *
  * This software, associated documentation and materials ("Software"),
  * is owned by Sierra Telecom ("Sierra") and is protected by and subject to
@@ -34,7 +34,6 @@
  *
  */
 
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -43,6 +42,7 @@
 
 #include "interface.h"
 #include "cli_debug.h"
+#include "messages.h"
 #include "../device/icb_def.h"
 /******************************************************
  *                      Macros
@@ -51,6 +51,20 @@
 /******************************************************
  *                    Constants
  ******************************************************/
+const char *debug_flags_description[] =
+{
+        "General Debugging ",                   // 0x00000001
+        "Debugs For BLE",                       // 0x00000002
+        "Debugs For Basic CoAP Messaging",      // 0x00000004
+        "Debugs For CoAP Xmit",                 // 0x00000008
+        "Debugs For CoAP Recv",                 // 0x00000010
+        "Debugs For CoAP Support Routines",     // 0x00000020
+        "Debugs For Hal",                       // 0x00000040
+        "Debugs For History",                   // 0x00000080
+        "Debugs For Serial Flash",              // 0x00000100
+        "Debugs For Application Start",         // 0x00000200
+        "Debugs For Log messages to iMatrix",   // 0x00000400
+};
 
 /******************************************************
  *                   Enumerations
@@ -79,20 +93,44 @@ extern iMatrix_Control_Block_t icb;
   */
 void cli_debug(uint16_t mode)
 {
-    char *token;
+    bool print_flags;
+    char *token, *foo;
+    uint16_t i;
 
 	/*
 	 *	command format debug <on|off>
 	 */
-	token = strtok(NULL, " " );	// Get start if any
+    print_flags = false;
+	token = strtok(NULL, " " );	// Get argument
 	if( token ) {
-		if( strcmp( token, "on" ) == 0 )
+		if( strcmp( token, "on" ) == 0 ) {
 			icb.print_debugs = true;
-		else if( strcmp( token, "off" ) == 0 )
+			print_flags = true;
+		} else if( strcmp( token, "off" ) == 0 )
             icb.print_debugs = false;
-		else
-		    cli_print( "Invalid option\r\n" );
+		else if( strncmp( token, "?", 1 ) == 0 ) {
+	        for( i = 0; i < 11; i++ )
+	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
+		    print_flags = true;
+		} else {
+		    if( strncmp( token, "0x", 2 ) == 0 )
+		        icb.log_messages = strtoul( &token[ 2 ], &foo, 16 );
+		    else
+		        icb.log_messages = strtoul( token, &foo, 10 );
+
+		    if( ( icb.log_messages & DEBUGS_LOG_TO_IMATRIX ) != 0x00 ) {
+		        cli_print( "Turning of CoAP Debug messages - recursive calls would result\r\n" );
+		        icb.log_messages &= ~( (uint32_t) ( DEBUGS_FOR_BASIC_MESSAGING | DEBUGS_FOR_XMIT | DEBUGS_FOR_RECV | DEBUGS_FOR_COAP_DEFINES ) );
+		    }
+		}
+	} else
+	    cli_print( "Invalid option, debug <on|off|?|flags>\r\n" );
+
+	if( print_flags == true ) {
+	    cli_print( "Debug: %s, Current debug flags: 0x%08lx\r\n", ( icb.print_debugs == true ) ? "On" : "Off", icb.log_messages );
+	    for( i = 0; i < 11; i++ )
+	        if( icb.log_messages & ( 1 << i ) )
+	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
 	}
-	else
-        icb.print_debugs = true;
+
 }

@@ -49,12 +49,16 @@
 #include "platform.h"
 
 #include "../storage.h"
-#include "../arduino/arduino.h"
 #include "../at_cmds/at_cmds.h"
 #include "../ble/ble_manager.h"
 #include "../device/icb_def.h"
 #include "../device/config.h"
+#include "../device/hal_leds.h"
 #include "../imatrix/imatrix.h"
+#include "../manufacturing/manufacturing.h"
+#include "../networking/http_get_sn_mac_address.h"
+#include "../ota_loader/ota_loader.h"
+#include "../wifi/wifi.h"
 #include "telnetd.h"
 #include "interface.h"
 #include "print_dct.h"
@@ -92,7 +96,6 @@ enum cli_states {
 };
 enum cmds {				// Must match commands variable order
 	CLI_HELP, 			// ?
-	CLI_ARDUINO,		// Get status of Arduino
 	CLI_AT_CMD,			// AT Commands
 	CLI_BLE_SCAN_PRINT,	// Print results of BLE Scan
 	CLI_BLE_SCAN_START,	// Start a background BLE scan
@@ -126,7 +129,7 @@ enum cmds {				// Must match commands variable order
 /******************************************************
  *               Function Declarations
  ******************************************************/
-void cli_set_led( uint16_t arg);
+
 /******************************************************
  *               Variable Definitions
  ******************************************************/
@@ -149,7 +152,6 @@ static uint16_t terminal_cmd_index, telnet_cmd_index, *cmd_index, cmd_found;
 
 cli_commands_t command[ NO_CMDS ] = {
 		{ "?",	&cli_help, NO_CMDS,  "Print this help" },	// Help
-		{ "a", &print_arduino, 0, "Print the status of the Arduino sub system" },
 		{ "AT", &cli_at, 0, "AT Commands &IC/&IS to set Controls & Sensor values" },
 		{ "ble_print", &print_ble_scan_results, 0, "Print BLE Scan Results" },
 		{ "ble_start", &ble_scan, true, "Start background BLE Scan" },
@@ -158,16 +160,16 @@ cli_commands_t command[ NO_CMDS ] = {
 		{ "debug", &cli_debug, 0, "Debug <on|off>", },
 		{ "dct", &print_dct, 0, "Print the DCT" },
         { "f", &cli_dump, DUMP_SFLASH, "f [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of SFLASH data" },
-		//{ "get_mac", &get_sn_mac, 0, "Get MAC and SN from Manufacturing server" },
-		//{ "get_latest", &cli_get_latest, 0, "Load the latest firmware with OTA" },
-		//{ "imatrix", &imatrix_status, 0, "Display status of iMatrix client system" },
-		//{ "l", &print_lut, 0, "Print the LUT" },
-		//{ "led", &cli_set_led, 0, "Set led state <led led_no | state <on|off|blink_rate per second>" },
-		//{ "m", &cli_dump, DUMP_MEMORY, "m [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of SRAM data" },
-		//{ "mfg", mfg_test, 0, "mfg <test/function number>" },
-		//{ "reboot", &cli_reboot, 0, "reboot the device" },	// reboot the device
+		{ "get_mac", &get_sn_mac, 0, "Get MAC and SN from Manufacturing server" },
+		{ "get_latest", &cli_get_latest, 0, "Load the latest firmware with OTA" },
+		{ "imatrix", &imatrix_status, 0, "Display status of iMatrix client system" },
+		{ "l", &print_lut, 0, "Print the LUT" },
+		{ "led", &cli_set_led, 0, "Set led state <led led_no | state <on|off|blink_rate per second>" },
+		{ "m", &cli_dump, DUMP_MEMORY, "m [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of SRAM data" },
+		{ "mfg", mfg_test, 0, "mfg <test/function number>" },
+		{ "reboot", &cli_reboot, 0, "reboot the device" },	// reboot the device
 		{ "s", &cli_status, 0, "Print the status" },		// Current Status
-		//{ "setup", &cli_wifi_setup, 0, "setup <on | off> - Sets to use Soft AP to provision" },
+		{ "setup", &cli_wifi_setup, 0, "setup <on | off> - Sets to use Soft AP to provision" },
         { "set_serial", &cli_set_serial, 0, "Set the serial number of a unit <serial number>" },    // Set SSID and PSK
 		{ "ssid", &cli_set_ssid, 0, "Set the SSID and PSK for WPA2PSK mode. ssid <ssid> <passphrase>" },	// Set SSID and PSK
 };

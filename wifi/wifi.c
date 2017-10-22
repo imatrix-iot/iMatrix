@@ -31,7 +31,9 @@
 
 /** @file
  *
+ *  wifi.c
  *
+ *  General Wi Fi set up and management routines
  *
  */
 
@@ -40,20 +42,16 @@
 
 #include "wiced.h"
 
-#include "../wifi_config_dct.h"
-
-#include "../defines.h"
-#include "../system.h"
-#include "../hal.h"
-#include "../hal_support.h"
+#include "storage.h"
 #include "../device/config.h"
-#include "../device/dcb_def.h"
+#include "../device/icb_def.h"
 #include "../ble/ble_manager.h"
 #include "../cli/interface.h"
+#include "../cli/messages.h"
 #include "../cli/telnetd.h"
 #include "../CoAP/coap_setup.h"
 #include "../device/config.h"
-#include "../hal/hal_wifi.h"
+#include "../device/hal_leds.h"
 #include "../imatrix/imatrix_get_ip.h"
 #include "../networking/http_get_sn_mac_address.h"
 #include "../networking/keep_alive.h"
@@ -75,7 +73,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_HISTORY
     #undef PRINTF
-	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_HISTORY ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_HISTORY ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -96,7 +94,7 @@
  *                    Structures
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-extern dcb_t dcb;
+extern iMatrix_Control_Block_t icb;
 typedef struct
 {
     uint8_t  uint8_var ;
@@ -129,9 +127,9 @@ uint16_t wifi_init(void)
 	wiced_result_t wiced_result;
 	wiced_interface_t interface;
 
-	dcb.wifi_up = false;
+	icb.wifi_up = false;
 
-	print_status( "Initializing Wi Fi\r\n" );
+	imx_printf( "Initializing Wi Fi\r\n" );
     /*
      * Kill the network - Code for test purposes only
      */
@@ -140,7 +138,7 @@ uint16_t wifi_init(void)
 
 	wiced_result = wiced_wlan_connectivity_init();
     if ( wiced_result != WICED_SUCCESS ) {
-        print_status( "wiced_wlan_connectivity_init() failed with error code: %u.\n", wiced_result );
+        imx_printf( "wiced_wlan_connectivity_init() failed with error code: %u.\n", wiced_result );
         return false;
     }
 #ifdef BLE_ENABLED
@@ -158,12 +156,17 @@ uint16_t wifi_init(void)
 	     */
 		wifi_set_default_ap_ssid();
 	    interface = WICED_AP_INTERFACE;
-	    wiced_network_up(interface, WICED_USE_INTERNAL_DHCP_SERVER, &ap_ip_settings);
+	    wiced_result = wiced_network_up(interface, WICED_USE_INTERNAL_DHCP_SERVER, &ap_ip_settings);
+	    if( wiced_result != WICED_SUCCESS ) {
+	        imx_printf( "Network failed to start in Access Point Mode, failed with error code: %u.\n", wiced_result );
+	        return false;
+	    }
+        wiced_ip_get_ipv4_address( WICED_AP_INTERFACE, &icb.my_ip );
+
 	    /*
 	     * Set the RED Link to blink 1 per second to indicate Provisioning mode
 	     */
-	    uint32_t led_mode = 2;
-	    set_led(LED_RED, &led_mode );
+        set_host_led( IMX_LED_RED, IMX_LED_BLINK_1 );
 
 	} else {
 
@@ -171,14 +174,14 @@ uint16_t wifi_init(void)
 	    // Bring up the STA (client) interface
 	    interface = WICED_STA_INTERFACE;
 	    switch( device_config.st_security_mode ) {
-	    	case SECURITY_8021X_EAP_TLS :
+	    	case IMX_SECURITY_8021X_EAP_TLS :
 	    		wiced_result = join_ent( device_config.st_ssid, EAP_TYPE_TLS, WICED_SECURITY_WPA2_AES_ENT, (uint8_t *) "", (uint8_t *) "" );
 	    		break;
-	    	case SECURITY_8021X_PEAP :
+	    	case IMX_SECURITY_8021X_PEAP :
 	    		wiced_result = join_ent( "Security", EAP_TYPE_PEAP, WICED_SECURITY_WPA2_AES_ENT, (uint8_t *) "120002555974" /* device_config.serial_no */, (uint8_t *) device_config.password );
 	    		break;
-	    	case SECURITY_WEP :
-	    	case SECURITY_WPA2 :
+	    	case IMX_SECURITY_WEP :
+	    	case IMX_SECURITY_WPA2 :
 	    	default:
 	    		set_wifi_st_ssid( device_config.st_ssid, device_config.st_wpa, device_config.st_security_mode );	// What is stored in the configuration
 	    	    wiced_result = wiced_network_up(interface, WICED_USE_EXTERNAL_DHCP_SERVER, NULL);
@@ -190,25 +193,25 @@ uint16_t wifi_init(void)
 	     */
 	    if( wiced_result != WICED_SUCCESS ) {
 	    	if( device_config.connected_to_imatrix == false ) {	// Was this a first time attempt fail?
-	    		print_status( "Unable to connect. Reverting to Provisioning Mode\r\n" );
+	    		imx_printf( "Unable to connect. Reverting to Provisioning Mode\r\n" );
 	    		wifi_set_default_ap_ssid();
 	    		device_config.AP_setup_mode = true;
-	    		save_config();
+	    		imatrix_save_config();
 	    	}
-	    	print_status( "WiFi Network Failed to Initialize, will re-attempt...\r\n" );
-	    	dcb.wifi_up = false;
+	    	imx_printf( "WiFi Network Failed to Initialize, will re-attempt...\r\n" );
+	    	icb.wifi_up = false;
 	        goto connectivity_deinit_and_fail;
 	    }
 	    /*
 	     * Network Is up
 	     */
-		dcb.wifi_change = false;	// If we changed and it worked good, if not make sure we don't change again
-		wiced_ip_get_ipv4_address( WICED_STA_INTERFACE, &dcb.my_ip );
-		wiced_ip_get_gateway_address( interface, &dcb.gw_ip );
+		icb.wifi_change = false;	// If we changed and it worked good, if not make sure we don't change again
+		wiced_ip_get_ipv4_address( WICED_STA_INTERFACE, &icb.my_ip );
+		wiced_ip_get_gateway_address( interface, &icb.gw_ip );
 
 	    if( check_valid_ip_address() == false ) {
-	        print_status( "Wi-Fi Network Failed to get IP Addresses, will re-attempt...\r\n" );
-	    	dcb.wifi_up = false;
+	        imx_printf( "Wi-Fi Network Failed to get IP Addresses, will re-attempt...\r\n" );
+	    	icb.wifi_up = false;
 	        goto connectivity_deinit_and_fail;
 	    }
 
@@ -222,7 +225,7 @@ uint16_t wifi_init(void)
 	 * Always set up the UDP Server
 	 */
 	if( init_udp( interface ) == false ) {
-	    print_status( "Failed to initialize UDP\r\n" );
+	    imx_printf( "Failed to initialize UDP\r\n" );
 		goto connectivity_deinit_and_fail;
 	}
 
@@ -233,21 +236,21 @@ uint16_t wifi_init(void)
 
 	if( device_config.AP_setup_mode == false ) {
 		/* Get the gateway that the STA is connected to */
-		if( wiced_ip_get_gateway_address( interface, &dcb.gw_ip ) != WICED_SUCCESS ) {	// In the current version of WICED, this always returns success
-			print_status( "Failed to get Gateway Address\r\n" );
+		if( wiced_ip_get_gateway_address( interface, &icb.gw_ip ) != WICED_SUCCESS ) {	// In the current version of WICED, this always returns success
+			imx_printf( "Failed to get Gateway Address\r\n" );
 			goto connectivity_deinit_and_fail;
 		}
 
 		/* Print Gateway Address to the UART */
-		print_status("Successfully Connected to Gateway: %u.%u.%u.%u\r\n", (unsigned int)((GET_IPV4_ADDRESS( dcb.gw_ip ) >> 24) & 0xFF),
-				(unsigned int)((GET_IPV4_ADDRESS( dcb.gw_ip ) >> 16) & 0xFF),
-				(unsigned int)((GET_IPV4_ADDRESS( dcb.gw_ip ) >>  8) & 0xFF),
-				(unsigned int)((GET_IPV4_ADDRESS( dcb.gw_ip ) >>  0) & 0xFF ) );
+		imx_printf("Successfully Connected to Gateway: %u.%u.%u.%u\r\n", (unsigned int)((GET_IPV4_ADDRESS( icb.gw_ip ) >> 24) & 0xFF),
+				(unsigned int)((GET_IPV4_ADDRESS( icb.gw_ip ) >> 16) & 0xFF),
+				(unsigned int)((GET_IPV4_ADDRESS( icb.gw_ip ) >>  8) & 0xFF),
+				(unsigned int)((GET_IPV4_ADDRESS( icb.gw_ip ) >>  0) & 0xFF ) );
 	    /*
 	     * Get iMatrix Address for UDP
 	     */
 	    if( get_imatrix_ip_address( 0 ) == false )
-	        print_status( "iMatrix IP Address Failed, will try later\r\n" );
+	        imx_printf( "iMatrix IP Address Failed, will try later\r\n" );
 	    else {
 	        if( device_config.connected_to_imatrix == false ) {
 	            /*
@@ -257,12 +260,12 @@ uint16_t wifi_init(void)
 	             *
 	             */
 	            device_config.connected_to_imatrix = true;
-	            save_config();
+	            imatrix_save_config();
 	        }
 
 	    }
 	}
-	dcb.wifi_up = true;
+	icb.wifi_up = true;
 	/*
 	 * If we are powered up and online and don't have a serial number contact the server and get one.
 	 */
@@ -273,7 +276,7 @@ uint16_t wifi_init(void)
 	 * Start BLE Scanning if enabled
 	 */
 	init_ble_scan();
-    dcb.ble_initialized = true;
+    icb.ble_initialized = true;
 #endif
 	telnetd_init();// Returns void( all it does is set the state variable so that the first call to tellnetd() will do the init.
 
@@ -291,7 +294,7 @@ void wifi_shutdown()
 
 	wiced_interface_t interface;
 
-	print_status( "Shutting Down the Wi Fi Interface\r\n" );
+	imx_printf( "Shutting Down the Wi Fi Interface\r\n" );
 	if( device_config.AP_setup_mode == true ) {
 		interface = WICED_AP_INTERFACE;
 	} else {
@@ -309,18 +312,18 @@ void wifi_shutdown()
 
     wiced_wlan_connectivity_deinit();// Always returns success even when it fails.
     deinit_tcp();
-    print_status( "Completed shutting Down the Wi Fi Interface\r\n" );
+    imx_printf( "Completed shutting Down the Wi Fi Interface\r\n" );
 }
 
 uint16_t check_valid_ip_address(void)
 {
-	if( dcb.wifi_up == true  && device_config.AP_setup_mode == false) {
+	if( icb.wifi_up == true  && device_config.AP_setup_mode == false) {
 		/* Save the gateway and IP address for the STA*/
-		wiced_ip_get_gateway_address( WICED_STA_INTERFACE, &dcb.gw_ip );
-		wiced_ip_get_ipv4_address( WICED_STA_INTERFACE, &dcb.my_ip );
-		if( ( dcb.gw_ip.ip.v4 == 0 ) || ( dcb.my_ip.ip.v4 == 0  ) ) {
+		wiced_ip_get_gateway_address( WICED_STA_INTERFACE, &icb.gw_ip );
+		wiced_ip_get_ipv4_address( WICED_STA_INTERFACE, &icb.my_ip );
+		if( ( icb.gw_ip.ip.v4 == 0 ) || ( icb.my_ip.ip.v4 == 0  ) ) {
 			cli_print( "0.0.0.0 Zero IP Address - failing network\r\n" );
-	    	dcb.wifi_up = false;
+	    	icb.wifi_up = false;
 	        return false;
 		}
 	}
@@ -330,16 +333,16 @@ uint16_t check_valid_ip_address(void)
 
 void link_up(void)
 {
-	dcb.print_msg |= MSG_WIFI_UP;
-	dcb.wifi_up = true;
+	icb.print_msg |= MSG_WIFI_UP;
+	icb.wifi_up = true;
 }
 
 void link_down(void)
 {
 
-    dcb.print_msg |= MSG_WIFI_DN;
-	dcb.wifi_up = false;
-	dcb.wifi_dropouts += 1;
+    icb.print_msg |= MSG_WIFI_DN;
+	icb.wifi_up = false;
+	icb.wifi_dropouts += 1;
 }
 /*
  * We lost Wi Fi or system wants to terminate current connection and start new
@@ -349,7 +352,7 @@ void stop_network()
 	sntp_stop_auto_time_sync();
 	stop_keep_alive();
 	wifi_shutdown();
-	dcb.wifi_up = false;	// In case this was not a forced shutdown
+	icb.wifi_up = false;	// In case this was not a forced shutdown
 }
 char* get_wifi_ssid( char* buffer, uint16_t index )
 {
@@ -369,7 +372,7 @@ char* get_wifi_ssid( char* buffer, uint16_t index )
   */
 void wifi_set_default_st_ssid(void)
 {
-	set_wifi_st_ssid( DEFAULT_ST_SSID, DEFAULT_ST_KEY, DEFAULT_ST_SECURITY );
+	set_wifi_st_ssid( IMX_DEFAULT_ST_SSID, IMX_DEFAULT_ST_KEY, IMX_DEFAULT_ST_SECURITY );
 }
 
 /**
@@ -388,14 +391,14 @@ void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security )
     	platform_dct_network_config_t network;
     } save;
 
-    if( ( strlen( ssid ) > SSID_LENGTH ) || ( strlen( passphrase ) > WPA2PSK_LENGTH ) ) {
-    	print_status( "Failed to set SSID//Pass phrase too long, SSID: %s, Pass phrase: %s\r\n", ssid, passphrase );
+    if( ( strlen( ssid ) > IMX_SSID_LENGTH ) || ( strlen( passphrase ) > IMX_WPA2PSK_LENGTH ) ) {
+    	imx_printf( "Failed to set SSID//Pass phrase too long, SSID: %s, Pass phrase: %s\r\n", ssid, passphrase );
     	return;
     }
     /*
      * Save in config
      */
-    print_status( "Setting SSID: %s, Phasephrase: %s, Security Code: 0x%08lx\r\n", ssid, passphrase, (uint32_t) security );
+    imx_printf( "Setting SSID: %s, Passphrase: %s, Security Code: 0x%08lx\r\n", ssid, passphrase, (uint32_t) security );
     strcpy( device_config.st_ssid, ssid );
     strcpy( device_config.st_wpa, passphrase );
     device_config.st_security_mode = security;
@@ -405,7 +408,7 @@ void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security )
     dct_wifi = (platform_dct_wifi_config_t*)wiced_dct_get_current_address( DCT_WIFI_CONFIG_SECTION );
     memmove( &( save.wifi ), dct_wifi, sizeof( platform_dct_wifi_config_t ) );
 
-    strncpy( (char *) save.wifi.stored_ap_list[0].details.SSID.value, ssid, SSID_NAME_SIZE );
+    strncpy( (char *) save.wifi.stored_ap_list[0].details.SSID.value, ssid, IMX_SSID_LENGTH );
     save.wifi.stored_ap_list[0].details.SSID.length = strlen( ssid );
     strncpy( save.wifi.stored_ap_list[0].security_key, passphrase, SECURITY_KEY_SIZE );
     save.wifi.stored_ap_list[0].security_key_length = strlen( passphrase );
@@ -429,7 +432,7 @@ void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security )
   */
 void wifi_set_default_ap_ssid(void)
 {
-	char ap_ssid[ SSID_LENGTH ];
+	char ap_ssid[ IMX_SSID_LENGTH ];
 	platform_dct_wifi_config_t* dct_wifi = NULL;
 
 	/*
@@ -437,12 +440,12 @@ void wifi_set_default_ap_ssid(void)
 	 */
     dct_wifi = (platform_dct_wifi_config_t*)wiced_dct_get_current_address( DCT_WIFI_CONFIG_SECTION );
 
-    if( ( strlen( device_config.product_name ) + 7 ) > SSID_LENGTH )
-        sprintf( ap_ssid, "%s", DEFAULT_AP_SSID );
+    if( ( strlen( device_config.product_name ) + 7 ) > IMX_SSID_LENGTH )
+        sprintf( ap_ssid, "%s", IMX_DEFAULT_AP_SSID );
     else
         sprintf( ap_ssid, "%s-%02X%02X%02X", device_config.product_name, (uint16_t) dct_wifi->mac_address.octet[ 3 ], (uint16_t) dct_wifi->mac_address.octet[ 4 ], (uint16_t) dct_wifi->mac_address.octet[ 5 ] );
-    print_status( "Setting Access Point to SSID:%s\r\n", ap_ssid );
-    set_wifi_ap_ssid( ap_ssid, DEFAULT_AP_KEY, DEFAULT_AP_SECURITY );
+    imx_printf( "Setting Access Point to SSID:%s\r\n", ap_ssid );
+    set_wifi_ap_ssid( ap_ssid, IMX_DEFAULT_AP_KEY, IMX_DEFAULT_AP_SECURITY );
 }
 
 /**
@@ -461,7 +464,7 @@ void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security )
     	platform_dct_network_config_t network;
     } save;
 
-    if( ( strlen( ssid ) > SSID_LENGTH ) || ( strlen( passphrase ) > WPA2PSK_LENGTH ) ) {
+    if( ( strlen( ssid ) > IMX_SSID_LENGTH ) || ( strlen( passphrase ) > IMX_WPA2PSK_LENGTH ) ) {
     	cli_print( "Failed to set SSID//Pass phrase too long, SSID: %s, Pass phrase: %s\r\n", ssid, passphrase );
     	return;
     }
@@ -477,7 +480,7 @@ void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security )
     dct_wifi = (platform_dct_wifi_config_t*)wiced_dct_get_current_address( DCT_WIFI_CONFIG_SECTION );
     memmove( &( save.wifi ), dct_wifi, sizeof( platform_dct_wifi_config_t ) );
 
-    strncpy( (char *) save.wifi.soft_ap_settings.SSID.value, ssid, SSID_NAME_SIZE );
+    strncpy( (char *) save.wifi.soft_ap_settings.SSID.value, ssid, IMX_SSID_LENGTH );
     save.wifi.soft_ap_settings.SSID.length = strlen( ssid );
     strncpy( save.wifi.soft_ap_settings.security_key, passphrase, SECURITY_KEY_SIZE );
     save.wifi.soft_ap_settings.security_key_length = strlen( passphrase );
@@ -531,14 +534,14 @@ void cli_wifi_setup( uint16_t arg )
 		if( strcmp( token, "off" ) == 0x00 ) {
 			cli_print( "Setting to Online mode - look System will connect to stored SSID: %s\r\n", device_config.st_ssid );
 			device_config.AP_setup_mode = false;
-			save_config();
-			dcb.wifi_up = false;
+			imatrix_save_config();
+			icb.wifi_up = false;
 		} else
 			cli_print( "on / off required\r\n" );
 	} else {
 		cli_print( "Setting to setup mode - look for AP and connect with App: %s + MAC\r\n", device_config.ap_ssid );
 		device_config.AP_setup_mode = true;
-		save_config();
-		dcb.wifi_up = false;
+		imatrix_save_config();
+		icb.wifi_up = false;
 	}
 }

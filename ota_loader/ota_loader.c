@@ -54,18 +54,16 @@
 #include "wiced.h"
 #include "spi_flash.h"
 
-#include "../system.h"
-#include "../defines.h"
-#include "../hal.h"
+#include "../storage.h"
 #include "../cli/interface.h"
 #include "../cli/print_dct.h"
 #include "../coap/coap.h"
 #include "../coap/coap_transmit.h"
 #include "../CoAP_interface/coap_def.h"
-#include "../device/dcb_def.h"
+#include "../device/icb_def.h"
 #include "../device/config.h"
+#include "../device/hal_leds.h"
 #include "../device/version.h"
-#include "../hal_support.h"
 #include "../imatrix/imatrix.h"
 #include "../json/mjson.h"
 #include "../networking/utility.h"
@@ -161,7 +159,7 @@ enum load_latest_t {
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern dcb_t dcb;							// Defined in device/dcb_def.h and initialized in device.c
+extern iMatrix_Control_Block_t icb;
 extern IOT_Device_Config_t device_config;	// Defined in device/config.h and saved in DCT
 
 extern sflash_handle_t sflash_handle;
@@ -181,8 +179,8 @@ void init_ota_loader(void)
 {
 	ota_loader_config.last_ota_loader_state =
 	ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
-	dcb.ota_loader_active = false;
-	dcb.get_latest_active = false;
+	icb.ota_loader_active = false;
+	icb.get_latest_active = false;
 }
 /**
  * Return 1 (true) if OTA is doing anything, otherwise return 0 (false).
@@ -201,15 +199,15 @@ uint16_t ota_is_active()
 void setup_ota_loader( char *site, char *uri, uint16_t image_no, uint16_t load_file, uint32_t checksum32 )
 {
 	if( ota_is_active() ) {
-		print_status( "OTA loader already active\r\n" );
+		imx_printf( "OTA loader already active\r\n" );
 		return;	// Only one can be active at any point in time
 	}
 	if( image_no >= NO_IMAGE_TYPES ) {
-		print_status( "OTA loader Invalid Image type: %u\r\n", image_no );
+		imx_printf( "OTA loader Invalid Image type: %u\r\n", image_no );
 		return;	// Only one can be active at any point in time
 	}
 
-	print_status( "OTA loader initiated from: %s%s to image %u with checksum: 0x%08lx\r\n", site, uri, image_no, checksum32 );
+	imx_printf( "OTA loader initiated from: %s%s to image %u with checksum: 0x%08lx\r\n", site, uri, image_no, checksum32 );
 	strcpy( ota_loader_config.site, site );
 	strcpy( ota_loader_config.uri, uri );
 	ota_loader_config.image_no = image_no;
@@ -217,7 +215,7 @@ void setup_ota_loader( char *site, char *uri, uint16_t image_no, uint16_t load_f
 	ota_loader_config.checksum32 = checksum32;
 
 	ota_loader_config.ota_loader_state = OTA_LOADER_START_AFTER_COAP_FLUSH;
-	dcb.ota_loader_active = true;
+	icb.ota_loader_active = true;
 }
 /**
   * @brief	ota loader state machine
@@ -238,7 +236,7 @@ uint16_t ota_loader(void)
 	 * Check the stack - we just put a big block on it.
 	 */
 	if( ota_loader_config.last_ota_loader_state != ota_loader_config.ota_loader_state ) {
-		print_status( "Changing OTA loader state to: %u\r\n", ota_loader_config.ota_loader_state );
+		imx_printf( "Changing OTA loader state to: %u\r\n", ota_loader_config.ota_loader_state );
 		ota_loader_config.last_ota_loader_state = ota_loader_config.ota_loader_state;
 	}
 	/*
@@ -266,7 +264,7 @@ uint16_t ota_loader(void)
 				print_lut( 0 );
 				ota_loader_config.content_offset = ( uint32_t) apps_lut[ ota_loader_config.image_no ].sectors[ 0 ].start * SFLASH_SECTOR_SIZE;
 				ota_loader_config.erase_length = ( uint32_t) apps_lut[ ota_loader_config.image_no ].sectors[ 0 ].count * SFLASH_SECTOR_SIZE;
-				ota_loader_config.allowed_sflash_area = WRITE_SFLASH_APP_AREA( ota_loader_config.image_no );
+				ota_loader_config.allowed_sflash_area = WRITE_SFLASH_APP_AREA ( ota_loader_config.image_no );
 			}
 			else if ( ota_loader_config.image_no == FULL_IMAGE ) {
 				ota_loader_config.content_offset = 0;
@@ -280,7 +278,7 @@ uint16_t ota_loader(void)
 				ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 			}
 
-			print_status( "About to erase FLash @:0x%08lX, for %lu Bytes, sector size: %lu\r\n", ota_loader_config.content_offset, ota_loader_config.erase_length, ota_loader_config.flash_sector_size );
+			imx_printf( "About to erase FLash @:0x%08lX, for %lu Bytes, sector size: %lu\r\n", ota_loader_config.content_offset, ota_loader_config.erase_length, ota_loader_config.flash_sector_size );
 			ota_loader_config.erase_count = ota_loader_config.content_offset;
 			ota_loader_config.ota_loader_state = OTA_LOADER_ERASE_FLASH;
 			break;
@@ -290,45 +288,45 @@ uint16_t ota_loader(void)
 	                /*
 	                 * Print the buffer out
 	                 */
-	                print_status( "." );
-	                blink_red_led();
+	                imx_printf( "." );
+	                set_host_led( IMX_LED_RED, IMX_LED_BLINK_1 );
 	                fflush(stdout);
 	                if ( 0 != protected_sflash_sector_erase( &sflash_handle, ota_loader_config.erase_count, ota_loader_config.allowed_sflash_area ) ) {
-	                    print_status( "Failed to erase serial flash prior to writing new image @: 0x%08lx. Update canceled.\r\n", ota_loader_config.erase_count );
+	                    imx_printf( "Failed to erase serial flash prior to writing new image @: 0x%08lx. Update canceled.\r\n", ota_loader_config.erase_count );
 	                    ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 	                    return false;
 	                }
 	                ota_loader_config.erase_count += ota_loader_config.flash_sector_size; // MICRON_SECTOR_LENGTH; // SFLASH_SECTOR_SIZE;
 	            } else
-	                print_status( "Failed to read SFLASH\r\n");
+	                imx_printf( "Failed to read SFLASH\r\n");
 			} else {
 				ota_loader_config.erase_count = ota_loader_config.content_offset;
-				print_status( "\r\nVerifying Erased Flash\r\n" );
+				imx_printf( "\r\nVerifying Erased Flash\r\n" );
 				ota_loader_config.ota_loader_state = OTA_LOADER_VERIFY_ERASE;
 			}
 			break;
 		case OTA_LOADER_VERIFY_ERASE :
 #ifdef VERIFY_FLASH
 			if( ota_loader_config.erase_count < ( ota_loader_config.content_offset + ota_loader_config.erase_length ) ) {
-				print_status( "." );
+				imx_printf( "." );
 				blink_red_led();
 				fflush(stdout);
 				if ( 0 != sflash_read( &sflash_handle, ota_loader_config.erase_count, (void*) &local_buffer, BUFFER_LENGTH ) ) {
 					for( j = 0; ota_loader_config.flash_sector_size / BUFFER_LENGTH; j++ )
 						for( i = 0; i < BUFFER_LENGTH; i++ )
 							if( local_buffer[ i ] != 0xff ) {
-								print_status( "SFLASH not erased at location: 0x%08lx\r\n", ota_loader_config.erase_count + i );
+								imx_printf( "SFLASH not erased at location: 0x%08lx\r\n", ota_loader_config.erase_count + i );
 								ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 								return false;
 							}
 				}
 				ota_loader_config.erase_count += ota_loader_config.flash_sector_size; // SFLASH_SECTOR_SIZE;
 			} else {
-				print_status( "\r\nFlash Erased Verified\r\n" );
+				imx_printf( "\r\nFlash Erased Verified\r\n" );
 				ota_loader_config.ota_loader_state = OTA_DNS_LOOKUP;
 			}
 #else
-			print_status( "Flash Erased Verification skipped\r\n" );
+			imx_printf( "Flash Erased Verification skipped\r\n" );
 			ota_loader_config.ota_loader_state = OTA_DNS_LOOKUP;
 #endif
 			break;
@@ -336,25 +334,25 @@ uint16_t ota_loader(void)
 			/*
 			 * During OTA Dim lights to 100% and turn ON Green LED
 			 */
-			print_status( "Attempting to load OTA image: %s, from: %s\r\n", ota_loader_config.uri, ota_loader_config.site );
-			print_status( "Doing DNS lookup...\r\n" );
+			imx_printf( "Attempting to load OTA image: %s, from: %s\r\n", ota_loader_config.uri, ota_loader_config.site );
+			imx_printf( "Doing DNS lookup...\r\n" );
 			retry_count = 0;
-			update_led_green_status( true );
-			update_led_red_status( false );
+            set_host_led( IMX_LED_GREEN, IMX_LED_ON );
+            set_host_led( IMX_LED_RED, IMX_LED_OFF );
 			if( get_site_ip( ota_loader_config.site, &ota_loader_config.address ) ) {
 			    ota_loader_config.ota_loader_state = OTA_LOADER_OPEN_SOCKET;
 			    return false;
 			} else {
-			    print_status( "Failed DNS... count: %u\r\n", retry_count );
+			    imx_printf( "Failed DNS... count: %u\r\n", retry_count );
 			}
-			print_status( "Failed to get IP address, aborting OTA loader\r\n");
+			imx_printf( "Failed to get IP address, aborting OTA loader\r\n");
 			ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 			return true;
 			break;
 		case OTA_LOADER_OPEN_SOCKET :
 			result = wiced_tcp_create_socket( &ota_loader_config.socket, WICED_STA_INTERFACE );
 			if( result != WICED_TCPIP_SUCCESS ) {
-				print_status( "Failed to create socket on STA Interface, aborting\r\n" );
+				imx_printf( "Failed to create socket on STA Interface, aborting\r\n" );
 				ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 				return true;
 			}
@@ -362,10 +360,10 @@ uint16_t ota_loader(void)
 			break;
 		case OTA_LOADER_ESTABLISH_CONNECTION :
 			retry_count = 0;
-			while( retry_count < MAX_CONNECTION_RETRY_COUNT ) {
+			while( retry_count < IMX_MAX_CONNECTION_RETRY_COUNT ) {
 				result = wiced_tcp_connect( &ota_loader_config.socket, &ota_loader_config.address, 80, 1000 );
 				if( result == WICED_TCPIP_SUCCESS ) {
-					print_status( "Successfully Connected to: %s on Port: 80\r\n", ota_loader_config.site );
+					imx_printf( "Successfully Connected to: %s on Port: 80\r\n", ota_loader_config.site );
 					/*
 					 * Create the stream
 					 */
@@ -380,11 +378,11 @@ uint16_t ota_loader(void)
 						}
 						return false;
 					} else {
-						print_status( "Failed to connect to stream\r\n" );
+						imx_printf( "Failed to connect to stream\r\n" );
 					}
 				}
 			}
-			print_status( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", ota_loader_config.site );
+			imx_printf( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", ota_loader_config.site );
 			ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_SOCKET;
 			break;
 		case OTA_LOADER_SEND_REQUEST :		// Create query request and send
@@ -394,7 +392,7 @@ uint16_t ota_loader(void)
 			strcat( (char *) local_buffer, " HTTP/1.1\nHost: " );
 			strcat( (char *) local_buffer, ota_loader_config.site );
 			strcat( (char *) local_buffer, "\r\n\r\n" );
-		    print_status( "Sending query: %s\r\n", local_buffer );
+		    imx_printf( "Sending query: %s\r\n", local_buffer );
 		    result = wiced_tcp_stream_write( &ota_loader_config.tcp_stream, local_buffer , (uint32_t) strlen( (char *) local_buffer ) );
 		    if ( result == WICED_TCPIP_SUCCESS ) {
 		    	result =  wiced_tcp_stream_flush( &ota_loader_config.tcp_stream );
@@ -404,7 +402,7 @@ uint16_t ota_loader(void)
 		    		return false;
 		    	}
 		    }
-		    print_status( "FAILED to send request.\r\n" );
+		    imx_printf( "FAILED to send request.\r\n" );
 		    ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_SOCKET;
 		    break;
 		case OTA_LOADER_SEND_PARTIAL_REQUEST :		// Create query request and send
@@ -415,7 +413,7 @@ uint16_t ota_loader(void)
 			strcat( (char *) local_buffer, ota_loader_config.site );
 			sprintf( (char *) &local_buffer[ strlen( (char *) local_buffer ) ], "\nRange: bytes=%lu-%lu", ota_loader_config.content_received, ota_loader_config.total_content_length );
 			strcat( (char *) local_buffer, "\r\n\r\n" );
-		    print_status( "Sending partial request query: %s\r\n", local_buffer );
+		    imx_printf( "Sending partial request query: %s\r\n", local_buffer );
 		    result = wiced_tcp_stream_write( &ota_loader_config.tcp_stream, local_buffer , (uint32_t) strlen( (char *) local_buffer ) );
 		    if ( result == WICED_TCPIP_SUCCESS ) {
 		    	result =  wiced_tcp_stream_flush( &ota_loader_config.tcp_stream );
@@ -425,13 +423,13 @@ uint16_t ota_loader(void)
 		    		return false;
 		    	}
 		    }
-		    print_status( "FAILED to send request.\r\n" );
+		    imx_printf( "FAILED to send request.\r\n" );
 		    ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_SOCKET;
 		    break;
 		case OTA_LOADER_PARSE_HEADER :
 			result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 0, &buffer_length );
 			if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
-				print_status( "\r\nReceived: %lu Bytes\r\n", buffer_length );
+				imx_printf( "\r\nReceived: %lu Bytes\r\n", buffer_length );
 
 
 				/*
@@ -455,13 +453,13 @@ uint16_t ota_loader(void)
 					/*
 					for( i = 0; i < ((uint8_t*)content_start - local_buffer); i++ )
 						if( isprint( (uint16_t ) local_buffer[ i ] ) || ( local_buffer[ i ] == '\r' ) || ( local_buffer[ i ] == '\n' ) )
-							print_status( "%c", local_buffer[ i ] );
+							imx_printf( "%c", local_buffer[ i ] );
 						else
-							print_status( "." );
+							imx_printf( "." );
 					for( i = ((uint8_t*)content_start - local_buffer); i < buffer_length; i++ ) {
-						print_status( "%x", local_buffer[ i ] );
+						imx_printf( "%x", local_buffer[ i ] );
 						if ( (i % 20) == 19 ) {
-							print_status( "\r\n");
+							imx_printf( "\r\n");
 						}
 					}
 					*/
@@ -470,10 +468,10 @@ uint16_t ota_loader(void)
 					 * Calculate the size of the real content
 					 */
 					ota_loader_config.total_content_length = ota_loader_config.content_length;	// This is the full length of the body expected
-					print_status( "\r\nTotal expected content Length: %lu\r\n", ota_loader_config.total_content_length );
+					imx_printf( "\r\nTotal expected content Length: %lu\r\n", ota_loader_config.total_content_length );
 
 					if( ota_loader_config.total_content_length > ota_loader_config.erase_length ) {
-						print_status( "Content length(%lu) does not match expected erase_length(%lu).. Aborting\r\n",
+						imx_printf( "Content length(%lu) does not match expected erase_length(%lu).. Aborting\r\n",
 											ota_loader_config.content_length, ota_loader_config.erase_length );
 						ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_SOCKET;
 						return false;
@@ -483,7 +481,7 @@ uint16_t ota_loader(void)
 					 */
 					content_length = (uint32_t ) ( ( uint32_t ) &local_buffer[ 0 ] + buffer_length ) - ( uint32_t ) content_start;
 					if( content_length > 0 ) {
-						print_status( "Saving %lu Bytes to SFLASH\r\n", content_length );
+						imx_printf( "Saving %lu Bytes to SFLASH\r\n", content_length );
 						/*
 						 * Write bytes to flash
 						 */
@@ -496,9 +494,9 @@ uint16_t ota_loader(void)
 
 						if( 0 != protected_sflash_write( &sflash_handle, ota_loader_config.content_offset, (void*) content_start, content_length,
 								ota_loader_config.allowed_sflash_area ) ) {
-							print_status( "Write to serial flash failed!\r\n" );
+							imx_printf( "Write to serial flash failed!\r\n" );
 							device_config.ota_fail_sflash_write += 1;
-							save_config();
+							imatrix_save_config();
 							ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 							return false;
 						}
@@ -509,10 +507,11 @@ uint16_t ota_loader(void)
 					}
 					wiced_time_get_utc_time( &ota_loader_config.last_recv_packet_utc_time );
 					ota_loader_config.packet_count = 1;
+                    set_host_led( IMX_LED_RED, IMX_LED_BLINK_4 );
 					ota_loader_config.ota_loader_state = OTA_LOADER_RECEIVE_STREAM;
 					return false;
 				} else {
-					print_status( "Garbage back - no header found: %80s\r\n", local_buffer );
+					imx_printf( "Garbage back - no header found: %80s\r\n", local_buffer );
 					ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 					return false;
 				}
@@ -526,17 +525,17 @@ uint16_t ota_loader(void)
 		case OTA_LOADER_PARSE_PARTIAL_HEADER :
 			result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 0, &buffer_length );
 			if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
-				print_status( "\r\nReceived: %lu Bytes\r\n", buffer_length );
+				imx_printf( "\r\nReceived: %lu Bytes\r\n", buffer_length );
 				for( i = 0; i < buffer_length; i++ )
 					if( isprint( (uint16_t ) local_buffer[ i ] ) || ( local_buffer[ i ] == '\r' ) || ( local_buffer[ i ] == '\n' ) )
-						print_status( "%c", local_buffer[ i ] );
+						imx_printf( "%c", local_buffer[ i ] );
 					else
-						print_status( "." );
+						imx_printf( "." );
 				 // Look for 206 OK, Content length and two CR/LF - make sure we are getting what we asked for
 				if( strstr( (char *) local_buffer, HTTP_RESPONSE_PARTIAL ) && strstr( (char *) local_buffer, CONTENT_LENGTH ) && strstr( (char *) local_buffer, CRLFCRLF ) ) {
 					// Header has all elements we need. Pull out the content length and save off the rest
 					ota_loader_config.content_length = strtol( strstr( (char *) local_buffer, CONTENT_LENGTH) + strlen( CONTENT_LENGTH ), &foo, 10 );
-					print_status( "Content Length: %lu\r\n", ota_loader_config.content_length );
+					imx_printf( "Content Length: %lu\r\n", ota_loader_config.content_length );
 					/*
 					 * Find the end of the header
 					 */
@@ -546,7 +545,7 @@ uint16_t ota_loader(void)
 					 */
 					content_length = (uint32_t ) ( ( uint32_t ) &local_buffer[ 0 ] + buffer_length ) - ( uint32_t ) content_start;
 					if( content_length > 0 ) {
-						print_status( "Saving %lu Bytes to SFLASH\r\n", content_length );
+						imx_printf( "Saving %lu Bytes to SFLASH\r\n", content_length );
 						/*
 						 * Write bytes to flash
 						 */
@@ -559,9 +558,9 @@ uint16_t ota_loader(void)
 
 						if( 0 != protected_sflash_write( &sflash_handle, ota_loader_config.content_offset, (void*) content_start, content_length,
 								ota_loader_config.allowed_sflash_area ) ) {
-							print_status( "Write to serial flash failed!\r\n" );
+							imx_printf( "Write to serial flash failed!\r\n" );
 							device_config.ota_fail_sflash_write += 1;
-							save_config();
+							imatrix_save_config();
 							ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 							return false;
 						}
@@ -579,6 +578,7 @@ uint16_t ota_loader(void)
 						return false;
 					}
 					ota_loader_config.packet_count = 1;
+                    set_host_led( IMX_LED_RED, IMX_LED_BLINK_4 );
 					ota_loader_config.ota_loader_state = OTA_LOADER_RECEIVE_STREAM;
 					return false;
 				}
@@ -590,12 +590,11 @@ uint16_t ota_loader(void)
 			}
 			break;
 		case OTA_LOADER_RECEIVE_STREAM :
-			blink_red_led();
 			result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 1000, &buffer_length );
 			if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
 				ota_loader_config.packet_count += 1;
 				for( i = 0; i < buffer_length; i++ ) {
-					//print_status( "%c", ( uint8_t ) local_buffer[ i ] );
+					//imx_printf( "%c", ( uint8_t ) local_buffer[ i ] );
 					ota_loader_config.checksum += local_buffer [ i ];
 				}
 				/*
@@ -605,7 +604,7 @@ uint16_t ota_loader(void)
 					/*
 					 * Abort as we would over run the allocated space
 					 */
-					print_status( "Data length exceeded\r\n" );
+					imx_printf( "Data length exceeded\r\n" );
 					ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 					return false;
 				}
@@ -614,19 +613,19 @@ uint16_t ota_loader(void)
 				 */
 				if ( 0 != protected_sflash_write( &sflash_handle, ota_loader_config.content_offset, (void*) local_buffer, buffer_length,
 						ota_loader_config.allowed_sflash_area ) ) {
-					print_status( "Write to serial flash failed.\r\n");
+					imx_printf( "Write to serial flash failed.\r\n");
 					device_config.ota_fail_sflash_write += 1;
-					save_config();
+					imatrix_save_config();
 					ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 					return false;
 				}
-				print_status( "(%u)Packet %u, @: 0x%08lX ", ota_loader_config.data_retry_count, ota_loader_config.packet_count, ota_loader_config.content_offset );
+				imx_printf( "(%u)Packet %u, @: 0x%08lX ", ota_loader_config.data_retry_count, ota_loader_config.packet_count, ota_loader_config.content_offset );
                 fflush(stdout);
 				calc_ota_checksum_partial( (uint8_t*)local_buffer, buffer_length );
 
 				ota_loader_config.content_received += buffer_length;
 				ota_loader_config.content_offset += buffer_length;
-				print_status( "%lu Bytes Now %lu/%lu\r", buffer_length, ota_loader_config.content_received, ota_loader_config.total_content_length );
+				imx_printf( "%lu Bytes Now %lu/%lu\r", buffer_length, ota_loader_config.content_received, ota_loader_config.total_content_length );
 				/*
 				 * Check if we have all the data yet
 				 */
@@ -653,12 +652,12 @@ uint16_t ota_loader(void)
 			}
 			break;
 		case OTA_LOADER_ALL_RECEIVED :
-			print_status( "All Content received, simple checksum: 0x%08lx\r\n", ota_loader_config.checksum );
-			print_status( "Received CRC checksum: 0x%08lx - ",  get_ota_checksum() );
+			imx_printf( "All Content received, simple checksum: 0x%08lx\r\n", ota_loader_config.checksum );
+			imx_printf( "Received CRC checksum: 0x%08lx - ",  get_ota_checksum() );
 			if ( ota_loader_config.checksum32 != IGNORE_CHECKSUM32 ) {
-				print_status( "must match 0x%08lx\r\n", (long int)ota_loader_config.checksum32 );
+				imx_printf( "must match 0x%08lx\r\n", (long int)ota_loader_config.checksum32 );
 			} else
-				print_status( " - Checksum Ignore Request\r\n" );
+				imx_printf( " - Checksum Ignore Request\r\n" );
 			// Set content_offset back to the start of the downloaded file in flash.
 			ota_loader_config.content_offset -= ota_loader_config.content_received;
 			ota_loader_config.ota_loader_state = OTA_LOADER_VERIFY_OTA;
@@ -672,7 +671,8 @@ uint16_t ota_loader(void)
 				start_ota_checksum();
 				ota_loader_config.crc_content_offset = ota_loader_config.content_offset;// - ota_loader_config.content_received;
 				ota_loader_config.crc_content_end = ota_loader_config.content_offset + ota_loader_config.content_received;
-				print_status( "Calculating SFLASH Checksum\r\n" );
+				imx_printf( "Calculating SFLASH Checksum\r\n" );
+				set_host_led( IMX_LED_RED, IMX_LED_BLINK_8 );
 				ota_loader_config.ota_loader_state = OTA_CALC_CRC;
 			} else {
 				ota_loader_config.good_load = true;
@@ -681,31 +681,30 @@ uint16_t ota_loader(void)
 			break;
 		case OTA_CALC_CRC :
 			if( ota_loader_config.crc_content_offset < ota_loader_config.crc_content_end ) {
-				blink_red_led();
 				uint32_t bytes_remaining = ota_loader_config.crc_content_end -  ota_loader_config.crc_content_offset;
 				uint16_t length = BUFFER_LENGTH;
 				if ( bytes_remaining < BUFFER_LENGTH ) {
 					length = bytes_remaining;
 				}
 				if( 0 != sflash_read( &sflash_handle, ota_loader_config.crc_content_offset, local_buffer, length ) ) {
-				    print_status( "Error Reading back SFLASH for CRC\r\n" );
+				    imx_printf( "Error Reading back SFLASH for CRC\r\n" );
                     ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
                     return false;
 				}
 				for( i = 0; i < length; i++ )
 				    if( local_buffer[ i ] != 0 )
-				        print_status( "Non Zero Data detected\r\n" );
+				        imx_printf( "Non Zero Data detected\r\n" );
 				calc_ota_checksum_partial( (uint8_t*)local_buffer, length );
 				ota_loader_config.crc_content_offset += length;
 			} else if ( ota_loader_config.checksum32 != get_ota_checksum() ) {
-				print_status( "Checksum for saved file(0x%08lx) is invalid even though download was successful.\r\n", get_ota_checksum() );
-				print_status( "Writing file to flash failed! Checksum should have been: 0x%08lx\r\n", ota_loader_config.checksum32 );
+				imx_printf( "Checksum for saved file(0x%08lx) is invalid even though download was successful.\r\n", get_ota_checksum() );
+				imx_printf( "Writing file to flash failed! Checksum should have been: 0x%08lx\r\n", ota_loader_config.checksum32 );
 				device_config.ota_fail_sflash_crc += 1;
-				save_config();
+				imatrix_save_config();
 				ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 				return false;
 			} else {
-				print_status( "Checksum good\r\n" );
+				imx_printf( "Checksum good\r\n" );
 				ota_loader_config.good_load = true;
 				ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 			}
@@ -713,15 +712,15 @@ uint16_t ota_loader(void)
 		case OTA_LOADER_DATA_TIMEOUT :
 			ota_loader_config.data_retry_count++;
 			if( ota_loader_config.data_retry_count > MAX_DATA_RETRY_COUNT ) {
-				print_status( "Max Retry Count exceeded. Giving up\r\n" );
+				imx_printf( "Max Retry Count exceeded. Giving up\r\n" );
 				device_config.ota_fail_communications_link += 1;
-				save_config();
+				imatrix_save_config();
 				ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 				return false;
 			}
 		    wiced_tcp_disconnect( &ota_loader_config.socket );
 		    wiced_tcp_delete_socket( &ota_loader_config.socket );
-		    print_status( "Timeout Retry Count %u\r\n", ota_loader_config.data_retry_count );
+		    imx_printf( "Timeout Retry Count %u\r\n", ota_loader_config.data_retry_count );
 		    if ( ota_loader_config.accept_ranges == true ) {
 			    ota_loader_config.ota_loader_state = OTA_DNS_LOOKUP;
 		    }
@@ -738,11 +737,11 @@ uint16_t ota_loader(void)
 		    wiced_tcp_delete_socket( &ota_loader_config.socket );
 		    ota_loader_config.socket_assigned = false;
 		    if( ota_loader_config.good_load ) {
-		    	print_status("Save is good.\r\n");
+		    	imx_printf("Save is good.\r\n");
 		    	ota_loader_config.ota_loader_state = OTA_LOADER_DONE;
 		    }
 		    else {
-		    	print_status("Save failed.\r\n");
+		    	imx_printf("Save failed.\r\n");
 		    	ota_loader_config.ota_loader_state = OTA_PRE_LOADER_IDLE;
 		    }
 			break;
@@ -761,13 +760,13 @@ uint16_t ota_loader(void)
 				} else if( ota_loader_config.image_no == FULL_IMAGE ) {
 					if( device_config.do_SFLASH_load == true ) {	// Got it successfully no need to do it next boot
 						device_config.do_SFLASH_load = false;
-						save_config();
+						imatrix_save_config();
 						/*
 						 * Go to idle mode with GREEN LED on
 						 */
-						update_led_red_status( false );
-						update_led_green_status( true );
-						print_status( "OTA loader completed loading SFLASH, in IDLE mode\r\n" );
+			            set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
+			            set_host_led( IMX_LED_RED, IMX_LED_ON );
+						imx_printf( "OTA loader completed loading SFLASH, in IDLE mode\r\n" );
 						ota_loader_config.checksum32 = IGNORE_CHECKSUM32;
 						ota_loader_config.ota_loader_state = OTA_LOADER_SFLASH_COMPLETE;
 						return( false );
@@ -778,20 +777,21 @@ uint16_t ota_loader(void)
 			ota_loader_config.ota_loader_state = OTA_PRE_LOADER_IDLE;
             break;
 		case OTA_PRE_LOADER_IDLE :
-			update_led_red_status( false );
-			print_status( "OTA loader completed, returning to IDLE\r\n" );
+            set_host_led( IMX_LED_RED, IMX_LED_OFF );
+			imx_printf( "OTA loader completed, returning to IDLE\r\n" );
 			ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 			if ( ota_loader_config.image_no == FULL_IMAGE ) {// After returning to normal mode, upload details to imatrix.
-				print_status( "SFLASH Loaded\r\n" );
+				imx_printf( "SFLASH Loaded\r\n" );
 				imatrix_production_upload( 1 );	// Loaded SFLASH
 			}
 			break;
 		case OTA_LOADER_SFLASH_COMPLETE :
-			update_led_green_status( true );	// Make sure it stays ON
+            set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
+            set_host_led( IMX_LED_RED, IMX_LED_OFF );
 			ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 			break;
 		case OTA_LOADER_IDLE :
-			dcb.ota_loader_active = false;
+			icb.ota_loader_active = false;
 			return true;
 			break;
 		default :
@@ -810,8 +810,8 @@ void ota_loader_deinit(void)
 	    wiced_tcp_disconnect( &ota_loader_config.socket );
 	    wiced_tcp_delete_socket( &ota_loader_config.socket );
 	    ota_loader_config.socket_assigned = false;
-		update_led_red_status( false );
-		print_status( "OTA loader terminated, returning to IDLE\r\n" );
+        set_host_led( IMX_LED_RED, IMX_LED_OFF );
+		imx_printf( "OTA loader terminated, returning to IDLE\r\n" );
 	}
 	ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 }
@@ -828,7 +828,7 @@ void print_lut(uint16_t arg)
 	uint16_t i, j;
 
 	get_apps_lut_if_needed();
-	print_status( "Current LUT\r\n" );
+	imx_printf( "Current LUT\r\n" );
 	for( i = 0; i < 8; i++ ) {//NO_IMAGE_TYPES; i++ ) {
 		cli_print( "Entry: %u, Sector Count: %u, Secure: %s\r\n", i, apps_lut[ i ].count,
 				apps_lut[ i ].secure ? "True" : "False" );
@@ -854,26 +854,26 @@ void reboot_to_image( uint16_t image_no )
 		result = protected_wiced_framework_set_boot( DCT_OTA_APP_INDEX, 1 /* PLATFORM_DEFAULT_LOAD */ );
 	else if( image_no == APP0 ) {
 		result = protected_wiced_framework_set_boot( DCT_APP0_INDEX, 1 /* PLATFORM_DEFAULT_LOAD */ );
-		print_status( "Rebooting to APP0: %u\r\n", DCT_APP0_INDEX);
+		imx_printf( "Rebooting to APP0: %u\r\n", DCT_APP0_INDEX);
 	}
 	else if( image_no == APP1 ) {
 		result = protected_wiced_framework_set_boot( DCT_APP1_INDEX, 1 /* PLATFORM_DEFAULT_LOAD */ );
-		print_status( "Rebooting to APP1: %u\r\n", DCT_APP1_INDEX);
+		imx_printf( "Rebooting to APP1: %u\r\n", DCT_APP1_INDEX);
 	}
 	else {
-		print_status( "Invalid image number to boot from\r\n" );
+		imx_printf( "Invalid image number to boot from\r\n" );
 		return;
 	}
 	if( result == WICED_SUCCESS ) {
-		print_status( "Framework Set successfully\r\n" );
+		imx_printf( "Framework Set successfully\r\n" );
 		print_dct_header();
-        print_status( "Rebooting to APP...\r\n" );
+        imx_printf( "Rebooting to APP...\r\n" );
 	    // wiced_deinit();
         wiced_rtos_delay_milliseconds( 2000 );
         wiced_framework_reboot();
 	} else
-		print_status( "Failed to Set Boot - " );
-    print_status( "Reboot failed!\r\n" );
+		imx_printf( "Failed to Set Boot - " );
+    imx_printf( "Reboot failed!\r\n" );
 
 
 }
@@ -885,22 +885,22 @@ void cli_get_latest( uint16_t arg )
 
 void setup_get_latest_version(uint16_t image_type, char *site )
 {
-	dcb.get_latest_active = true;
+	icb.get_latest_active = true;
 	ota_loader_config.retry_count = 0;
 	ota_loader_config.good_get_latest = false;
 	ota_loader_config.ota_getlatest_state = GET_LATEST_DNS;
 	ota_loader_config.image_type = image_type;
-	memmove( ota_loader_config.site, site, SITE_LENGTH );
+	memmove( ota_loader_config.site, site, IMX_IMATRIX_SITE_LENGTH );
 
 }
 uint16_t get_latest_version(void)
 {
 	uint32_t buffer_length;
 	wiced_result_t result;
-	char local_buffer[ BUFFER_LENGTH ], version[ VERSION_LENGTH ], checksum[ CHECKSUM_LENGTH ], uri[ URI_LENGTH ], my_version[ VERSION_LENGTH ];
+	char local_buffer[ BUFFER_LENGTH ], version[ VERSION_LENGTH ], checksum[ CHECKSUM_LENGTH ], uri[ IMX_IMATRIX_URI_LENGTH ], my_version[ VERSION_LENGTH ];
 	char *content_start, *content_end;
     struct json_attr_t json_attrs[] = {
-            {"image_url",  t_string, .addr.string = uri, .len = URI_LENGTH },
+            {"image_url",  t_string, .addr.string = uri, .len = IMX_IMATRIX_URI_LENGTH },
             {"version", t_string, .addr.string = version, .len = VERSION_LENGTH },
 			{"checksum", t_string, .addr.string = checksum, .len = CHECKSUM_LENGTH },// initially tried using t_uinteger, but that is only a 31 bit integer.
             {NULL}
@@ -908,9 +908,9 @@ uint16_t get_latest_version(void)
 
 	switch( ota_loader_config.ota_getlatest_state ) {
 		case GET_LATEST_DNS :
-            print_status( "DNS Lookup for site: %s\r\n", ota_loader_config.site );
+            imx_printf( "DNS Lookup for site: %s\r\n", ota_loader_config.site );
             if( get_site_ip( ota_loader_config.site, &ota_loader_config.address ) == true ) {
-                print_status("IP address %lu.%lu.%lu.%lu\r\n",
+                imx_printf("IP address %lu.%lu.%lu.%lu\r\n",
                         ( ota_loader_config.address.ip.v4 >> 24) & 0xFF,
                         ( ota_loader_config.address.ip.v4 >> 16) & 0xFF,
                         ( ota_loader_config.address.ip.v4 >> 8 ) & 0xFF,
@@ -918,29 +918,29 @@ uint16_t get_latest_version(void)
                     ota_loader_config.ota_getlatest_state = GET_LATEST_OPEN_SOCKET;
                     break;
             } else {
-                print_status( "Failed DNS... \r\n" );
-                print_status( "Failed to get IP address, aborting getting latest revision of: %u\r\n", ota_loader_config.image_type);
+                imx_printf( "Failed DNS... \r\n" );
+                imx_printf( "Failed to get IP address, aborting getting latest revision of: %u\r\n", ota_loader_config.image_type);
                 ota_loader_config.ota_getlatest_state = GET_LATEST_IDLE;
-                dcb.get_latest_active = false;
+                icb.get_latest_active = false;
                 return true;    // We are done
             }
 			break;
 		case GET_LATEST_OPEN_SOCKET :
 			result = wiced_tcp_create_socket( &ota_loader_config.socket, WICED_STA_INTERFACE );
 			if( result != WICED_TCPIP_SUCCESS ) {
-				print_status( "Failed to create socket on STA Interface, aborting\r\n" );
+				imx_printf( "Failed to create socket on STA Interface, aborting\r\n" );
 				ota_loader_config.ota_getlatest_state = GET_LATEST_IDLE;
-				dcb.get_latest_active = false;
+				icb.get_latest_active = false;
 				return true;	// We are done
 			}
 			ota_loader_config.ota_getlatest_state = GET_LATEST_ESTABLISH_CONNECTION;
 			break;
 		case GET_LATEST_ESTABLISH_CONNECTION :
 			ota_loader_config.retry_count = 0;
-			while( ota_loader_config.retry_count < MAX_CONNECTION_RETRY_COUNT ) {
+			while( ota_loader_config.retry_count < IMX_MAX_CONNECTION_RETRY_COUNT ) {
 				result = wiced_tcp_connect( &ota_loader_config.socket, &ota_loader_config.address, 80, 1000 );
 				if( result == WICED_TCPIP_SUCCESS ) {
-					print_status( "Successfully Connected to: %s on Port: 80\r\n", ota_loader_config.site );
+					imx_printf( "Successfully Connected to: %s on Port: 80\r\n", ota_loader_config.site );
 					/*
 					 * Create the stream
 					 */
@@ -949,12 +949,12 @@ uint16_t get_latest_version(void)
 						ota_loader_config.ota_getlatest_state = GET_LATEST_SEND_REQUEST;
 						break;
 					} else {
-						print_status( "Failed to connect to stream\r\n" );
+						imx_printf( "Failed to connect to stream\r\n" );
 					}
 				}
 			}
-			if( ota_loader_config.retry_count >= MAX_CONNECTION_RETRY_COUNT ) {
-				print_status( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", ota_loader_config.site );
+			if( ota_loader_config.retry_count >= IMX_MAX_CONNECTION_RETRY_COUNT ) {
+				imx_printf( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", ota_loader_config.site );
 				ota_loader_config.ota_getlatest_state = GET_LATEST_CLOSE_SOCKET;
 			}
 			break;
@@ -970,7 +970,7 @@ uint16_t get_latest_version(void)
 			strcat( local_buffer, " HTTP/1.1\nHost: " );
 			strcat( local_buffer, ota_loader_config.site );
 			strcat( local_buffer, "\r\n\r\n" );
-		    print_status( "Sending query: %s\r\n", local_buffer );
+		    imx_printf( "Sending query: %s\r\n", local_buffer );
 		    result = wiced_tcp_stream_write( &ota_loader_config.tcp_stream, local_buffer , (uint32_t) strlen( local_buffer ) );
 		    if ( result == WICED_TCPIP_SUCCESS ) {
 		    	result =  wiced_tcp_stream_flush( &ota_loader_config.tcp_stream );
@@ -982,23 +982,23 @@ uint16_t get_latest_version(void)
 		    	}
 		    }
 		    if( result != WICED_TCPIP_SUCCESS ) {
-		    	print_status( "FAILED to send request.\r\n" );
+		    	imx_printf( "FAILED to send request.\r\n" );
 		    	ota_loader_config.ota_getlatest_state = GET_LATEST_CLOSE_SOCKET;
 		    }
 		    break;
 		case GET_LATEST_PARSE_HEADER :
 			result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 10000, &buffer_length );
 			if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
-				print_status( "\r\nReceived: %lu Bytes\r\n", buffer_length );
+				imx_printf( "\r\nReceived: %lu Bytes\r\n", buffer_length );
 
 				/*
 				 *
 			    uint32_t i;
 				for( i = 0; i < buffer_length; i++ )
 					if( isprint( (uint16_t ) local_buffer[ i ] ) || ( local_buffer[ i ] == '\r' ) || ( local_buffer[ i ] == '\n' ) )
-						print_status( "%c", local_buffer[ i ] );
+						imx_printf( "%c", local_buffer[ i ] );
 					else
-						print_status( "." );
+						imx_printf( "." );
 
 				*/
 
@@ -1019,36 +1019,36 @@ uint16_t get_latest_version(void)
 					content_start = strstr( local_buffer, "{" );
 					content_end = strstr( local_buffer, "}" ) + 1;
 					if( content_start == (char *) 0 || content_end == (char *) 1 ) {
-						print_status( "JSON not found in body\r\n" );
+						imx_printf( "JSON not found in body\r\n" );
 						ota_loader_config.ota_getlatest_state = GET_LATEST_CLOSE_CONNECTION;
 					} else {
 						*content_end = 0x00;	// Null terminate the string
 
-					print_status( "JSON: %s\r\n", content_start );
+					imx_printf( "JSON: %s\r\n", content_start );
 				    /*
 				     * Process the passed URI Query
 				     */
 				    result = json_read_object( content_start, json_attrs, NULL );
 
 				    if( result ) {
-				        print_status( "JSON parsing failed, Result: %u\r\n", result );
+				        imx_printf( "JSON parsing failed, Result: %u\r\n", result );
 				        return( false );
 				    }
 
 				    if(strcmp( uri, "" ) == 0 ) {
-				        print_status( "Missing uri value in JSON from request.\r\n");
+				        imx_printf( "Missing uri value in JSON from request.\r\n");
 				        return( false );
 				    }
-				    memmove( ota_loader_config.uri, uri, URI_LENGTH );
+				    memmove( ota_loader_config.uri, uri, IMX_IMATRIX_URI_LENGTH );
 
 				    if(strcmp( version, "" ) == 0 ) {
-				        print_status( "Missing Version value in JSON from request.\r\n");
+				        imx_printf( "Missing Version value in JSON from request.\r\n");
 				        return( false );
 				    }
 				    memmove( ota_loader_config.version, version, VERSION_LENGTH );
 
 				    if(strcmp( checksum, "" ) == 0 ) {
-				        print_status( "Missing checksum value in JSON from request.\r\n");
+				        imx_printf( "Missing checksum value in JSON from request.\r\n");
 				        return( false );
 				    }
 				    ota_loader_config.checksum32 = atol( checksum );
@@ -1067,18 +1067,18 @@ uint16_t get_latest_version(void)
 			ota_loader_config.ota_getlatest_state = GET_LATEST_CLOSE_SOCKET;
 			break;
 		case GET_LATEST_CLOSE_SOCKET :
-	    	dcb.get_latest_active = false;
+	    	icb.get_latest_active = false;
 		    wiced_tcp_disconnect( &ota_loader_config.socket );
 		    wiced_tcp_delete_socket( &ota_loader_config.socket );
 		    if( ota_loader_config.good_get_latest ) {
 		    	if( ota_loader_config.image_type == OTA_IMAGE_MASTER ) {	// Only check version for MASTER flash
 			    	sprintf( my_version, VERSION_FORMAT, MajorVersion, MinorVersion, AUTO_BUILD );
 			    	if( strcmp( my_version, ota_loader_config.version ) >= 0 ) {
-			    		print_status( "We have the latest Version: %s, No need to upgrade to: %s\r\n", my_version, ota_loader_config.version );
+			    		imx_printf( "We have the latest Version: %s, No need to upgrade to: %s\r\n", my_version, ota_loader_config.version );
 			    		return( true );
 			    	}
 		    	}
-		    	print_status("Got the uri and checksum.\r\n");
+		    	imx_printf("Got the uri and checksum.\r\n");
 		    	if( ( ota_loader_config.image_type == OTA_IMAGE_SFLASH ) ||
 		    		( ota_loader_config.image_type == OTA_IMAGE_BETA_SFLASH ) )
 		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, FULL_IMAGE, true, (uint32_t)ota_loader_config.checksum32 );
@@ -1089,9 +1089,9 @@ uint16_t get_latest_version(void)
 		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, APP2, true, (uint32_t)ota_loader_config.checksum32 );
 		    }
 		    else {
-		    	print_status("Get Latest failed.\r\n");
+		    	imx_printf("Get Latest failed.\r\n");
 		    }
-	    	dcb.get_latest_active = false;
+	    	icb.get_latest_active = false;
     		return( true );
 			break;
 		case GET_LATEST_IDLE :
@@ -1123,10 +1123,10 @@ wiced_result_t protected_wiced_framework_set_boot( uint16_t image_no, uint16_t l
      * Start of ELF image should be: 7F 45 4C 46 01 01 01 00
      */
     if( memcmp( buffer, valid_elf, ELF_SIGNATURE_LENGTH ) == 0 ) {
-    	print_status( "Elf signature Verified\r\n" );
+    	imx_printf( "Elf signature Verified\r\n" );
     	return( wiced_framework_set_boot( image_no, load_mode ) );
     } else {
-    	print_status( "Selected Image: %u does not have a valid ELF signature\r\n", image_no );
+    	imx_printf( "Selected Image: %u does not have a valid ELF signature\r\n", image_no );
     	return WICED_ERROR;
     }
 

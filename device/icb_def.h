@@ -90,6 +90,7 @@ typedef struct {
 	uint16_t wifi_state;
 	uint16_t no_ble_updates;
 	uint16_t no_ble_devices;
+	uint32_t log_messages;
 	uint32_t print_msg;
 	uint32_t print_telnet_msg;
 	uint32_t boot_count;

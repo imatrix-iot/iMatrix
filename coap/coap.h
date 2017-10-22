@@ -40,7 +40,7 @@
 
 /** @file coap.h
  *
- *
+ *  Define CoAP Constants and structures
  *
  */
 
@@ -182,6 +182,8 @@ uint16_t no_user_coap_entries(void);
 
 #define COAP_PAYLOAD_LENGTH     ( MAX_MSG_LENGTH - sizeof( coap_header_t ) )
 
+#define IGNORE_CHECKSUM32       0xFFFFFFFF
+
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -287,9 +289,27 @@ typedef struct {
 /******************************************************
  *               Function Declarations
  ******************************************************/
+uint16_t in_my_groups( uint16_t group );
+uint16_t add_options_from_string( uint16_t option_number, char separator, char *str_in, uint16_t *current_option_number, uint8_t *buffer, uint16_t buf_length );
+uint16_t add_coap_uint_option( uint16_t option_number, uint16_t option_value, uint16_t *current_option_number, uint8_t *buffer, uint16_t buf_length );
+wiced_result_t coap_append_response_payload_using_printf( uint16_t media_type, coap_message_t* msg_out, char* format,  ... );
+wiced_result_t coap_store_response_header( coap_message_t* msg_out, uint16_t code_in, uint16_t type_in, uint16_t *header_size );
+wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query_str );
+uint16_t add_coap_str_option( uint16_t option_number, uint16_t *current_option_number, char *uri, uint8_t *buffer, uint16_t buf_length );
+wiced_result_t coap_append_response_payload( uint16_t media_type, coap_message_t* msg_out, uint8_t* data, uint16_t size );
+wiced_result_t coap_store_response_data(coap_message_t* msg_out, uint16_t code_in, uint16_t type_in, char* data_str, uint16_t media_type );
 uint16_t process_coap_msg( message_t *msg, CoAP_msg_detail_t *cd );
 uint16_t is_multicast_ip( wiced_ip_address_t *addr );
-
+void * coap_msg_payload( coap_message_t* coap );
+message_t *msg_get( uint16_t min_bytes );
+uint16_t get_messaging_list_empty_errors(void);
+void list_add( message_list_t *list, message_t *entry  );
+void list_add_at( wiced_time_t timestamp, message_list_t *list, message_t *new_entry, uint8_t retry );
+uint16_t get_block_not_found_errors();
+uint16_t get_block_list_details( uint16_t index, uint16_t *smallest_freelist_size, uint16_t *errors );
+void* new_coap_token( token_buffer_t token, unsigned int length );
+bool coap_transmit_empty(void);
+void coap_transmit( uint16_t process_to_end );
 /******************************************************
  *               Global Variable Declarations
  ******************************************************/

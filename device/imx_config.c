@@ -30,21 +30,24 @@
  */
 /** @file
  *
- * match_uri.c
+ *	imx_config.c
+ *	
+ *	Read / Write the Applicationconfiguration
  *
  */
+
+
+#include <stdint.h>
 #include <stdbool.h>
 
 #include "wiced.h"
 
-#include "../CoAP/coap.h"
-#include "../cli/messages.h"
-#include "../cli/messages.h"
-#include "../device/icb_def.h"
-#include "coap_def.h" // coap_def.c creates the global array CoAP_entries[]
+#include "../storage.h"
+#include "../device_app_dct.h"
 #include "../cli/interface.h"
-#include "../cli/messages.h"
-#include "../device/icb_def.h"
+#include "icb_def.h"
+#include "config.h"
+
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -72,93 +75,60 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
+extern IOT_Device_Config_t device_config;
 
 /******************************************************
  *               Function Definitions
  ******************************************************/
-/*
- * match_uri.c
- *
- *  Created on: Apr 10, 2015
- *      Author: eric thelin
- *
- *      The match_uri() function searches the array of possible CoAP entries and
- *      returns the one that matches the passed in uri. NULL is returned if
- *      the uri does not match anything in the array.
- */
 
-/******************************************************
- *                      Macros
- ******************************************************/
-#ifdef PRINT_DEBUGS_FOR_RECV
-    #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_RECV ) != 0x00 ) imx_log_printf(__VA_ARGS__)
-#elif !defined PRINTF
-    #define PRINTF(...)
-#endif
-/******************************************************
- *                    Constants
- ******************************************************/
-
-/******************************************************
- *                   Enumerations
- ******************************************************/
-
-/******************************************************
- *                 Type Definitions
- ******************************************************/
-
-/******************************************************
- *                    Structures
- ******************************************************/
-
-
-/******************************************************
- *               Function Declarations
- ******************************************************/
-
-/******************************************************
- *               Variable Definitions
- ******************************************************/
-extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/
-/* TRUE == 1 FALSE == 0 see ../defines.h */
+/**
+  * @brief	print saved configuration
+  * @param  None
+  * @retval : None
+  */
 
-/* I'm only interested in string equality so create a boolean function for string equality
- * Eric Thelin 13 April 2015
- */
-int str_equals(char* s1, char* s2) { // Returns TRUE or FALSE
-    return ( strcmp( s1, s2 ) == 0 );
+wiced_result_t imx_get_config_current_address( void *config_address )
+{
+
+	// The address in the DCT becomes invalid as soon as anything is written to the DCT
+	uint8_t *temp_app_config = (uint8_t*) ( (uint32_t)wiced_dct_get_current_address( DCT_APP_SECTION ) + OFFSETOF( device_app_dct_t, app_config ) );
+	if ( temp_app_config == GET_CURRENT_ADDRESS_FAILED ) {
+	    imx_printf( "DCT access error while attempting to print the saved device configuration.\r\n");
+	    return WICED_ERROR;
+	}
+
+	config_address = (void *) temp_app_config;
+
+    return WICED_SUCCESS;
+}
+/**
+  * @brief  print saved configuration
+  * @param  None
+  * @retval : None
+  */
+
+wiced_result_t imx_save_config( void *data, uint16_t length )
+{
+   if( length > APP_CONFIG_SIZE ) {
+       imx_printf( "Application Configuration exceeds space allocated( %u Bytes): %u Bytes\r\n", APP_CONFIG_SIZE, length );
+       return WICED_ERROR;
+   }
+
+   return wiced_dct_write( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, app_config ), APP_CONFIG_SIZE );
+
+    return WICED_SUCCESS;
 }
 
-/* return NULL if uri not found, otherwise return pointer to entry that matches
- * Eric Thelin 13 April 2015
- */
-CoAP_entry_t* match_uri(char* uri, CoAP_entry_t* all_entries, int arSize)
+/**
+  * @brief  return the saved serial number
+  * @param  None
+  * @retval : None
+  */
+
+char *imx_get_device_serial_number( void )
 {
-    if ( (arSize <= 0) || (all_entries == NULL ) ) {//invalid array size or empty array (
-        return NULL;
-    }
-    else {// there is at least one element in the all_entries[] array
-
-        int i=0;
-
-        int found = str_equals( uri, all_entries[ i ].node.uri );
-
-        // find index i for CoAP_entry that matches uri and set notFound = FALSE)
-        while ( ( i+1 < arSize ) && ! found ) {
-            i++;
-            found = str_equals( uri, all_entries[ i ].node.uri );
-        }
-        PRINTF( "%s %s.\r\n", found ? "Found" : "Did not find", uri );
-
-        if ( ! found ) {
-            return NULL;
-        }
-        else {// return pointer to CoAP_entry identified by this uri
-            return &( all_entries[ i ] );
-        }
-    }
+    return (char *) &device_config.device_serial_number;
 }

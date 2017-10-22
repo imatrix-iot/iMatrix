@@ -36,8 +36,8 @@
  */
 
 #include <stdint.h>
-#include "wiced.h"
-#include "coap.h"
+#include <stdlib.h>
+extern unsigned int random_seed;
 
 uint16_t ms_backoff( uint16_t max_ms)
 {

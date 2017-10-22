@@ -83,6 +83,7 @@
 uint16_t active_device = CONSOLE_OUTPUT;
 extern iMatrix_Control_Block_t icb;
 extern IOT_Device_Config_t device_config;
+extern const char *debug_flags_description[];
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -92,7 +93,7 @@ bool verify_cmd( void )
 
 	cli_print( "\r\nAre u sure (y/n): " );
 
-	while( !st_get_ch( &ch ) )
+	while( !imx_get_ch( &ch ) )
 		;
 	cli_print( "%c\r\n", ch );
 	if( toupper( (uint8_t )ch ) == 'Y' ) {
@@ -104,7 +105,7 @@ bool verify_cmd( void )
 	}
 }
 
-uint16_t imx_get_ch( char *ch )
+bool imx_get_ch( char *ch )
 {
 	uint32_t expected_data_size;
 	wiced_result_t result;
@@ -169,7 +170,7 @@ void cli_print( char *format, ... )
     va_end( args );
 }
 
-int st_log_imx_printf( char *format, ... )
+int imx_log_printf( char *format, ... )
 {
 	if ( ( icb.print_debugs != 0 ) ) {
 		char buffer[ SPRINTF_BUFFER_LENGTH ];

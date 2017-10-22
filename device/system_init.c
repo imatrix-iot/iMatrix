@@ -41,9 +41,6 @@
 #include "wiced.h"
 
 #include "../storage.h"
-#include "../cli/cli.h"
-#include "../cli/interface.h"
-#include "../cli/telnetd.h"
 #include "config.h"
 #include "hal_leds.h"
 #include "icb_def.h"
@@ -51,6 +48,10 @@
 #include "system_init.h"
 #include "device.h"
 #include "config.h"
+#include "../cli/cli.h"
+#include "../cli/interface.h"
+#include "../cli/telnetd.h"
+#include "../sflash/sflash.h"
 
 /******************************************************
  *                      Macros
@@ -172,8 +173,7 @@ bool system_init(void)
     wiced_time_set_utc_time_ms( &( device_config.last_ntp_updated_time ) );
     icb.boot_time = icb.fake_utc_boot_time;
 
-    set_host_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED LED to off
-    set_host_led( IMX_LED_GREEN, IMX_LED_OFF );         // SEt GREEN LED off
+    set_host_led( IMX_LED_INIT, IMX_LED_OFF );           // Set up LEDs
 
 	if( init_serial_flash() == false )
 	    imx_printf( "ERROR: Serial Flash size does not match product definition\r\n" );

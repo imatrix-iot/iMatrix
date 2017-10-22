@@ -48,8 +48,8 @@
 /*
  * Debug message defines
  */
-#define DEBUG_GENERAL                   (0x00000001)
-#define DEBUG_BLE                       (0x00000002)
+#define DEBUGS_GENERAL                  (0x00000001)
+#define DEBUGS_BLE                      (0x00000002)
 #define DEBUGS_FOR_BASIC_MESSAGING      (0x00000004)
 #define DEBUGS_FOR_XMIT                 (0x00000008)
 #define DEBUGS_FOR_RECV                 (0x00000010)
@@ -59,10 +59,7 @@
 #define DEBUGS_FOR_INIT                 (0x00000010)
 #define DEBUGS_FOR_SFLASH               (0x00000100)
 #define DEBUGS_FOR_APPLICATION_START    (0x00000200)
-#define DEBUG_LOG_TO_IMATRIX            (0x00000400)
-#define NTP_SYNCH_SUCCEEDED__MSG_BIT    (0x00000800)
-#define NTP_SYNCH_FAILED__MSG_BIT       (0x00000100)
-#define ABANDONING_NTP_SYNCH__MSG_BIT   (0x00000200)
+#define DEBUGS_LOG_TO_IMATRIX           (0x00000400)
 /*
  * Background (callback) messages to print in main loop
  */

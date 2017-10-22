@@ -92,11 +92,8 @@
 #define MAX_ARDUINO_CONTROLS                8
 #define MAX_ARDUINO_SENSORS                 8
 
-#define CONTROL_SENSOR_NAME_LENGTH          ( 32 )
-#define CONTROL_NAME_LENGTH                 (CONTROL_SENSOR_NAME_LENGTH)
-
 #define IMATRIX_HISTORY_SIZE                ( 60 )
-#define WARNING_LEVELS                      ( 3 )
+
 #define USE_WARNING_LEVEL_1                 ( 0x01 )    // Bit Masks
 #define USE_WARNING_LEVEL_2                 ( 0x02 )
 #define USE_WARNING_LEVEL_3                 ( 0x04 )
@@ -147,11 +144,11 @@ typedef enum comm_mode {
 } comm_mode_t;
 
 typedef enum security_mode {
-    SECURITY_WEP,
-    SECURITY_WPA2,
-    SECURITY_8021X_EAP_TLS,
-    SECURITY_8021X_PEAP,
-    SECURITY_MAX
+    IMX_SECURITY_WEP,
+    IMX_SECURITY_WPA2,
+    IMX_SECURITY_8021X_EAP_TLS,
+    IMX_SECURITY_8021X_PEAP,
+    IMX_SECURITY_MAX_TYPES
 } security_mode_t;
 /*
  * iMatrix Block formats
@@ -222,33 +219,11 @@ typedef struct serial_number {
     uint32_t serial3;
 } serial_number_t;
 
-typedef struct var_data_header {
-    uint16_t pool_id;
-    uint16_t length;
-    void *next;
-} var_data_header_t;
-
-typedef struct var_data_entry {
-    var_data_header_t header;
-    uint8_t data[];
-} var_data_entry_t;
-
 typedef struct var_data_t {
     var_data_entry_t *entry;
     var_data_entry_t *next;
 } var_data_t;
 
-typedef struct var_data_block {
-    var_data_entry_t *head;
-    var_data_entry_t *tail;
-} var_data_block_t;
-
-typedef union data_32 {
-    uint32_t uint_32bit;
-    int32_t int_32bit;
-    float float_32bit;
-    var_data_entry_t *var_data;
-} data_32_t;
 
 typedef struct var_data_config {
     uint16_t size;
@@ -271,30 +246,6 @@ typedef struct control_sensor_data {
     data_32_t last_value;
     data_32_t data[ IMATRIX_HISTORY_SIZE ];
 } control_sensor_data_t;
-
-typedef struct control_sensor_block {
-    char name[ CONTROL_SENSOR_NAME_LENGTH ];
-    uint32_t id;
-    uint32_t sample_rate;
-    uint16_t sample_batch_size;
-    uint16_t percent_change_to_send;            // Bits
-    unsigned int enabled                : 1;    // 0
-    unsigned int send_on_percent_change : 1;    // 1
-    unsigned int data_type              : 2;    // 2-3
-    unsigned int use_warning_level_low  : 3;    // 4-6
-    unsigned int use_warning_level_high : 3;    // 5-7
-    unsigned int reserved               : 19;   // 8-31
-    data_32_t default_value;
-    data_32_t warning_level_low[ WARNING_LEVELS ];
-    data_32_t warning_level_high[ WARNING_LEVELS ];
-} control_sensor_block_t;
-
-typedef struct functions {
-    void (*load_config_defaults)(uint16_t arg);
-    void (*init)(uint16_t arg);
-    uint16_t (*update)(uint16_t arg, void *value );
-    uint16_t arg;
-} functions_t;
 
 typedef union __attribute__((__packed__)) { // Bits
     struct {

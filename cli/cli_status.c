@@ -45,7 +45,9 @@
 #include "./ble/ble_manager.h"
 #include "../device/config.h"
 #include "../device/hal_wifi.h"
+#include "../device/hal_leds.h"
 #include "../device/icb_def.h"
+#include "../platform_functions/ISMART_LEDS.h"
 #include "../imatrix/imatrix.h"
 #include "../wifi/wifi.h"
 #include "cli_status.h"
@@ -117,7 +119,7 @@ void cli_status( uint16_t arg )
                 (unsigned int)((GET_IPV4_ADDRESS( icb.my_ip ) >>  8) & 0xFF),
                 (unsigned int)((GET_IPV4_ADDRESS( icb.my_ip ) >>  0) & 0xFF ) );
 		if( device_config.AP_setup_mode == true ) {
-			cli_print( "Access Point Setup mode, SSID: %s, WPA2PSK: %s, ", device_config.ap_ssid, device_config.ap_wpa );
+			cli_print( "Access Point / Setup mode, SSID: %s, WPA2PSK: %s, ", device_config.ap_ssid, device_config.ap_wpa );
 			/*
 			 * Add Code to list clients
 			 */
@@ -128,16 +130,16 @@ void cli_status( uint16_t arg )
 			channel = hal_get_wifi_channel();
     		cli_print( "Secured with: " );
 		    switch( device_config.st_security_mode ) {
-		    	case SECURITY_8021X_EAP_TLS :
+		    	case IMX_SECURITY_8021X_EAP_TLS :
 		    		cli_print( "802.1X EAP TLS, " );
 		    		break;
-		    	case SECURITY_8021X_PEAP :
+		    	case IMX_SECURITY_8021X_PEAP :
 		    		cli_print( "802.1X PEAP TLS, " );
 		    		break;
-		    	case SECURITY_WEP :
+		    	case IMX_SECURITY_WEP :
 		    		cli_print( "WEP, " );
 		    		break;
-		    	case SECURITY_WPA2 :
+		    	case IMX_SECURITY_WPA2 :
 		    	default :
 		    		cli_print( "WPA2PSK, " );
 		    		break;
@@ -303,9 +305,10 @@ void cli_status( uint16_t arg )
             */
         }
 	}
+	print_led_status();
 	/*
 	 * BLE Scan Status
 	 */
-	print_ble_scan_results( 1 );
+//	print_ble_scan_results( 1 );
 
 }

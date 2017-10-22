@@ -58,7 +58,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_XMIT
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) st_log_imx_printf( __VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) imx_log_printf( __VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -152,10 +152,10 @@ void coap_transmit( uint16_t process_to_end )
                     goto free_msg;
                 } else
                     PRINTF( "About to transmit CoAP message to: %u.%u.%u.%u, %u Bytes \r\n",
-                            (unsigned char) ( ( msg->coap.udp_ip_addr.ip.v4  >> 24 ) & 0xff ),
-                            (unsigned char) ( ( msg->coap.udp_ip_addr.ip.v4  >> 16 ) & 0xff ),
-                            (unsigned char) ( ( msg->coap.udp_ip_addr.ip.v4  >>  8 ) & 0xff ),
-                            (unsigned char) ( ( msg->coap.udp_ip_addr.ip.v4  >>  0 ) & 0xff ),
+                            (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 24 ) & 0xff ),
+                            (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 16 ) & 0xff ),
+                            (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >>  8 ) & 0xff ),
+                            (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >>  0 ) & 0xff ),
                             msg->coap.msg_length );
             } else {    // TCP
                 if ( wiced_packet_create_tcp( &tcp.socket, sizeof( coap_header_t ) + msg->coap.msg_length, &packet, (uint8_t**) &data, &available_data_length ) != WICED_SUCCESS ) {

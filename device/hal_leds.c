@@ -44,6 +44,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+#include "../cli/interface.h"
 #include "../storage.h"
 
 /******************************************************
@@ -53,7 +54,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-
+#define LED_TEST_TIME       2000        // mS
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -73,6 +74,19 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
+
+const char *led_names[ IMX_NO_LED_COMBINATIONS ] = {
+        "Red",              // IMX_LED_RED = 0,
+        "Green",            // IMX_LED_GREEN,
+        "Blue",             // IMX_LED_BLUE,
+        "Red & Green",      // IMX_LED_RED_GREEN,
+        "Red & Blue",       // IMX_LED_RED_BLUE,
+        "Green & Red",      // IMX_LED_GREEN_RED,
+        "Green & Blue",     // IMX_LED_GREEN_BLUE,
+        "Blue & Red",       // IMX_LED_BLUE_RED,
+        "Blue & Green",     // IMX_LED_BLUE_GREEN,
+};
+
 extern imx_imatrix_init_config_t imatrix_init_config;
 /******************************************************
  *               Function Definitions
@@ -90,4 +104,86 @@ bool set_host_led( imx_led_t led, imx_led_state_t value )
         return true;
     } else
         return false;
+}
+/**
+  * @brief Print the status of the device
+  * @param  None
+  * @retval : None
+  */
+void cli_set_led( uint16_t arg)
+{
+    UNUSED_PARAMETER(arg);
+    char *token, *foo;
+    imx_led_t led, i;
+    imx_led_state_t rate;
+
+    token = strtok(NULL, " " );
+    if( token ) {
+        if( strcmp( token, "test" ) == 0 ) {
+            /*
+             * Do a sequence of tests for to show LED functionality
+             */
+            for( i = 0; i < IMX_NO_LEDS; i++ ) {
+                imx_printf( "Setting %s to ON..", led_names[ i ] );
+                set_host_led( i, IMX_LED_ON );
+                wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+                set_host_led( i, IMX_LED_OFF );
+                imx_printf( "OFF\r\n" );
+            }
+            for( i = 0; i < IMX_NO_LEDS; i++ ) {
+                imx_printf( "Setting %s to Blinking..", led_names[ i ] );
+                set_host_led( i, IMX_LED_BLINK_5 );
+                wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+                set_host_led( i, IMX_LED_OFF );
+                imx_printf( "OFF\r\n" );
+            }
+            for( i = IMX_LED_RED_GREEN; i < IMX_NO_LED_COMBINATIONS; i++ ) {
+                imx_printf( "Setting %s to Alternating Blinking..", led_names[ i ] );
+                set_host_led( i, IMX_LED_BLINK_5 );
+                wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+                set_host_led( i, IMX_LED_OFF );
+                imx_printf( "OFF\r\n" );
+            }
+            for( i = IMX_LED_RED_GREEN; i < IMX_NO_LED_COMBINATIONS; i++ ) {
+                imx_printf( "Setting %s to Alternating Flashing..", led_names[ i ] );
+                set_host_led( i, IMX_LED_FLASH | IMX_LED_BLINK_5 );
+                wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+                set_host_led( i, IMX_LED_OFF );
+                imx_printf( "OFF\r\n" );
+            }
+            return;
+        } else if( strncmp( token, "0x", 2 ) == 0 )
+            led = (imx_led_t) strtoul( &token[ 2 ], &foo, 16 );
+        else if( strcmp( token, "red" ) == 0 )
+            led = IMX_LED_RED;
+        else if( strcmp( token, "green" ) == 0 )
+            led = IMX_LED_GREEN;
+        else if( strcmp( token, "blue" ) == 0 )
+            led = IMX_LED_BLUE;
+        else
+            led = (imx_led_t) strtoul( token, &foo, 10 );
+        token = strtok(NULL, " " );
+        if( token ) {
+            if( strcmp( token, "on" ) == 0 ) {
+                rate = IMX_LED_ON;
+                set_host_led( led, rate );
+            } else if( strcmp( token, "off" ) == 0 ) {
+                rate = IMX_LED_OFF;
+                set_host_led( led, rate );
+            } else if( strcmp( token, "blink" ) == 0 ) {
+                token = strtok(NULL, " " );
+                if( token ) {
+                    if( strncmp( token, "0x", 2 ) == 0 )
+                        rate = (imx_led_state_t) strtoul( &token[ 2 ], &foo, 16 );
+                    else
+                        rate = (imx_led_state_t) strtoul( token, &foo, 10 ) + 1;
+                    set_host_led( led, rate );
+                } else
+                    cli_print( "Need to specify blink rate\r\n" );
+            } else
+                cli_print( "Need to specify on / off  / blink\r\n" );
+        } else
+            cli_print( "Need to specify state\r\n" );
+    } else
+        cli_print( "Need to specify LED - 0 / red or 1 / green\r\n" );
 }

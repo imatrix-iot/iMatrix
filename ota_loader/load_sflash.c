@@ -43,10 +43,9 @@
 
 #include "wiced.h"
 
-#include "../system.h"
-#include "../defines.h"
+#include "../storage.h"
 #include "../cli/interface.h"
-#include "../device/dcb_def.h"
+#include "../device/icb_def.h"
 #include "../ota_loader/ota_structure.h"
 #include "../sflash/sflash.h"
 
@@ -80,8 +79,8 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern dcb_t dcb;	// Defined in device/dcbdef.h and initialized in device.c
-
+extern iMatrix_Control_Block_t icb;
+extern IOT_Device_Config_t device_config;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -93,8 +92,8 @@ extern dcb_t dcb;	// Defined in device/dcbdef.h and initialized in device.c
 void load_sflash( wiced_system_monitor_t* watchdog, uint32_t watchdog_delay )
 {
 
-	if( dcb.wifi_up == true ) {
-		print_status( "Starting OTA Load of SFLASH...\r\n" );
-    	setup_get_latest_version( OTA_IMAGE_SFLASH, SITE );
+	if( icb.wifi_up == true ) {
+		imx_printf( "Starting OTA Load of SFLASH...\r\n" );
+    	setup_get_latest_version( OTA_IMAGE_SFLASH, device_config.ota_public_url );
 	}
 }

@@ -23,21 +23,20 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .c
+/** @file .h
  *
- *  Created on: October 20, 2017
+ *  Created on: October 21, 2017
  *      Author: greg.phillips
  *
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#ifndef LCB_DEF_H_
+#define LCB_DEF_H_
 
-#include "wiced.h"
-
-#include "..\defines.h"
-#include "..\structs.h"
-
+/*
+ *	Defines for LED Control block
+ *
+ */
 
 /******************************************************
  *                      Macros
@@ -54,24 +53,26 @@
 /******************************************************
  *                 Type Definitions
  ******************************************************/
+typedef struct led_control_block {
+    imx_led_t led_no;
+    void (*init_led)(void);
+    void (*update_led_status)( imx_led_state_t state );
+    uint16_t blink_rate;
+    uint16_t count;
+    uint16_t flash_duration;
+    wiced_timer_t led_timer_data;
+    unsigned int in_pair    : 1;
+    unsigned int blinking   : 1;
+    unsigned int flashing   : 1;
+    unsigned int state      : 1;
+} led_control_block_t;
 
 /******************************************************
  *                    Structures
  ******************************************************/
 
 /******************************************************
- *               Function Declarations
- ******************************************************/
-
-/******************************************************
- *               Variable Definitions
- ******************************************************/
-
-/******************************************************
  *               Function Definitions
  ******************************************************/
-/**
-  * @brief
-  * @param  None
-  * @retval : None
-  */
+
+#endif /* LCB_DEF_H_ */

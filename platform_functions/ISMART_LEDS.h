@@ -23,21 +23,20 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .c
+/** @file .h
  *
  *  Created on: October 20, 2017
  *      Author: greg.phillips
  *
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#ifndef ISMART_LEDS_H_
+#define ISMART_LEDS_H_
 
-#include "wiced.h"
-
-#include "..\defines.h"
-#include "..\structs.h"
-
+/*
+ *	Defines for
+ *
+ */
 
 /******************************************************
  *                      Macros
@@ -60,18 +59,8 @@
  ******************************************************/
 
 /******************************************************
- *               Function Declarations
- ******************************************************/
-
-/******************************************************
- *               Variable Definitions
- ******************************************************/
-
-/******************************************************
  *               Function Definitions
  ******************************************************/
-/**
-  * @brief
-  * @param  None
-  * @retval : None
-  */
+bool imx_ismart_set_led( imx_led_t led, imx_led_state_t value );
+void print_led_status( void );
+#endif /* ISMART_LEDS_H_ */

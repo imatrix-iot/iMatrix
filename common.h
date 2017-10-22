@@ -57,6 +57,8 @@
 /******************************************************
  *                    Constants
  ******************************************************/
+#define IMX_CONTROL_SENSOR_NAME_LENGTH  ( 32 )
+#define IMX_CONTROL_NAME_LENGTH         (IMX_CONTROL_SENSOR_NAME_LENGTH)
 /*
  * Product Capabilities
  */
@@ -148,6 +150,9 @@
 #define IMX_LATITUDE_DEFAULT            38.986835
 #define IMX_ELEVATION_DEFAULT           1925.15         // Elevation in Meters
 
+#define WARNING_LEVELS                  ( 3 )
+#define IMX_NO_LEDS                     ( 3 )
+
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -217,18 +222,48 @@ typedef enum {
     IMX_LED_BLINK_8,
     IMX_LED_BLINK_9,
     IMX_LED_BLINK_10,
+    IMX_LED_BLINK_MASK = 0x0FF,
+    IMX_LED_FLASH = 0x100,  // Indicate this is a flash not a blink on / off - Blink rate then represents duty cycle in 1 second
 } imx_led_state_t;
 
 typedef enum {
     IMX_LED_RED = 0,
     IMX_LED_GREEN,
-    IMS_LED_BLUE,
+    IMX_LED_BLUE,
     IMX_LED_RED_GREEN,
     IMX_LED_RED_BLUE,
+    IMX_LED_GREEN_RED,
     IMX_LED_GREEN_BLUE,
+    IMX_LED_BLUE_RED,
+    IMX_LED_BLUE_GREEN,
+    IMX_NO_LED_COMBINATIONS,
+    IMX_LED_INIT = 0xFF,
 } imx_led_t;
 
 typedef uint32_t imx_status_t;
+
+typedef struct var_data_header {
+    uint16_t pool_id;
+    uint16_t length;
+    void *next;
+} var_data_header_t;
+
+typedef struct var_data_entry {
+    var_data_header_t header;
+    uint8_t data[];
+} var_data_entry_t;
+
+typedef struct var_data_block {
+    var_data_entry_t *head;
+    var_data_entry_t *tail;
+} var_data_block_t;
+
+typedef union data_32 {
+    uint32_t uint_32bit;
+    int32_t int_32bit;
+    float float_32bit;
+    var_data_entry_t *var_data;
+} data_32_t;
 
 typedef struct {
     char product_name[ IMX_PRODUCT_NAME_LENGTH + 1 ];
@@ -260,6 +295,31 @@ typedef struct {
     float elevation;
     bool (*set_led)( imx_led_t led, uint16_t state );
 } imx_imatrix_init_config_t;
+
+typedef struct control_sensor_block {
+    char name[ IMX_CONTROL_SENSOR_NAME_LENGTH ];
+    uint32_t id;
+    uint32_t sample_rate;
+    uint16_t sample_batch_size;
+    uint16_t percent_change_to_send;            // Bits
+    unsigned int enabled                : 1;    // 0
+    unsigned int send_on_percent_change : 1;    // 1
+    unsigned int data_type              : 2;    // 2-3
+    unsigned int use_warning_level_low  : 3;    // 4-6
+    unsigned int use_warning_level_high : 3;    // 5-7
+    unsigned int reserved               : 19;   // 8-31
+    data_32_t default_value;
+    data_32_t warning_level_low[ WARNING_LEVELS ];
+    data_32_t warning_level_high[ WARNING_LEVELS ];
+} control_sensor_block_t;
+
+typedef struct functions {
+    void (*load_config_defaults)(uint16_t arg);
+    void (*init)(uint16_t arg);
+    uint16_t (*update)(uint16_t arg, void *value );
+    uint16_t arg;
+} functions_t;
+
 /******************************************************
  *                    Structures
  ******************************************************/

@@ -880,7 +880,7 @@ void imatrix_status( uint16_t arg)
   * @param  current time
   * @retval : None
   */
-void imatrix_config(void)
+void print_imatrix_config(void)
 {
 	cli_print( "iMatrix is @: %s on IP: %u.%u.%u.%u", device_config.imatrix_public_url,
 			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),

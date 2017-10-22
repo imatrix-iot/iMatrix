@@ -41,7 +41,7 @@
 #include <stdbool.h>
 
 #include "../storage.h"
-
+#include "../device/icb_def.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -62,7 +62,7 @@
  *                    Structures
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-
+extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -75,7 +75,22 @@ extern IOT_Device_Config_t device_config;
 /******************************************************
  *               Function Definitions
  ******************************************************/
+/**
+  * @brief  return if the device is in AP / Setup mode
+  * @param  None
+  * @retval : state
+  */
+
 bool imx_setup_mode(void)
 {
     return device_config.AP_setup_mode;
+}
+/**
+  * @brief  return if the device is in ST mode and Wi Fi is up
+  * @param  None
+  * @retval : state
+  */
+bool imx_network_connected(void)
+{
+    return ( ( device_config.AP_setup_mode == false) && ( icb.wifi_up == true ) );
 }

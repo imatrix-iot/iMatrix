@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -44,13 +45,16 @@
 #include "../coap/add_coap_option.h"
 #include "../coap/que_manager.h"
 #include "coap_msg_get_store.h"
+#include "../cli/interface.h"
+#include "../cli/messages.h"
+#include "../device/icb_def.h"
 
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_BASIC_MESSAGING
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_BASIC_MESSAGING ) != 0x00 ) st_log_print_status(__VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_BASIC_MESSAGING ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif

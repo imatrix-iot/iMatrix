@@ -44,13 +44,16 @@
 #include "coap.h"
 #include "../CoAP_interface/token_string.h"
 #include "add_coap_option.h"
+#include "../cli/interface.h"
+#include "../cli/messages.h"
+#include "../device/icb_def.h"
 
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_BASIC_MESSAGING
     #undef PRINTF
-	#define PRINTF(...) if( ( dcb.log_messages & DEBUGS_FOR_BASIC_MESSAGING ) != 0x00 ) st_log_print_status( __VA_ARGS__)
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_BASIC_MESSAGING ) != 0x00 ) imx_log_printf( __VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -77,7 +80,7 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-
+extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/

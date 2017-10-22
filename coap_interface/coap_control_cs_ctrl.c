@@ -60,13 +60,14 @@
 #include "coap_def.h"
 #include "coap_msg_get_store.h"
 #include "coap_control_cs_ctrl.h"
-
+#include "../cli/messages.h"
+#include "../device/icb_def.h"
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-    #define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
+    #define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -96,7 +97,8 @@
 extern IOT_Device_Config_t device_config;   // Defined in device\config.h
 extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
 extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
-extern functions_t control_functions[ MAX_NO_CONTROLS ];
+extern functions_t imx_control_functions[ MAX_NO_CONTROLS ];
+extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -297,8 +299,8 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                 case IMX_DO_UINT32 :
                     if( uint_value != NO_VALUE_VALUE ) {
                         cd[ i ].last_value.uint_32bit = uint_value;
-                        if( control_functions[ i ].update != NULL )
-                            (control_functions[ i ].update)( i, &uint_value );
+                        if( imx_control_functions[ i ].update != NULL )
+                            (imx_control_functions[ i ].update)( i, &uint_value );
                     } else {
                         response_code = BAD_REQUEST;
                         goto create_response_and_exit;
@@ -307,8 +309,8 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                 case IMX_DO_INT32 :
                     if( int_value != NO_VALUE_VALUE ) {
                         cd[ i ].last_value.uint_32bit = int_value;
-                        if( control_functions[ i ].update != NULL )
-                            (control_functions[ i ].update)( i, &int_value );
+                        if( imx_control_functions[ i ].update != NULL )
+                            (imx_control_functions[ i ].update)( i, &int_value );
                     } else {
                         response_code = BAD_REQUEST;
                         goto create_response_and_exit;
@@ -317,8 +319,8 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                 case IMX_AO_FLOAT :
                     if( float_value != NO_FLOAT_VALUE ) {
                         cd[ i ].last_value.float_32bit = float_value;
-                        if( control_functions[ i ].update != NULL )
-                            (control_functions[ i ].update)( i, &float_value );
+                        if( imx_control_functions[ i ].update != NULL )
+                            (imx_control_functions[ i ].update)( i, &float_value );
                     } else {
                         response_code = BAD_REQUEST;
                         goto create_response_and_exit;
@@ -361,9 +363,6 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     PRINTF( "Invalid JSON object in coap_post_control_cs_ctrl function.\r\n");
     response_code = BAD_REQUEST;
     goto create_response_and_exit;
-
-
-    PRINTF( "id: %lu, value: %u, designation: %u, group: %u status: %d\r\n", id, value, designation, group, result );
 
 done:
     response_code = CHANGED;

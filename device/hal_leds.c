@@ -54,7 +54,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define LED_TEST_TIME       2000        // mS
+#define LED_TEST_TIME       5000        // mS
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -123,6 +123,10 @@ void cli_set_led( uint16_t arg)
             /*
              * Do a sequence of tests for to show LED functionality
              */
+            set_host_led( IMX_LED_RED, IMX_LED_OFF );
+            set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
+            set_host_led( IMX_LED_BLUE, IMX_LED_OFF );
+            /*
             for( i = 0; i < IMX_NO_LEDS; i++ ) {
                 imx_printf( "Setting %s to ON..", led_names[ i ] );
                 set_host_led( i, IMX_LED_ON );
@@ -137,6 +141,14 @@ void cli_set_led( uint16_t arg)
                 set_host_led( i, IMX_LED_OFF );
                 imx_printf( "OFF\r\n" );
             }
+            for( i = 0; i < IMX_NO_LEDS; i++ ) {
+                imx_printf( "Setting %s to Flashing..", led_names[ i ] );
+                set_host_led( i, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_2 );
+                wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+                set_host_led( i, IMX_LED_OFF );
+                imx_printf( "OFF\r\n" );
+            }
+            */
             for( i = IMX_LED_RED_GREEN; i < IMX_NO_LED_COMBINATIONS; i++ ) {
                 imx_printf( "Setting %s to Alternating Blinking..", led_names[ i ] );
                 set_host_led( i, IMX_LED_BLINK_5 );
@@ -146,7 +158,7 @@ void cli_set_led( uint16_t arg)
             }
             for( i = IMX_LED_RED_GREEN; i < IMX_NO_LED_COMBINATIONS; i++ ) {
                 imx_printf( "Setting %s to Alternating Flashing..", led_names[ i ] );
-                set_host_led( i, IMX_LED_FLASH | IMX_LED_BLINK_5 );
+                set_host_led( i, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_2 );
                 wiced_rtos_delay_milliseconds( LED_TEST_TIME );
                 set_host_led( i, IMX_LED_OFF );
                 imx_printf( "OFF\r\n" );

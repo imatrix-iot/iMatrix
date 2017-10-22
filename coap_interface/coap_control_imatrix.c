@@ -70,7 +70,7 @@
  *                    Constants
  ******************************************************/
 #define CPUID_LENGTH                        26
-#define PRODUCT_ID_SN_TEMPLATE		"{ \"organization-id\" : \"%08lu\", \"product-name\" : \"%s\", \"product-id\" : \"%08lu\", \"serial-number\" : \"%s\", \"cpuid\" : \"0x%08lX%08lX%08lX\", \"capabilities\" : \"%08lu\" }"
+#define PRODUCT_ID_SN_TEMPLATE		"{ \"manufacturer-id\" : \"%08lu\", \"product-name\" : \"%s\", \"product-id\" : \"%08lu\", \"serial-number\" : \"%s\", \"cpuid\" : \"0x%08lX%08lX%08lX\", \"capabilities\" : \"%08lu\" }"
 #define PRODUCT_ID_SN_BUFFER_LENGTH	( sizeof( PRODUCT_ID_SN_TEMPLATE ) + IMX_PRODUCT_NAME_LENGTH + IMX_PRODUCT_ID_LENGTH + IMX_DEVICE_SERIAL_NUMBER_LENGTH + CPUID_LENGTH + 1 )
 /******************************************************
  *                   Enumerations
@@ -158,7 +158,7 @@ uint16_t coap_post_control_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, u
     }
     uint16_t response;
 
-    PRINTF( "POST mode - '/control/reboot'\r\n");
+    PRINTF( "POST mode - '/control/imatrix'\r\n");
     /*
      * Process the passed URI Query
      */

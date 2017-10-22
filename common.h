@@ -223,7 +223,18 @@ typedef enum {
     IMX_LED_BLINK_9,
     IMX_LED_BLINK_10,
     IMX_LED_BLINK_MASK = 0x0FF,
-    IMX_LED_FLASH = 0x100,  // Indicate this is a flash not a blink on / off - Blink rate then represents duty cycle in 1 second
+    IMX_LED_FLASH_1 = 0x100,
+    IMX_LED_FLASH_2 = 0x200,
+    IMX_LED_FLASH_3 = 0x300,
+    IMX_LED_FLASH_4 = 0x400,
+    IMX_LED_FLASH_5 = 0x500,
+    IMX_LED_FLASH_6 = 0x600,
+    IMX_LED_FLASH_7 = 0x700,
+    IMX_LED_FLASH_8 = 0x800,
+    IMX_LED_FLASH_9 = 0x900,
+    IMX_LED_FLASH_10 = 0xA00,
+    IMX_LED_FLASH_MASK = 0xF00,
+    IMX_LED_FLASH = 0x1000,  // Indicate this is a flash not a blink on / off - Blink rate then represents duty cycle in 1 second
 } imx_led_state_t;
 
 typedef enum {

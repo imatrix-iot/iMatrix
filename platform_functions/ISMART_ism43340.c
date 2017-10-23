@@ -38,8 +38,8 @@
 
 #include "../cli/interface.h"
 #include "../storage.h"
-#include "lcb_def.h"
-#include "ISMART_LEDS.h"
+#include "../device/lcb_def.h"
+#include "ISMART_ism43340.h"
 
 /******************************************************
  *                      Macros
@@ -66,101 +66,43 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-static void init_led_red( void );
-static void init_led_green( void );
-static void init_led_blue( void );
-static void update_led_red_status( imx_led_state_t state );
-static void update_led_green_status( imx_led_state_t state );
-static void update_led_blue_status( imx_led_state_t state );
 
 /******************************************************
  *               Variable Definitions
  ******************************************************/
 
-led_control_block_t lcb[ IMX_NO_LEDS ] = {
-        {
-                .led_no = IMX_LED_RED,
-                .init_led = init_led_red,
-                .update_led_status = update_led_red_status,
-                .blink_rate = 0,
-                .count  = 0,
-                .flash_duration = 0,
-                .led_timer_data = 0,
-                .in_pair = false,
-                .blinking = false,
-                .flashing = false,
-                .state = false,
-        },
-        {
-                .led_no = IMX_LED_GREEN,
-                .init_led = init_led_green,
-                .update_led_status = update_led_green_status,
-                .blink_rate = 0,
-                .count  = 0,
-                .flash_duration = 0,
-                .led_timer_data = 0,
-                .in_pair = false,
-                .blinking = false,
-                .flashing = false,
-                .state = false,
-        },
-        {
-                .led_no = IMX_LED_BLUE,
-                .init_led = init_led_blue,
-                .update_led_status = update_led_blue_status,
-                .blink_rate = 0,
-                .count  = 0,
-                .flash_duration = 0,
-                .led_timer_data = 0,
-                .in_pair = false,
-                .blinking = false,
-                .flashing = false,
-                .state = false,
-        },
-};
-
 /******************************************************
  *               Function Definitions
  ******************************************************/
 /**
-  * @brief  Control the LEDs on ISMART ISM 43340 system
-  * @param  LED, Status
-  * @retval : None
-  */
-bool imx_ismart_ism43340_set_led( imx_led_t led, imx_led_state_t mode )
-{
-    return imx_ismart_set_led( led, mode );
-
-}
-/**
   * @brief init_led_red
   * @param  None
   * @retval : None
   */
-static void init_led_red( void )
+void imx_init_led_red_ismart43340( void )
 {
     wiced_gpio_init( ON_BOARD_LED_RED, OUTPUT_PUSH_PULL );  // GPIO 3 - Red Led
-    update_led_red_status( false );
+    imx_update_led_red_status_ismart43340( false );
 }
 /**
   * @brief init_led_red
   * @param  None
   * @retval : None
   */
-static void init_led_green( void )
+void imx_init_led_green_ismart43340( void )
 {
     wiced_gpio_init( ON_BOARD_LED_GREEN, OUTPUT_PUSH_PULL );  // GPIO 4 - Green Led
-    update_led_green_status( false );
+    imx_update_led_green_status_ismart43340( false );
 }
 /**
   * @brief init_led_red
   * @param  None
   * @retval : None
   */
-static void init_led_blue( void )
+void imx_init_led_blue_ismart43340( void )
 {
     // Add init for Blue
-    update_led_blue_status( false );
+    imx_update_led_blue_status_ismart43340( false );
 }
 
 /**
@@ -168,13 +110,11 @@ static void init_led_blue( void )
   * @param  None
   * @retval : None
   */
-static void update_led_red_status( uint16_t state )
+void imx_update_led_red_status_ismart43340( bool state )
 {
     if( state == true ) {
-        lcb[ IMX_LED_RED ].state = true;
         wiced_gpio_output_high( ON_BOARD_LED_RED );
     } else {
-        lcb[ IMX_LED_RED ].state = false;
         wiced_gpio_output_low( ON_BOARD_LED_RED );
     }
 }
@@ -183,13 +123,11 @@ static void update_led_red_status( uint16_t state )
   * @param  None
   * @retval : None
   */
-static void update_led_green_status( uint16_t state )
+void imx_update_led_green_status_ismart43340( bool state )
 {
     if( state == true ) {
-        lcb[ IMX_LED_GREEN ].state = true;
         wiced_gpio_output_high( ON_BOARD_LED_GREEN );
     } else {
-        lcb[ IMX_LED_GREEN ].state = false;
         wiced_gpio_output_low( ON_BOARD_LED_GREEN );
     }
 
@@ -199,14 +137,12 @@ static void update_led_green_status( uint16_t state )
   * @param  None
   * @retval : None
   */
-static void update_led_blue_status( uint16_t state )
+void imx_update_led_blue_status_ismart43340( bool state )
 {
     if( state == true ) {
-        lcb[ IMX_LED_BLUE ].state = true;
-        // wiced_gpio_output_high( ON_BOARD_LED_GREEN );
+        // wiced_gpio_output_high( ON_BOARD_LED_BLUE );
     } else {
-        lcb[ IMX_LED_BLUE ].state = false;
-        // wiced_gpio_output_low( ON_BOARD_LED_GREEN );
+        // wiced_gpio_output_low( ON_BOARD_LED_BLUE );
     }
 
 }

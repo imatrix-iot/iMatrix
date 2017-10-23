@@ -276,6 +276,11 @@ typedef union data_32 {
     var_data_entry_t *var_data;
 } data_32_t;
 
+typedef struct imx_led_functions {
+    void (*init_led)(void);
+    void (*set_led)( bool state );
+} imx_led_functions_t;
+
 typedef struct {
     char product_name[ IMX_PRODUCT_NAME_LENGTH + 1 ];
     char device_name[ IMX_DEVICE_NAME_LENGTH + 1 ];
@@ -304,7 +309,7 @@ typedef struct {
     float longitude;
     float latitude;
     float elevation;
-    bool (*set_led)( imx_led_t led, uint16_t state );
+    imx_led_functions_t led_functions[ IMX_NO_LEDS ];    // Red, Green, Blue
 } imx_imatrix_init_config_t;
 
 typedef struct control_sensor_block {

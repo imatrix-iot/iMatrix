@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef ISMART_LEDS_H_
-#define ISMART_LEDS_H_
+#ifndef IMX_LEDS_H_
+#define IMX_LEDS_H_
 
 /*
  *	Defines for
@@ -61,6 +61,7 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-bool imx_ismart_set_led( imx_led_t led, imx_led_state_t value );
+void imx_init_led_functions( imx_led_functions_t *led_functions[] );
+bool imx_set_led( imx_led_t led, imx_led_state_t mode );
 void print_led_status( void );
-#endif /* ISMART_LEDS_H_ */
+#endif /* IMX_LEDS_H_ */

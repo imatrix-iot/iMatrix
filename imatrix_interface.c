@@ -39,6 +39,7 @@
 #include "cli/cli.h"
 #include "device/config.h"
 #include "device/icb_def.h"
+#include "device/imx_LEDS.h"
 #include "device/system_init.c"
 #include "coap/coap_receive.h"
 #include "coap/coap_transmit.h"
@@ -88,6 +89,10 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
 {
 
     init_storage();     // Start clean
+    /*
+     * Set up LEDS as we use these to tell what is going on
+     */
+    imx_init_led_functions( &init_config->led_functions[ 0 ] );
     /*
      * Save user defined product information to local storage
      */

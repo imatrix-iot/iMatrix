@@ -47,7 +47,7 @@
 #include "../device/hal_wifi.h"
 #include "../device/hal_leds.h"
 #include "../device/icb_def.h"
-#include "../platform_functions/ISMART_LEDS.h"
+#include "../device/imx_LEDS.h"
 #include "../imatrix/imatrix.h"
 #include "../wifi/wifi.h"
 #include "cli_status.h"

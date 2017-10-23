@@ -51,7 +51,7 @@
 #include "../cli/telnetd.h"
 #include "../CoAP/coap_setup.h"
 #include "../device/config.h"
-#include "../device/hal_leds.h"
+#include "../device/imx_leds.h"
 #include "../imatrix/imatrix_get_ip.h"
 #include "../networking/http_get_sn_mac_address.h"
 #include "../networking/keep_alive.h"
@@ -166,7 +166,7 @@ uint16_t wifi_init(void)
 	    /*
 	     * Set the RED Link to blink 1 per second to indicate Provisioning mode
 	     */
-        set_host_led( IMX_LED_RED, IMX_LED_BLINK_1 );
+        imx_set_led( IMX_LED_RED, IMX_LED_BLINK_1 );
 
 	} else {
 

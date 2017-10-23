@@ -84,6 +84,8 @@ static timer_handler_t flash_led( void *arg );
 static timer_handler_t alt_flash_led( void *arg );
 static timer_handler_t blink_led( void *arg );
 static timer_handler_t alt_blink_led( void *arg );
+static void void_led_function(void);
+static void void_led_update_function( bool state );
 static void select_leds( imx_led_t led, imx_led_t *master_led, imx_led_t *slave_led );
 /******************************************************
  *               Variable Definitions
@@ -101,7 +103,47 @@ const imx_led_t led_options[ IMX_NO_LED_COMBINATIONS ] = {
 };
 static wiced_semaphore_t wiced_led_semaphore;
 
-extern led_control_block_t lcb[ IMX_NO_LEDS ];
+led_control_block_t lcb[ IMX_NO_LEDS ] = {
+        {
+                .led_no = IMX_LED_RED,
+                .init_led = void_led_function,
+                .update_led_status = void_led_update_function,
+                .blink_rate = 0,
+                .count  = 0,
+                .flash_duration = 0,
+                .led_timer_data = { 0 },
+                .in_pair = false,
+                .blinking = false,
+                .flashing = false,
+                .state = false,
+        },
+        {
+                .led_no = IMX_LED_GREEN,
+                .init_led = void_led_function,
+                .update_led_status = void_led_update_function,
+                .blink_rate = 0,
+                .count  = 0,
+                .flash_duration = 0,
+                .led_timer_data = { 0 },
+                .in_pair = false,
+                .blinking = false,
+                .flashing = false,
+                .state = false,
+        },
+        {
+                .led_no = IMX_LED_BLUE,
+                .init_led = void_led_function,
+                .update_led_status = void_led_update_function,
+                .blink_rate = 0,
+                .count  = 0,
+                .flash_duration = 0,
+                .led_timer_data = { 0 },
+                .in_pair = false,
+                .blinking = false,
+                .flashing = false,
+                .state = false,
+        },
+};
 
 static imx_led_t master_slave[ 2 ];
 
@@ -113,7 +155,7 @@ static imx_led_t master_slave[ 2 ];
   * @param  LED, Status
   * @retval : None
   */
-bool imx_ismart_set_led( imx_led_t led, imx_led_state_t mode )
+bool imx_set_led( imx_led_t led, imx_led_state_t mode )
 {
     uint16_t i;
     wiced_result_t wiced_result;
@@ -285,6 +327,48 @@ bool imx_ismart_set_led( imx_led_t led, imx_led_state_t mode )
             break;
     }
     return true;
+}
+/**
+  * @brief Initialize LED functions from Host provided entries
+  * @param  LED functions from Host
+  * @retval : None
+  */
+void imx_init_led_functions( imx_led_functions_t *led_functions[] )
+{
+    uint16_t i;
+
+    for( i = 0; i < IMX_NO_LEDS; i++ ) {
+        if( led_functions[ i ]->init_led != NULL )
+            lcb[ i ].init_led = led_functions[ i ]->init_led;
+        if( led_functions[ i ]->set_led != NULL )
+            lcb[ i ].update_led_status = led_functions[ i ]->set_led;
+    }
+}
+
+/**
+  * @brief Void Dummy filler function for LED handler
+  * @param  None
+  * @retval : false
+  */
+static void void_led_function(void)
+{
+    /*
+     * Do Nothing :)
+     */
+    return;
+}
+/**
+  * @brief Void Dummy filler function for LED handler
+  * @param  None
+  * @retval : false
+  */
+static void void_led_update_function( bool state )
+{
+    UNUSED_PARAMETER( state );
+    /*
+     * Do Nothing :)
+     */
+    return;
 }
 /**
   * @brief blink LED

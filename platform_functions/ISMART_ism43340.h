@@ -61,5 +61,11 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void ismart_ism43340_set_led( imx_led_t led, imx_led_state_t value );
+void imx_init_led_red_ismart43340( void );
+void imx_init_led_green_ismart43340( void );
+void imx_init_led_blue_ismart43340( void );
+void imx_update_led_red_status_ismart43340( bool state );
+void imx_update_led_green_status_ismart43340( bool state );
+void imx_update_led_blue_status_ismart43340( bool state );
+
 #endif /* ISMART_ISM4440_H_ */

@@ -173,8 +173,6 @@ bool system_init(void)
     wiced_time_set_utc_time_ms( &( device_config.last_ntp_updated_time ) );
     icb.boot_time = icb.fake_utc_boot_time;
 
-    set_host_led( IMX_LED_INIT, IMX_LED_OFF );           // Set up LEDs
-
 	if( init_serial_flash() == false )
 	    imx_printf( "ERROR: Serial Flash size does not match product definition\r\n" );
     device_config.boot_count += 1;

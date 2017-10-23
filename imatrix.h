@@ -121,7 +121,7 @@ imx_status_t imx_deinit(void);
 /*
  * System status: Operating Mode Setup / Standalone mode - or normal online mode
  */
-bool imx_setup_mode(void);
+bool imx_get_wifi_mode(void);
 bool imx_network_connected(void);
 char *imx_get_device_serial_number(void);
 /*
@@ -147,6 +147,11 @@ imx_status_t imx_get_control( uint16_t control_entry, void *value );
 void load_config_defaults_generic_scb( uint16_t arg );
 void load_config_defaults_generic_ccb( uint16_t arg );
 /*
+ * LED Control functions
+ */
+bool imx_set_led( imx_led_t led, imx_led_state_t mode );
+bool imx_get_led_state( imx_led_t led );
+/*
  * Additional support Platform code - ISMART-43340
  */
 void imx_init_led_red_ismart43340( void );
@@ -155,7 +160,6 @@ void imx_init_led_blue_ismart43340( void );
 void imx_update_led_red_status_ismart43340( bool state );
 void imx_update_led_green_status_ismart43340( bool state );
 void imx_update_led_blue_status_ismart43340( bool state );
-
 /*
  * CoAP Processing defines
  */

@@ -545,3 +545,8 @@ void cli_wifi_setup( uint16_t arg )
 		icb.wifi_up = false;
 	}
 }
+
+bool imx_get_wifi_mode(void)
+{
+    return false;
+}

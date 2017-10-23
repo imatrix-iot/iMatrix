@@ -92,7 +92,7 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
     /*
      * Set up LEDS as we use these to tell what is going on
      */
-    imx_init_led_functions( &init_config->led_functions[ 0 ] );
+    imx_init_led_functions( init_config->led_functions );
     /*
      * Save user defined product information to local storage
      */

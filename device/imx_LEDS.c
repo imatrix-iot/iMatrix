@@ -341,15 +341,15 @@ bool imx_get_led_state( imx_led_t led )
   * @param  LED functions from Host
   * @retval : None
   */
-void imx_init_led_functions( imx_led_functions_t *led_functions[] )
+void imx_init_led_functions( imx_led_functions_t *led_functions )
 {
     uint16_t i;
 
     for( i = 0; i < IMX_NO_LEDS; i++ ) {
-        if( led_functions[ i ]->init_led != NULL )
-            lcb[ i ].init_led = led_functions[ i ]->init_led;
-        if( led_functions[ i ]->set_led != NULL )
-            lcb[ i ].update_led_status = led_functions[ i ]->set_led;
+        if( led_functions[ i ].init_led != NULL )
+            lcb[ i ].init_led = led_functions[ i ].init_led;
+        if( led_functions[ i ].set_led != NULL )
+            lcb[ i ].update_led_status = led_functions[ i ].set_led;
     }
 }
 

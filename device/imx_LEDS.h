@@ -61,7 +61,8 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void imx_init_led_functions( imx_led_functions_t *led_functions[] );
+void imx_init_led_functions( imx_led_functions_t *led_functions );
 bool imx_set_led( imx_led_t led, imx_led_state_t mode );
+bool imx_get_led_state( imx_led_t led );
 void print_led_status( void );
 #endif /* IMX_LEDS_H_ */

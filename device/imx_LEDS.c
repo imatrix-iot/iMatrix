@@ -328,6 +328,14 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
     }
     return true;
 }
+
+bool imx_get_led_state( imx_led_t led )
+{
+    if( ( led != IMX_LED_RED ) && ( led != IMX_LED_GREEN ) && ( led != IMX_LED_BLUE ) )
+        return false;
+    else
+        return( lcb[ led ].state );
+}
 /**
   * @brief Initialize LED functions from Host provided entries
   * @param  LED functions from Host

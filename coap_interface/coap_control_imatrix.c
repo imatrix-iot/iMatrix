@@ -133,7 +133,7 @@ uint16_t coap_get_control_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, ui
 
     memset( buffer, 0x00, PRODUCT_ID_SN_BUFFER_LENGTH );
 
-    sprintf( buffer, PRODUCT_ID_SN_TEMPLATE, device_config.organization_id, device_config.product_name,
+    sprintf( buffer, PRODUCT_ID_SN_TEMPLATE, device_config.manufactuer_id, device_config.product_name,
             device_config.product_id, device_config.device_serial_number, device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.product_capabilities );
     if ( coap_store_response_data( msg, CONTENT, response_type, buffer, JSON_MEDIA_TYPE ) != WICED_SUCCESS ) {
 			PRINTF( "Failed to create response.\r\n" );

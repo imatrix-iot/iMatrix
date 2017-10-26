@@ -130,10 +130,10 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-uint16_t set_at_register( uint16_t at_control, uint16_t at_register, char *value );
-uint16_t print_at_register( uint16_t at_control, uint16_t at_register );
-uint16_t sample_at_sensor(uint16_t arg, void *value );
-uint16_t sample_at_control(uint16_t arg, void *value );
+uint16_t set_register( uint16_t at_control, uint16_t at_register, char *value );
+uint16_t print_register( uint16_t at_control, uint16_t at_register );
+uint16_t sample_sensor(uint16_t arg, void *value );
+uint16_t sample_control(uint16_t arg, void *value );
 
 /******************************************************
  *               Variable Definitions

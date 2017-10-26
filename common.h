@@ -291,17 +291,13 @@ typedef struct {
     uint16_t no_controls;
     uint16_t no_arduino_sensors;
     uint16_t no_arduino_controls;
-    uint16_t no_at_controls;
-    uint16_t at_control_start;
-    uint16_t no_at_sensors;
-    uint16_t at_sensor_start;
     uint16_t ap_eap_mode;
     uint16_t st_eap_mode;
     uint32_t ap_security_mode;
     uint32_t st_security_mode;
     uint32_t product_capabilities;
     uint32_t product_id;
-    uint32_t organization_id;
+    uint32_t manufactuer_id;
     uint32_t building_id;
     uint32_t level_id;
     uint32_t indoor_x;
@@ -309,7 +305,8 @@ typedef struct {
     float longitude;
     float latitude;
     float elevation;
-    imx_led_functions_t led_functions[ IMX_NO_LEDS ];    // Red, Green, Blue
+    unsigned int at_command_mode    : 1;                // What type of command interface is used
+    imx_led_functions_t led_functions[ IMX_NO_LEDS ];   // Red, Green, Blue
 } imx_imatrix_init_config_t;
 
 typedef struct control_sensor_block {
@@ -318,12 +315,14 @@ typedef struct control_sensor_block {
     uint32_t sample_rate;
     uint16_t sample_batch_size;
     uint16_t percent_change_to_send;            // Bits
-    unsigned int enabled                : 1;    // 0
-    unsigned int send_on_percent_change : 1;    // 1
-    unsigned int data_type              : 2;    // 2-3
-    unsigned int use_warning_level_low  : 3;    // 4-6
-    unsigned int use_warning_level_high : 3;    // 5-7
-    unsigned int reserved               : 19;   // 8-31
+    unsigned int enabled                : 1;    // 0    Is this entry used
+    unsigned int read_only              : 1;    // 1    Read only Sensor (Internal - Can not change with AT command)
+    unsigned int valid                  : 1;    // 2    Has data be read yet
+    unsigned int send_on_percent_change : 1;    // 3
+    unsigned int data_type              : 2;    // 4-5  Standard data types, Int Uint Float and Variable length
+    unsigned int use_warning_level_low  : 3;    // 6-7
+    unsigned int use_warning_level_high : 3;    // 8-9
+    unsigned int reserved               : 17;   // 10-31
     data_32_t default_value;
     data_32_t warning_level_low[ WARNING_LEVELS ];
     data_32_t warning_level_high[ WARNING_LEVELS ];

@@ -207,12 +207,12 @@ void cli_at( uint16_t arg )
 	            /*
 	             * Save value
 	             */
-	            result = set_at_register( type, at_register, &token[ 5 ] );
+	            result = set_register( type, at_register, &token[ 5 ] );
 	        } else if( token[ 4 ] == '?' ) {
 	            /*
 	             * Display value
 	             */
-	            result = print_at_register( type, at_register );
+	            result = print_register( type, at_register );
 	        } else {
 	            icb.AT_command_errors += 1;
 	            at_print( AT_RESPONSE_ERROR );

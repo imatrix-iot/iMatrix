@@ -363,7 +363,7 @@ typedef struct IOT_Device_Config {
     uint32_t imatrix_batch_check_time;
     uint32_t location_update_rate;
     uint32_t product_id;
-    uint32_t organization_id;
+    uint32_t manufactuer_id;
     uint32_t product_capabilities;
     uint32_t boot_count;
     uint32_t ota_fail_sflash_write;
@@ -380,6 +380,7 @@ typedef struct IOT_Device_Config {
     control_sensor_block_t scb[ MAX_NO_SENSORS ];
     var_data_config_t var_data_config[ NO_VAR_POOLS ];
     arduino_config_t acb;
+    unsigned int at_command_mode            : 1;    // Determines CLI output styles
     unsigned int application_loaded         : 1;    // Has the application already loaded
     unsigned int api_loaded                 : 1;    // Has API loaded values - use to overide defaults
     unsigned int imatrix_enabled            : 1;

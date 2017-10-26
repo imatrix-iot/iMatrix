@@ -255,7 +255,7 @@ void process_tcp( wiced_time_t current_time )
             /*
              * Create Entry
              */
-            sprintf( registration, "{ \"serial_number\" : \"%s\", \"organization id\" : \"0x%08lX\" }", device_config.device_serial_number, device_config.organization_id );
+            sprintf( registration, "{ \"serial_number\" : \"%s\", \"manufactuer id\" : \"0x%08lX\" }", device_config.device_serial_number, device_config.manufactuer_id );
             /*
              * Set the end of the data portion
              */

@@ -48,8 +48,8 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define ON_BOARD_LED_RED                WICED_GPIO_12
-#define ON_BOARD_LED_GREEN              WICED_GPIO_11
+#define ON_BOARD_LED_RED                WICED_LED2
+#define ON_BOARD_LED_GREEN              WICED_LED1
 
 /******************************************************
  *                   Enumerations

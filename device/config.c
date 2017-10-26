@@ -121,7 +121,7 @@ wiced_result_t imatrix_load_config(void)
     strncpy( device_config.device_name, imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
 
     device_config.product_id = imatrix_init_config.product_id;
-    device_config.organization_id = imatrix_init_config.organization_id;
+    device_config.manufactuer_id = imatrix_init_config.manufactuer_id;
     /*
      * Load the iMatrix URL and other configuration items that define this Thing
      */
@@ -133,10 +133,6 @@ wiced_result_t imatrix_load_config(void)
     device_config.no_controls = imatrix_init_config.no_controls;
     device_config.no_arduino_sensors = imatrix_init_config.no_arduino_sensors;
     device_config.no_arduino_controls = imatrix_init_config.no_arduino_controls;
-    device_config.no_at_controls = imatrix_init_config.no_at_controls;
-    device_config.at_control_start = imatrix_init_config.at_control_start;
-    device_config.no_at_sensors = imatrix_init_config.no_at_sensors;
-    device_config.at_sensor_start = imatrix_init_config.at_sensor_start;
     device_config.ap_eap_mode = imatrix_init_config.ap_eap_mode;
     device_config.st_eap_mode = imatrix_init_config.st_eap_mode;
     device_config.ap_security_mode = imatrix_init_config.ap_security_mode;
@@ -149,11 +145,11 @@ wiced_result_t imatrix_load_config(void)
     device_config.longitude = imatrix_init_config.longitude;
     device_config.latitude = imatrix_init_config.latitude;
     device_config.elevation = imatrix_init_config.elevation;
-
+    device_config.at_command_mode = imatrix_init_config.at_command_mode;
     /*
      * Do we have AT commands - Host processor will not expect extra status updates on serial interface
      */
-    if( ( device_config.no_at_controls + device_config.no_at_sensors ) > 0 )  // We have AT controls - only show CLI output for direct requests and response to AT commands
+    if( device_config.at_command_mode == true )  // We have AT controls - only show CLI output for direct requests and response to AT commands
         device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD;
     else
         device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD_STATUS;

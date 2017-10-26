@@ -312,9 +312,9 @@ void imatrix_upload(wiced_time_t current_time)
 	         *
 	         */
 	        if( imatrix.tusnami_warning == true )
-	        	sprintf( (char *) &uri_path,"itw/%lu/%s", device_config.organization_id, (char *) &device_config.device_serial_number );
+	        	sprintf( (char *) &uri_path,"itw/%lu/%s", device_config.manufactuer_id, (char *) &device_config.device_serial_number );
 	        else
-	        	sprintf( (char *) &uri_path,"isc/%lu/%s", device_config.organization_id, (char *) &device_config.device_serial_number );
+	        	sprintf( (char *) &uri_path,"isc/%lu/%s", device_config.manufactuer_id, (char *) &device_config.device_serial_number );
 	        options_length = add_coap_str_option( URI_PATH, &current_option_number, (char *) &uri_path, options, max_options_length );
 	        options_length += add_coap_uint_option( CONTENT_FORMAT, BINARY_MEDIA_TYPE, &current_option_number,
 	        		options + options_length, max_options_length - options_length );

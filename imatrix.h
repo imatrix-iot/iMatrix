@@ -154,12 +154,12 @@ bool imx_get_led_state( imx_led_t led );
 /*
  * Additional support Platform code - ISMART-43340
  */
-void imx_init_led_red_ismart43340( void );
-void imx_init_led_green_ismart43340( void );
-void imx_init_led_blue_ismart43340( void );
-void imx_update_led_red_status_ismart43340( bool state );
-void imx_update_led_green_status_ismart43340( bool state );
-void imx_update_led_blue_status_ismart43340( bool state );
+void imx_init_led_red_ismart( void );
+void imx_init_led_green_ismart( void );
+void imx_init_led_blue_ismart( void );
+void imx_update_led_red_status_ismart( bool state );
+void imx_update_led_green_status_ismart( bool state );
+void imx_update_led_blue_status_ismart( bool state );
 /*
  * CoAP Processing defines
  */

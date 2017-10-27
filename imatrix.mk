@@ -84,7 +84,7 @@ coap_interface/coap_sensor_rssi.c coap_interface/coap_sensor_rssi.h \
 coap_interface/get_uint_from_query_str.c coap_interface/get_uint_from_query_str.h \
 coap_interface/match_uri.c coap_interface/match_uri.h \
 coap_interface/token_string.c coap_interface/token_string.h \
-cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
+cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/common_config.c cs_ctrl/common_config.h cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
 cs_ctrl/hal_event.c cs_ctrl/hal_event.h cs_ctrl/hal_sample.c cs_ctrl/hal_sample.h  \
 device/cert_util.c device/cert_util.h device/config.c device/config.h device/device.c device/device.h device/hal_leds.c device/hal_leds.h \
 device/hal_wifi.c device/hal_wifi.h device/imx_config.c device/imx_config.h \
@@ -99,7 +99,7 @@ networking/get_inbound_destination_ip.c networking/get_inbound_destination_ip.h 
 networking/keep_alive.c networking/keep_alive.h networking/utility.c networking/utility.h \
 ota_loader/load_sflash.c ota_loader/load_sflash.h ota_loader/ota_checksum.c ota_loader/ota_checksum.h ota_loader/ota_loader.c ota_loader/ota_loader.h \
 ota_loader/lut.c \
-platform_functions/ISMART_ism43340.c platform_functions/ISMART_ism43340.h \
+platform_functions/ISMART.c platform_functions/ISMART.h \
 sflash/sflash.c sflash/sflash.h \
 time/ck_time.c time/ck_time.h time/ntp_success.c time/ntp_success.h time/sntp.c time/sntp.h \
 wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/imx_wifi.c wifi/process_wifi.c wifi/process_wifi.h \

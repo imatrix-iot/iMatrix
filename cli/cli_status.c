@@ -102,9 +102,6 @@ void cli_status( uint16_t arg )
 	wiced_iso8601_time_t iso8601_time;
 	wiced_utc_time_t utc_time;
 
-	cli_print( "Running WICED: %s, Name: %s, Manufacturing ID: 0x08lx - %l", WICED_VERSION, device_config.product_name, device_config.manufactuer_id, device_config.manufactuer_id );
-	cli_print( "Serial Number: %s (%08lX%08lX%08lX) - %s\r\n", device_config.device_serial_number,
-			device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.provisioned == true ? "Provisioned" : "Not provisioned" );
 	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
 	wiced_time_get_utc_time( &utc_time );
 	wiced_time_get_iso8601_time( &iso8601_time );
@@ -160,151 +157,64 @@ void cli_status( uint16_t arg )
 	            icb.ip_stats[ i ].packet_creation_failure, icb.ip_stats[ i ].fail_to_send_packet, icb.ip_stats[ i ].packets_sent, icb.ip_stats[ i ].rec_error );
 	}
 
-    cli_print( "AT Commands processed: %lu, Errors: %lu, ", icb.AT_commands_processed, icb.AT_command_errors );
-    //print_led_status();
-	// print_controls();
-	// print_sensors();
+    cli_print( "AT Commands processed: %lu, Errors: %lu\r\n", icb.AT_commands_processed, icb.AT_command_errors );
 
 	wiced_time_get_time( &current_time );
 	/*
 	 * Display status of controls
 	 */
-    cli_print( "Current Controls Status @ %lu:\r\n", current_time );
-	for( i = 0; i < device_config.no_controls; i++ ) {
-	    if( device_config.ccb[ i ].enabled == true ) {
-	        cli_print( "Control no: %u, %s, ID: 0x%08lx, ", i, device_config.ccb[ i ].name, device_config.ccb[ i ].id );
-            cli_print( "Current setting: " );
-            switch( device_config.ccb[ i ].data_type ) {
-                case IMX_DO_UINT32 :
-                    cli_print( "0x%08lx - %lu", cd[ i ].last_value.uint_32bit, cd[ i ].last_value.uint_32bit );
-                    break;
-                case IMX_DO_INT32 :
-                    cli_print( "%ld", cd[ i ].last_value.int_32bit );
-                    break;
-                case IMX_AO_FLOAT :
-                    cli_print( "%0.6f", cd[ i ].last_value.float_32bit );
-                    break;
-            }
-            cli_print( ", " );
-	        switch( device_config.ccb[ i ].data_type ) {
-	            case IMX_DO_INT32 :
-	                cli_print( "32 Bit signed" );
-	                break;
-	            case IMX_DO_UINT32 :
-	                cli_print( "32 Bit Unsigned" );
-	                break;
-	            case IMX_AO_FLOAT :
-	                cli_print( "32 Bit Float" );
-	                break;
-	        }
-	        cli_print( ", Errors: %lu, ", cd[ i ].errors );
-	        if( device_config.ccb[ i ].sample_rate == 0 )
-	            cli_print( ", Event Driven" );
-	        else
-	            cli_print( ", Refresh rate: %u mS", device_config.ccb[ i ].sample_rate );
-	        cli_print( "\r\n" );
-	    }
-	}
-	/*
-	 * Display Sensor data - including settings for alarms
-	 */
-	cli_print( "Current Sensor Status @ %lu:\r\n", current_time );
-	for( i = 0; i < device_config.no_sensors; i++ ) {
-        if( device_config.scb[ i ].enabled == true ) {
-            cli_print( "Sensor no: %u, %s ID: 0x%08lx, - Last Value: ", i, device_config.scb[ i].name, device_config.scb[ i].id );
-            switch( device_config.scb[ i ].data_type ) {
-                case IMX_DI_UINT32 :
-                    cli_print( "%lu - 32 Bit Unsigned", sd[ i ].last_value.uint_32bit );
-                    break;
-                case IMX_DI_INT32 :
-                    cli_print( "%ld - 32 Bit Signed", sd[ i ].last_value.int_32bit );
-                    break;
-                case IMX_AI_FLOAT :
-                    cli_print( "%f - 32 Bit Float", sd[ i ].last_value.float_32bit );
-                    break;
-            }
-            cli_print( ", Errors: %lu,", sd[ i ].errors );
-            cli_print( " Sample Batch: %u Samples, ", device_config.scb[ i ].sample_batch_size );
-            if( device_config.scb[ i ].sample_rate == 0 )
-                cli_print( "Event Driven" );
-            else {
-                cli_print( "Save Sample Rate Every: %u mS", device_config.scb[ i ].sample_rate );
-                cli_print( "saving next sample in %lu mS",
-                    (uint32_t) ( (uint32_t) device_config.scb[ i ].sample_rate - ( ( current_time - sd[ i ].last_sample_time ) / 1000 ) ) );
-            }
-            cli_print( ", %u Samples saved, last sample @: %lu\r\n", sd[ i ].no_samples, sd[ i ].last_sample_time  );
+	peripheral_type_t type;
+	control_sensor_block_t *cs_block;
+	uint16_t no_items;
 
-            /*
-            cli_print( "Monitoring Levels low enabled:" );
-            if( device_config.scb[ i ].use_warning_level_low == 0 )
-                cli_print( " None" );
-            else {
-                cli_print( "%s%s%s",
-                        ( ( device_config.scb[ i ].use_warning_level_high & USE_WARNING_LEVEL_1 ) != 0 ) ? " Watch" : " ",
-                        ( ( device_config.scb[ i ].use_warning_level_high & USE_WARNING_LEVEL_2 ) != 0 ) ? " Advisory" : " ",
-                        ( ( device_config.scb[ i ].use_warning_level_high & USE_WARNING_LEVEL_3 ) != 0 ) ? " Warning" : " " );
-                cli_print( ", High Level Settings: Watch_level: ");
-                switch( device_config.scb[ i ].data_type ) {
-                    case DI_UINT32 :
-                        cli_print( "%lu", device_config.scb[ i ].warning_level_high[ 0 ].uint_32bit );
-                        break;
-                    case DI_INT32 :
-                        cli_print( "%ld", device_config.scb[ i ].warning_level_high[ 0 ].int_32bit );
-                        break;
-                    case AI_FLOAT :
-                        cli_print( "%f", device_config.scb[ i ].warning_level_high[ 0 ].float_32bit );
-                        break;
-                }
+	for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
+	    if( type == IMX_CONTROLS )
+	        cs_block = &device_config.ccb[ 0 ];
+	    else
+	        cs_block = &device_config.scb[ 0 ];
+        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors, ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
+        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
+
+        for( i = 0; i < no_items; i++ ) {
+            if( cs_block[ i ].enabled == true ) {
+                cli_print( "No: %u, %s, ID: 0x%08lx, ", i, cs_block[ i ].name, cs_block[ i ].id );
+                if( cs_block[ i ].valid == true ) {
+                    cli_print( "Current setting: " );
+                    switch( cs_block[ i ].data_type ) {
+                        case IMX_DO_UINT32 :
+                            cli_print( "0x%08lx - %lu", cd[ i ].last_value.uint_32bit, cd[ i ].last_value.uint_32bit );
+                            break;
+                        case IMX_DO_INT32 :
+                            cli_print( "%ld", cd[ i ].last_value.int_32bit );
+                            break;
+                        case IMX_AO_FLOAT :
+                            cli_print( "%0.6f", cd[ i ].last_value.float_32bit );
+                            break;
+                    }
+                    cli_print( ", " );
+                    switch( cs_block[ i ].data_type ) {
+                        case IMX_DO_INT32 :
+                            cli_print( "32 Bit signed" );
+                            break;
+                        case IMX_DO_UINT32 :
+                            cli_print( "32 Bit Unsigned" );
+                            break;
+                        case IMX_AO_FLOAT :
+                            cli_print( "32 Bit Float" );
+                            break;
+                    }
+                    cli_print( ", Errors: %lu, ", cd[ i ].errors );
+                    if( cs_block[ i ].sample_rate == 0 )
+                        cli_print( ", Event Driven" );
+                    else
+                        cli_print( ", Refresh rate: %u mS", cs_block[ i ].sample_rate );
+                } else
+                    cli_print( "No Data Recorded");
+                cli_print( "\r\n" );
             }
-            cli_print( " Monitoring Levels high enabled:" );
-            if( device_config.scb[ i ].use_warning_level_high == 0 )
-                cli_print( " None" );
-            else {
-                cli_print( "%s%s%s",
-                        ( ( device_config.scb[ i ].use_warning_level_high & USE_WARNING_LEVEL_1 ) != 0 ) ? " Watch" : " ",
-                        ( ( device_config.scb[ i ].use_warning_level_high & USE_WARNING_LEVEL_2 ) != 0 ) ? " Advisory" : " ",
-                        ( ( device_config.scb[ i ].use_warning_level_high & USE_WARNING_LEVEL_3 ) != 0 ) ? " Warning" : " " );
-                cli_print( " Low Level Settings: Watch: ");
-                switch( device_config.scb[ i ].data_type ) {
-                    case DI_UINT32 :
-                        cli_print( "%lu", device_config.scb[ i ].warning_level_low[ 0 ].uint_32bit );
-                        break;
-                    case DI_INT32 :
-                        cli_print( "%ld", device_config.scb[ i ].warning_level_low[ 0 ].int_32bit );
-                        break;
-                    case AI_FLOAT :
-                        cli_print( "%f", device_config.scb[ i ].warning_level_low[ 0 ].float_32bit );
-                        break;
-                }
-                cli_print( ", Advisory: ");
-                switch( device_config.scb[ i ].data_type ) {
-                    case DI_UINT32 :
-                        cli_print( "%lu", device_config.scb[ i ].warning_level_low[ 1 ].uint_32bit );
-                        break;
-                    case DI_INT32 :
-                        cli_print( "%ld", device_config.scb[ i ].warning_level_low[ 1 ].int_32bit );
-                        break;
-                    case AI_FLOAT :
-                        cli_print( "%f", device_config.scb[ i ].warning_level_low[ 1 ].float_32bit );
-                        break;
-                }
-                cli_print( ", Warning: ");
-                switch( device_config.scb[ i ].data_type ) {
-                    case DI_UINT32 :
-                        cli_print( "%lu", device_config.scb[ i ].warning_level_low[ 2 ].uint_32bit );
-                        break;
-                    case DI_INT32 :
-                        cli_print( "%ld", device_config.scb[ i ].warning_level_low[ 2 ].int_32bit );
-                        break;
-                    case AI_FLOAT :
-                        cli_print( "%f", device_config.scb[ i ].warning_level_low[ 2 ].float_32bit );
-                        break;
-                }
-            }
-            cli_print( "\r\n" );
-            */
         }
 	}
+
 	print_led_status();
 	/*
 	 * BLE Scan Status

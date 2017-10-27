@@ -45,6 +45,7 @@
 #include "../storage.h"
 #include "../device_app_dct.h"
 #include "../cli/interface.h"
+#include "../cs_ctrl/common_config.h"
 #include "../imatrix/imatrix.h"
 #include "cert_util.h"
 #include "icb_def.h"
@@ -111,7 +112,7 @@ wiced_result_t imatrix_load_config(void)
 
     // Replace invalid DCT with factory defaults and user defined values
 
-    imx_printf( "Reseting to factory defaults\r\n" );
+    imx_printf( "*** Reseting to Factory Defaults ***\r\n" );
     memcpy( &device_config, &factory_default_config, sizeof( IOT_Device_Config_t ) );
 
     strncpy( device_config.product_name, imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
@@ -198,6 +199,8 @@ wiced_result_t imatrix_load_config(void)
     }
 #endif
 
+    cs_reset_defaults();
+
     return imatrix_save_config();
 }
 
@@ -224,17 +227,20 @@ void imatrix_print_config( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 
+    cli_print( "Running WICED: %s, Name: %s, Manufacturing ID: 0x08lx - %l", WICED_VERSION, device_config.product_name, device_config.manufactuer_id, device_config.manufactuer_id );
+    cli_print( "Serial Number: %s (%08lX%08lX%08lX) - %s\r\n", device_config.device_serial_number,
+            device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.provisioned == true ? "Provisioned" : "Not provisioned" );
 	cli_print( "Active Configuration: - Magic: 0x%08lx\r\n", device_config.valid_config );
 	cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
 	cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
 	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
 	cli_print( "Operating Mode: %s, SSID: %s, Passphrase: ->%s<-\r\n", device_config.AP_setup_mode ? "Provisioning" : "Normal Online", device_config.st_ssid, device_config.st_wpa );
-	imatrix_print_config( 0 );
 
-	cli_print( "\r\n" );
-	imatrix_print_saved_config( 0 );
-
+	cli_print( "Controls Configuration:\r\n" );
+	print_common_config( IMX_CONTROLS, &device_config.ccb[ 0 ] );
+	cli_print( "Sensors Configuration:\r\n" );
+	print_common_config( IMX_SENSORS, &device_config.scb[ 0 ] );
 }
 /**
   * @brief	print saved configuration

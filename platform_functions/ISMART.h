@@ -23,23 +23,20 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file ISMART_ism43340.c
+/** @file ISMART_rev_D.h
  *
  *  Created on: October 20, 2017
  *      Author: greg.phillips
  *
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdbool.h>
+#ifndef ISMART_REV_D_H_
+#define ISMART_REV_D_H_
 
-#include "wiced.h"
-
-#include "../cli/interface.h"
-#include "../storage.h"
-#include "../device/lcb_def.h"
-#include "ISMART_ism43340.h"
+/*
+ *	Defines for
+ *
+ */
 
 /******************************************************
  *                      Macros
@@ -48,8 +45,6 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define ON_BOARD_LED_RED                WICED_LED2
-#define ON_BOARD_LED_GREEN              WICED_LED1
 
 /******************************************************
  *                   Enumerations
@@ -64,85 +59,13 @@
  ******************************************************/
 
 /******************************************************
- *               Function Declarations
- ******************************************************/
-
-/******************************************************
- *               Variable Definitions
- ******************************************************/
-
-/******************************************************
  *               Function Definitions
  ******************************************************/
-/**
-  * @brief init_led_red
-  * @param  None
-  * @retval : None
-  */
-void imx_init_led_red_ismart43340( void )
-{
-    wiced_gpio_init( ON_BOARD_LED_RED, OUTPUT_PUSH_PULL );  // GPIO 3 - Red Led
-    imx_update_led_red_status_ismart43340( false );
-}
-/**
-  * @brief init_led_red
-  * @param  None
-  * @retval : None
-  */
-void imx_init_led_green_ismart43340( void )
-{
-    wiced_gpio_init( ON_BOARD_LED_GREEN, OUTPUT_PUSH_PULL );  // GPIO 4 - Green Led
-    imx_update_led_green_status_ismart43340( false );
-}
-/**
-  * @brief init_led_red
-  * @param  None
-  * @retval : None
-  */
-void imx_init_led_blue_ismart43340( void )
-{
-    // Add init for Blue
-    imx_update_led_blue_status_ismart43340( false );
-}
+void imx_init_led_red_ismart( void );
+void imx_init_led_green_ismart( void );
+void imx_init_led_blue_ismart( void );
+void imx_update_led_red_status_ismart( bool state );
+void imx_update_led_green_status_ismart( bool state );
+void imx_update_led_blue_status_ismart( bool state );
 
-/**
-  * @brief update_led_red_status
-  * @param  None
-  * @retval : None
-  */
-void imx_update_led_red_status_ismart43340( bool state )
-{
-    if( state == true ) {
-        wiced_gpio_output_high( ON_BOARD_LED_RED );
-    } else {
-        wiced_gpio_output_low( ON_BOARD_LED_RED );
-    }
-}
-/**
-  * @brief update_led_green_status
-  * @param  None
-  * @retval : None
-  */
-void imx_update_led_green_status_ismart43340( bool state )
-{
-    if( state == true ) {
-        wiced_gpio_output_high( ON_BOARD_LED_GREEN );
-    } else {
-        wiced_gpio_output_low( ON_BOARD_LED_GREEN );
-    }
-
-}
-/**
-  * @brief update_led_blue_status
-  * @param  None
-  * @retval : None
-  */
-void imx_update_led_blue_status_ismart43340( bool state )
-{
-    if( state == true ) {
-        // wiced_gpio_output_high( ON_BOARD_LED_BLUE );
-    } else {
-        // wiced_gpio_output_low( ON_BOARD_LED_BLUE );
-    }
-
-}
+#endif /* ISMART_REV_D_H_ */

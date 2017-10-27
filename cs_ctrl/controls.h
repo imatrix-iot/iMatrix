@@ -42,11 +42,6 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void reset_controls(void);
-void init_controls(void);
-uint16_t add_control( control_sensor_block_t *ctrl_blk, uint16_t *entry_no );
-void process_controls( wiced_time_t current_time );
-void set_control_arg( uint16_t control_no, uint16_t arg );
 void load_config_defaults_generic_ccb( uint16_t arg );
 
 #endif /* CONTROLS_H_ */

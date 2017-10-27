@@ -23,18 +23,18 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .h
+/** @file print_common_config.h
  *
  *  Created on: October 25, 2017
  *      Author: greg.phillips
  *
  */
 
-#ifndef _H_
-#define _H_
+#ifndef PRINT_COMMON_CONFIG_H_
+#define PRINT_COMMON_CONFIG_H_
 
 /*
- *	Defines for
+ *	Defines for print common config
  *
  */
 
@@ -61,5 +61,8 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
+void cs_reset_defaults(void);
+void cs_init(void);
+void print_common_config( peripheral_type_t type, control_sensor_block_t *cs_block );
 
-#endif /* _H_ */
+#endif /* PRINT_COMMON_CONFIG_H_ */

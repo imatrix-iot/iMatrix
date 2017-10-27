@@ -100,22 +100,22 @@ enum cmds {				// Must match commands variable order
 	CLI_BLE_SCAN_PRINT,	// Print results of BLE Scan
 	CLI_BLE_SCAN_START,	// Start a background BLE scan
 	CLI_BLE_SCAN_STOP,	// Stop a background BLE scan
-	CLI_DEBUG,          // Turn On / Off Debug messages
+    CLI_PRINT_CONFIG,   // Print the configuration
+    CLI_DEBUG,          // Turn On / Off Debug messages
+    CLI_PRINT_DCT,      // Print the DCT
+    CLI_DUMP_SFLASH,    // dump sflash memory
 	CLI_GET_MAC,		// Get MAC and Serial Number
+    CLI_OTA_GET_LATEST, // Load the latest firmware using OTA
 	CLI_IMATRIX,        // Status of iMatrix Subsystem
-	CLI_PRINT_CONFIG,	// Print the configuration
-	CLI_PRINT_DCT,		// Print the DCT
+    CLI_PRINT_LUT,      // print the LUT
 	CLI_LED,			// Set the LED and Mode
 	CLI_DUMP_MEMORY,	// dump internal memory
 	CLI_MFG_TEST,       // Do a manufacturing test / function
-	CLI_OTA_GET_LATEST, // Load the latest firmware using OTA
-	CLI_DUMP_SFLASH,	// dump sflash memory
+    CLI_REBOOT,         // reboot
 	CLI_SETUP_MODE,		// Set to setup mode for provisioning
-	CLI_REBOOT,			// reboot
-	CLI_PRINT_LUT,      // print the LUT
 	CLI_PRINT_STATUS,	// s
+    CLI_SET_SERIAL,     // Set the serial number of a unit
 	CLI_SSID,			// set SSID and passphrase
-	CLI_SET_SERIAL,		// Set the serial number of a unit
 	NO_CMDS
 };
 /******************************************************

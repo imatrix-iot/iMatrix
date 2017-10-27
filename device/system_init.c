@@ -51,6 +51,8 @@
 #include "../cli/cli.h"
 #include "../cli/interface.h"
 #include "../cli/telnetd.h"
+#include "../cs_ctrl/common_config.h"
+#include "../location/location.h"
 #include "../sflash/sflash.h"
 
 /******************************************************
@@ -199,28 +201,19 @@ bool system_init(void)
     imx_printf( "Setting up %s, Product ID: 0x%08lx, Serial Number: %s\r\n", device_config.product_name, device_config.product_id, device_config.device_serial_number );
     /*
      * Set up variable length payload pools
-    // !@# init_var_pool();
-     * If no controls or sensors do not match config then we need to intialize the config to include them
-    if( ( ( device_config.no_controls != get_no_controls() ) || ( device_config.no_sensors != get_no_sensors() ) ) ) {
-         * Start with a blank slate
-        device_config.no_controls = 0;
-        device_config.no_sensors = 0;
-        // !@# init_arduino();
-         * Add any internal controls and sensors
-        // !@# reset_controls();
-        // !@# reset_sensors();
-    }
-*/
+     */
+    init_var_pool();
+
     imx_printf( "System has %u Controls and %u Sensors\r\n", device_config.no_controls, device_config.no_sensors );
 
-    imx_printf( "Initializing Controls\r\n" );
-    // !@# init_controls();
-    imx_printf( "Initializing Sensors\r\n" );
-    // !@# init_sensors();
-    imx_printf( "Configuring Smart Arduino\r\n" );
-    // !@# configure_arduino();
+    imx_printf( "Initializing Controls & Sensors\r\n" );
+    cs_init();
+
+    // imx_printf( "Configuring Smart Arduino\r\n" );
+    // configure_arduino();
     imx_printf( "Initializing Locaton System\r\n" );
-    // !@# init_location_system();
+
+    init_location_system();
 
     icb.wifi_state = MAIN_WIFI_SETUP;
 

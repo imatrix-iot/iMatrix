@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -28,15 +22,22 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
-/** @file hal_sample.h
+
+/** @file imx_interface.c
  *
- *  Created on: Feb 17, 2017
+ *  Created on: October 26, 2017
  *      Author: greg.phillips
+ *
  */
 
-#ifndef HAL_EVENT_H_
-#define HAL_EVENT_H_
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 
+#include "wiced.h"
+#include "../storage.h"
+#include "hal_sample.h"
+#include "hal_event.h"
 
 /******************************************************
  *                      Macros
@@ -59,7 +60,48 @@
  ******************************************************/
 
 /******************************************************
+ *               Function Declarations
+ ******************************************************/
+
+/******************************************************
+ *               Variable Definitions
+ ******************************************************/
+extern IOT_Device_Config_t device_config;   // Defined in device\config.h
+extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
+extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
+
+/******************************************************
  *               Function Definitions
  ******************************************************/
-void hal_event( peripheral_type_t type, wiced_time_t current_time, void *value );
-#endif /* HAL_EVENT_H_ */
+/**
+  * @brief set a sensor to a value - trigger and event if event driven
+  * @param  sensor entry, value to set
+  * @retval : result
+  */
+/*
+ * Set & Get Control / Sensor data
+ */
+imx_status_t imx_set_sensor( uint16_t sensor_entry, void *value )
+{
+    if( sensor_entry > device_config.no_sensors )
+        return IMX_INVALID_ENTRY;
+    if( device_config.scb[ sensor_entry ].enabled == false )
+        return IMX_CONTROL_DISABLED;
+    if( device_config.scb[ sensor_entry ].sample_rate == 0 )
+        hal_event( IMX_SENSORS, sensor_entry, value );
+    else
+        memcpy( &sd[ sensor_entry ].last_value, value, SAMPLE_LENGTH );
+    return IMX_SUCCESS;
+}
+imx_status_t imx_get_sensor( uint16_t sensor_entry, void *value )
+{
+    return IMX_SUCCESS;
+}
+imx_status_t imx_set_control( uint16_t sensor_entry, void *value )
+{
+    return IMX_SUCCESS;
+}
+imx_status_t imx_get_control( uint16_t control_entry, void *value )
+{
+    return IMX_SUCCESS;
+}

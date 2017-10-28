@@ -135,6 +135,8 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     memcpy( &data->data[ data->no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
     data->no_samples += 1;
 	memcpy( &data->data[ data->no_samples ], value, SAMPLE_LENGTH );
+    csb->valid = true;  // We have a sample
+
     /*
     if( type == CONTROLS )
         imx_printf( "Sampled Control: %u, result: %u", entry, status );

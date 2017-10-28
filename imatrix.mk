@@ -84,14 +84,15 @@ coap_interface/coap_sensor_rssi.c coap_interface/coap_sensor_rssi.h \
 coap_interface/get_uint_from_query_str.c coap_interface/get_uint_from_query_str.h \
 coap_interface/match_uri.c coap_interface/match_uri.h \
 coap_interface/token_string.c coap_interface/token_string.h \
-cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/common_config.c cs_ctrl/common_config.h cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
+cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/common_config.c cs_ctrl/common_config.h cs_ctrl/imx_interface.c cs_ctrl/imx_interface.h \
+cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
 cs_ctrl/hal_event.c cs_ctrl/hal_event.h cs_ctrl/hal_sample.c cs_ctrl/hal_sample.h  \
 device/cert_util.c device/cert_util.h device/config.c device/config.h device/device.c device/device.h device/hal_leds.c device/hal_leds.h \
 device/hal_wifi.c device/hal_wifi.h device/imx_config.c device/imx_config.h \
 device/imx_LEDS.c device/imx_LEDS.h device/lcb_def.h \
 device/set_serial.c device/set_serial.h device/system_init.c \
 device/system_init.h device/var_data.c device/var_data.h \
-imatrix/add_internal.c imatrix/add_internal.h imatrix/imatrix_get_ip.c imatrix/imatrix_get_ip.h imatrix/imatrix.c imatrix/imatrix.h imatrix/registration.c imatrix/registration.h \
+imatrix/add_internal.c imatrix/add_internal.h imatrix/imatrix_get_ip.c imatrix/imatrix_get_ip.h imatrix/imatrix_upload.c imatrix/imatrix_upload.h imatrix/registration.c imatrix/registration.h \
 json/mjson.c json/mjson.h \
 location/location.c location/location.h \
 manufacturing/manufacturing.c manufacturing/manufacturing.h \

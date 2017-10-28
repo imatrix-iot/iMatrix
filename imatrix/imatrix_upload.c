@@ -28,7 +28,7 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
-/** @file imatrix.c
+/** @file imatrix_upload.c
  *
  *
  *  Created on: Dec, 2016
@@ -278,7 +278,7 @@ void imatrix_upload(wiced_time_t current_time)
     		}
     		break;
     	case IMATRIX_LOAD_PACKET :
-    	    set_host_led( IMX_LED_GREEN, IMX_LED_ON );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
+    	    imx_set_led( IMX_LED_GREEN, IMX_LED_ON );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
     	    imx_printf( "Sending History to iMatrix Server: %03u.%03u.%03u.%03u ",
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x00ff0000 ) >> 16 ),
@@ -654,7 +654,7 @@ void imatrix_upload(wiced_time_t current_time)
 	        imatrix.state = IMATRIX_UPLOAD_COMPLETE;
     		break;
     	case IMATRIX_UPLOAD_COMPLETE :
-    	    set_host_led( IMX_LED_GREEN, IMX_LED_OFF );         // Set GREEN LED off - Packet sent
+    	    imx_set_led( IMX_LED_GREEN, IMX_LED_OFF );         // Set GREEN LED off - Packet sent
     	    imatrix.state = IMATRIX_INIT;
     	    break;
     	default:

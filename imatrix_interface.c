@@ -37,12 +37,14 @@
 #include "storage.h"
 #include "imatrix_interface.h"
 #include "cli/cli.h"
+#include "cs_ctrl/hal_sample.h"
+#include "coap/coap_receive.h"
+#include "coap/coap_transmit.h"
 #include "device/config.h"
 #include "device/icb_def.h"
 #include "device/imx_LEDS.h"
 #include "device/system_init.c"
-#include "coap/coap_receive.h"
-#include "coap/coap_transmit.h"
+#include "imatrix/imatrix_upload.h"
 #include "wifi/process_wifi.h"
 /******************************************************
  *                      Macros
@@ -119,7 +121,7 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
         icb.running_in_background = true;
     }
 
-    return IMX_NO_ERROR;
+    return IMX_SUCCESS;
 }
 #ifdef TEST_STANDALONE
 imx_imatrix_init_config_t test_imatrix_config = {
@@ -174,11 +176,28 @@ imx_status_t imx_process(void)
     wiced_time_t current_time;
 
     cli_process();
+    /*
+     * Process controls Controls are set by direct action from logic or from CoAP POST
+     */
+    hal_sample( IMX_CONTROLS, current_time );
+    /*
+     * Process Sensors
+     */
+    hal_sample( IMX_SENSORS, current_time );
+    /*
+     * Process Location system
+     */
+    process_location( current_time );
+    /*
+     * Process iMatrix Uploads
+     */
+    imatrix_upload( current_time );
     wiced_time_get_time( &current_time );
     process_wifi( current_time );
     coap_recv( true );
     coap_transmit( true );
-    return IMX_NO_ERROR;
+
+    return IMX_SUCCESS;
 }
 imx_status_t imx_deinit(void)
 {
@@ -188,5 +207,5 @@ imx_status_t imx_deinit(void)
          */
         ;
     }
-    return IMX_NO_ERROR;
+    return IMX_SUCCESS;
 }

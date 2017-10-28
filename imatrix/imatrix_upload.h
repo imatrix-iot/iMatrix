@@ -34,10 +34,10 @@
  *      Author: greg.phillips
  */
 
-#ifndef IMATRIX_H_
-#define IMATRIX_H_
+#ifndef IMATRIX_UPLOAD_H_
+#define IMATRIX_UPLOAD_H_
 
-/** @file imatrix.h
+/** @file imatrix_upload.h
  *
  *
  *
@@ -72,4 +72,4 @@ void imatrix_production_upload( uint16_t mode );
 void imatrix_log( char *buffer );
 void imatrix_status( uint16_t arg);
 void print_imatrix_config(void);
-#endif /* IMATRIX_H_ */
+#endif /* IMATRIX_UPLOAD_H_ */

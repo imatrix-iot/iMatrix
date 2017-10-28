@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -28,15 +22,21 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
-/** @file hal_sample.h
+
+/** @file imx_interface.h
  *
- *  Created on: Feb 17, 2017
+ *  Created on: October 26, 2017
  *      Author: greg.phillips
+ *
  */
 
-#ifndef HAL_EVENT_H_
-#define HAL_EVENT_H_
+#ifndef IMX_INTERFACE_H_
+#define IMX_INTERFACE_H_
 
+/*
+ *	Defines for interfacing to IMX controls/sensor system
+ *
+ */
 
 /******************************************************
  *                      Macros
@@ -61,5 +61,9 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void hal_event( peripheral_type_t type, wiced_time_t current_time, void *value );
-#endif /* HAL_EVENT_H_ */
+imx_status_t imx_set_sensor( uint16_t sensor_entry, void *value );
+imx_status_t imx_get_sensor( uint16_t sensor_entry, void *value );
+imx_status_t imx_set_control( uint16_t sensor_entry, void *value );
+imx_status_t imx_get_control( uint16_t control_entry, void *value );
+
+#endif /* IMX_INTERFCE_H_ */

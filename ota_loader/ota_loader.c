@@ -64,7 +64,7 @@
 #include "../device/config.h"
 #include "../device/hal_leds.h"
 #include "../device/version.h"
-#include "../imatrix/imatrix.h"
+#include "../imatrix/imatrix_upload.h"
 #include "../json/mjson.h"
 #include "../networking/utility.h"
 #include "../sflash/sflash.h"

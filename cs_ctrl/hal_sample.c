@@ -84,8 +84,8 @@ uint16_t active_control = 0;
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
 extern control_sensor_data_t cd[];
 extern control_sensor_data_t sd[];
-extern functions_t control_functions[];
-extern functions_t sensor_functions[];
+extern functions_t imx_control_functions[];
+extern functions_t imx_sensor_functions[];
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -111,7 +111,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 			if( *active >= device_config.no_controls )
 				*active = 0;
 			data = &cd[ *active ];
-			f = &control_functions[ *active ];
+			f = &imx_control_functions[ *active ];
 			csb = &device_config.ccb[ *active ];
 //			print_status( "Sampling Control: %u\r\n", *active );
 		}
@@ -124,7 +124,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 				*active = 0;
 			data = &sd[ *active ];
 //			print_status( "Sample - Setting Sensor %u Data to: 0x%08lx\r\n", *active, (uint32_t) data );
-			f = &sensor_functions[ *active ];
+			f = &imx_sensor_functions[ *active ];
 			csb = &device_config.scb[ *active ];
 //			cli_print( "Sampling Sensor: %u\r\n", *active );
 		}
@@ -139,6 +139,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 		status = 0;	// Controls may not have an update function as the may just be set remotely
 		if( f->update != NULL ) {
 			status = ( f->update)( f->arg, &data->data[ data->no_samples ] );
+			csb->valid = true;  // We have a sample
 			/*
 			if( type == CONTROLS )
 				print_status( "Sampled Control: %u, result: %u", *active, status );

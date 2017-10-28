@@ -40,7 +40,9 @@
 
 #include "wiced.h"
 
-
+#include "../storage.h"
+#include "../host_support.h"
+#include "../cs_ctrl/imx_cs_interface.h"
 #include "../device/icb_def.h"
 #include "../device/hal_wifi.h"
 
@@ -48,12 +50,6 @@
 /******************************************************
  *                      Macros
  ******************************************************/
-#ifdef PRINT_DEBUGS_FOR_HISTORY
-    #undef PRINTF
-    #define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_HISTORY ) != 0x00 ) st_log_print_status(__VA_ARGS__)
-#elif !defined PRINTF
-    #define PRINTF(...)
-#endif
 
 /******************************************************
  *                    Constants
@@ -71,8 +67,6 @@
  *                    Structures
  ******************************************************/
 
-extern dcb_t dcb;
-extern history_data_t history;
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -80,40 +74,39 @@ extern history_data_t history;
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-
+extern IOT_Device_Config_t device_config;
+extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/
-
 /**
-  * @brief  measure and store the RSSI and Noise levels for Wi Fi
+  * @brief  Log wth Wi Fi connection details
   *
   * @param  None
   * @retval : completion
   */
-void wifi_logging(void)
+
+void log_wifi_connection(void)
 {
-	int32_t rssi, noise;
+    int32_t channel, noise, rssi;
+    wiced_mac_t bssid;
 
-	if( dcb.wifi_up ) {
-		rssi = hal_get_wifi_rssi();
-		noise = hal_get_wifi_noise();
-	} else {
-		rssi = 0;
-		noise = 0;
-	}
-    memmove( &history.data[ HISTORY_WIFI_RSSI ][ 1 ], &history.data[ HISTORY_WIFI_RSSI ][ 0 ], ( HISTORY_SIZE - 1 ) * sizeof( int16_t ) );
-    history.sensor_data_valid[ HISTORY_WIFI_RSSI ] <<= 1;
+    if( device_config.log_wifi_AP == true ) {
+        channel = hal_get_wifi_channel();
+        hal_get_wifi_bssid( &bssid );
+        imx_set_sensor( imx_get_wifi_bssid_scb(), (void *) &bssid );
+        imx_set_sensor( imx_get_wifi_channel_scb(), &channel );
+    }
 
-    history.data[ HISTORY_WIFI_RSSI ][ 0 ] = (int16_t) rssi;
-    history.sensor_data_valid[ HISTORY_WIFI_RSSI ] |= 0x01;
-    PRINTF( "Saving new WiFi RSSI value %d dB\r\n", history.data[ HISTORY_WIFI_RSSI ][ 0 ] );
+    if( device_config.log_wifi_rssi == true ) {
+        rssi = hal_get_wifi_rssi();
+        imx_set_sensor( imx_get_wifi_rssi_scb(), (void *) &rssi );
+    }
 
-    memmove( &history.data[ HISTORY_WIFI_NOISE ][ 1 ], &history.data[ HISTORY_WIFI_NOISE ][ 0 ], ( HISTORY_SIZE - 1 ) * sizeof( int16_t ) );
-    history.sensor_data_valid[ HISTORY_WIFI_NOISE ] <<= 1;
+    if( device_config.log_wifi_rfnoise == true ) {
+        noise = hal_get_wifi_noise();
+        imx_set_sensor( imx_get_wifi_rf_noise_scb(), (void *) &noise );
+    }
 
-    history.data[ HISTORY_WIFI_NOISE ][ 0 ] = (int16_t) noise;
-    history.sensor_data_valid[ HISTORY_WIFI_NOISE ] |= 0x01;
-    PRINTF( "Saving new WiFi Noise value %0.3f Watts\r\n", (float ) history.data[ HISTORY_WIFI_NOISE ][ 0 ] );
+
 }
-

@@ -147,6 +147,10 @@ wiced_result_t imatrix_load_config(void)
     device_config.latitude = imatrix_init_config.latitude;
     device_config.elevation = imatrix_init_config.elevation;
     device_config.at_command_mode = imatrix_init_config.at_command_mode;
+    device_config.log_wifi_AP = imatrix_init_config.log_wifi_AP;
+    device_config.log_wifi_rssi = imatrix_init_config.log_wifi_rssi;
+    device_config.log_wifi_rfnoise = imatrix_init_config.log_wifi_rfnoise;
+
     /*
      * Do we have AT commands - Host processor will not expect extra status updates on serial interface
      */

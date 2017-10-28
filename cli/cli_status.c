@@ -164,7 +164,7 @@ void cli_status( uint16_t arg )
 	 * Display status of controls
 	 */
 	peripheral_type_t type;
-	control_sensor_block_t *cs_block;
+	imx_control_sensor_block_t *cs_block;
 	uint16_t no_items;
 
 	for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {

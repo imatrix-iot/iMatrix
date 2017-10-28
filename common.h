@@ -308,6 +308,9 @@ typedef struct {
     float latitude;
     float elevation;
     unsigned int at_command_mode    : 1;                // What type of command interface is used
+    unsigned int log_wifi_AP        : 1;
+    unsigned int log_wifi_rssi      : 1;
+    unsigned int log_wifi_rfnoise   : 1;
     imx_led_functions_t led_functions[ IMX_NO_LEDS ];   // Red, Green, Blue
 } imx_imatrix_init_config_t;
 
@@ -328,14 +331,14 @@ typedef struct control_sensor_block {
     data_32_t default_value;
     data_32_t warning_level_low[ WARNING_LEVELS ];
     data_32_t warning_level_high[ WARNING_LEVELS ];
-} control_sensor_block_t;
+} imx_control_sensor_block_t;
 
 typedef struct functions {
     void (*load_config_defaults)(uint16_t arg);
     void (*init)(uint16_t arg);
     uint16_t (*update)(uint16_t arg, void *value );
     uint16_t arg;
-} functions_t;
+} imx_functions_t;
 
 /******************************************************
  *                    Structures

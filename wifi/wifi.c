@@ -57,6 +57,7 @@
 #include "../networking/keep_alive.h"
 #include "../time/ck_time.h"
 #include "../time/sntp.h"
+#include "../wifi/wifi_logging.h"
 
 #include "../CoAP/udp_transport.h"
 #include "../CoAP/tcp_transport.h"
@@ -220,6 +221,10 @@ uint16_t wifi_init(void)
 		if ( wiced_network_register_link_callback( link_up, link_down, interface ) != WICED_SUCCESS ) {
 	        goto connectivity_deinit_and_fail;
 		}
+		/*
+		 * Log this connection
+		 */
+		log_wifi_connection();
 	}
 	/*
 	 * Always set up the UDP Server

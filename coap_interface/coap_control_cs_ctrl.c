@@ -97,7 +97,7 @@
 extern IOT_Device_Config_t device_config;   // Defined in device\config.h
 extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
 extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
-extern functions_t imx_control_functions[ MAX_NO_CONTROLS ];
+extern imx_functions_t imx_control_functions[ MAX_NO_CONTROLS ];
 extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions

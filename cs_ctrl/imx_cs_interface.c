@@ -38,7 +38,7 @@
 #include "../storage.h"
 #include "hal_sample.h"
 #include "hal_event.h"
-
+#include "imx_cs_interface.h"
 /******************************************************
  *                      Macros
  ******************************************************/

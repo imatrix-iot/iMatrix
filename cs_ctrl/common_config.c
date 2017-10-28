@@ -67,8 +67,8 @@
  ******************************************************/
 extern IOT_Device_Config_t device_config;
 extern control_sensor_data_t cd[ MAX_NO_CONTROLS ], sd[ MAX_NO_SENSORS ];
-extern control_sensor_block_t imx_controls_defaults[], imx_sensors_defaults[];
-extern functions_t imx_control_functions[], imx_sensor_functions[];
+extern imx_control_sensor_block_t imx_controls_defaults[], imx_sensors_defaults[];
+extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 
 /******************************************************
  *               Function Definitions
@@ -83,7 +83,7 @@ extern functions_t imx_control_functions[], imx_sensor_functions[];
 void cs_reset_defaults(void)
 {
     peripheral_type_t type;
-    control_sensor_block_t *cs_block, *config_source;
+    imx_control_sensor_block_t *cs_block, *config_source;
     uint16_t no_items, i;
 
     for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
@@ -108,7 +108,7 @@ void cs_reset_defaults(void)
                     (uint16_t) imx_controls_defaults[ i ].send_on_percent_change,
                     (uint16_t) imx_controls_defaults[ i ].data_type );
     */
-            memcpy( &cs_block[ i ], &config_source[ i ], sizeof( control_sensor_block_t ) );
+            memcpy( &cs_block[ i ], &config_source[ i ], sizeof( imx_control_sensor_block_t ) );
             imx_printf( "  Added %u%s, %s, ", device_config.no_controls, device_config.ccb[ device_config.no_controls ].enabled ? "" : " (Disabled)", device_config.ccb[ device_config.no_controls ].name );
 
             if( cs_block[ i ].sample_rate == 0 )
@@ -128,7 +128,7 @@ void cs_init(void)
 {
     peripheral_type_t type;
     control_sensor_data_t *data;
-    functions_t *f;
+    imx_functions_t *f;
     uint16_t no_items, i;
     wiced_time_t current_time;
 
@@ -169,7 +169,7 @@ void cs_init(void)
   */
 void load_config_defaults_generic_ccb( uint16_t arg )
 {
-    memcpy( &device_config.ccb[ arg ], &imx_controls_defaults[ arg ], sizeof( control_sensor_block_t ) );
+    memcpy( &device_config.ccb[ arg ], &imx_controls_defaults[ arg ], sizeof( imx_control_sensor_block_t ) );
 }
 
 /**
@@ -177,7 +177,7 @@ void load_config_defaults_generic_ccb( uint16_t arg )
   * @param  None
   * @retval : None
   */
-void print_common_config( peripheral_type_t type, control_sensor_block_t *cs_block )
+void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *cs_block )
 {
     uint16_t i, no_items;
 

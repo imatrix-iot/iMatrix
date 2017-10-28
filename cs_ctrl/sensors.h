@@ -43,11 +43,5 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void reset_sensors(void);
-void init_sensors(void);
-uint16_t add_sensor( control_sensor_block_t *ctrl_blk, uint16_t *entry_no );
-void sample_sensors( wiced_time_t current_time );
-void set_sensor_arg( uint16_t control_no, uint16_t arg );
 void load_config_defaults_generic_scb( uint16_t arg );
-void print_sensors(void);
 #endif /* SENSOR_RECORDER_H_ */

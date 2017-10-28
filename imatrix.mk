@@ -53,7 +53,7 @@ GLOBAL_DEFINES += PRINT_DEBUGS_FOR_BUSINESS_HOURS
 
 NAME := iMatix_Library_$(PLATFORM)
 
-$(NAME)_SOURCES := imatrix_interface.c imatrix_interface.h storage.c storage.h \
+$(NAME)_SOURCES := imatrix_interface.c imatrix_interface.h storage.c storage.h host_support.h \
 at_cmds/at_cmds.c at_cmds/at_cmds.h \
 ble/ble_config.c ble/ble_manager.c ble/ble_manager.h \
 cli/cli.c cli/cli.h cli/cli_help.c cli/cli_help.h cli/cli_reboot.c cli/cli_reboot.h cli/cli_status.c cli/status.h \
@@ -84,7 +84,7 @@ coap_interface/coap_sensor_rssi.c coap_interface/coap_sensor_rssi.h \
 coap_interface/get_uint_from_query_str.c coap_interface/get_uint_from_query_str.h \
 coap_interface/match_uri.c coap_interface/match_uri.h \
 coap_interface/token_string.c coap_interface/token_string.h \
-cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/common_config.c cs_ctrl/common_config.h cs_ctrl/imx_interface.c cs_ctrl/imx_interface.h \
+cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/common_config.c cs_ctrl/common_config.h cs_ctrl/imx_cs_interface.c cs_ctrl/imx_cs_interface.h \
 cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
 cs_ctrl/hal_event.c cs_ctrl/hal_event.h cs_ctrl/hal_sample.c cs_ctrl/hal_sample.h  \
 device/cert_util.c device/cert_util.h device/config.c device/config.h device/device.c device/device.h device/hal_leds.c device/hal_leds.h \
@@ -103,7 +103,7 @@ ota_loader/lut.c \
 platform_functions/ISMART.c platform_functions/ISMART.h \
 sflash/sflash.c sflash/sflash.h \
 time/ck_time.c time/ck_time.h time/ntp_success.c time/ntp_success.h time/sntp.c time/sntp.h \
-wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/imx_wifi.c wifi/process_wifi.c wifi/process_wifi.h \
+wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/imx_wifi.c wifi/wifi_logging.c wifi/wifi_logging.h wifi/process_wifi.c wifi/process_wifi.h \
 wifi/wifi.c wifi/wifi.h
 
 $(NAME)_DEFINES += IMATRIX_CLIENT

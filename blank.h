@@ -23,9 +23,9 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .h
+/** @file host_support.h
  *
- *  Created on: October 25, 2017
+ *  Created on: October 28, 2017
  *      Author: greg.phillips
  *
  */
@@ -34,7 +34,7 @@
 #define _H_
 
 /*
- *	Defines for
+ *	Defines for 
  *
  */
 

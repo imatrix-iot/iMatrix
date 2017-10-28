@@ -84,8 +84,7 @@ uint16_t active_control = 0;
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
 extern control_sensor_data_t cd[];
 extern control_sensor_data_t sd[];
-extern functions_t imx_control_functions[];
-extern functions_t imx_sensor_functions[];
+extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -100,8 +99,8 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	uint8_t status;
 	bool percent_change_detected;
 	control_sensor_data_t *data;
-	control_sensor_block_t *csb;
-	functions_t *f;
+	imx_control_sensor_block_t *csb;
+	imx_functions_t *f;
 
 	if( type == IMX_CONTROLS ) {
 		if( device_config.no_controls == 0 )

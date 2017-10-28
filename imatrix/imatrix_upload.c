@@ -173,7 +173,7 @@ void imatrix_upload(wiced_time_t current_time)
     wiced_iso8601_time_t iso8601_time;
     bits_t header_bits;
     upload_data_t *upload_data;
-    control_sensor_block_t *csb;    // Temp pointer to control structure
+    imx_control_sensor_block_t *csb;    // Temp pointer to control structure
     control_sensor_data_t *data;    // Temp pointer to data
 
     variable_data_length = 0;

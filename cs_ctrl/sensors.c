@@ -50,7 +50,7 @@
  *               Variable Definitions
  ******************************************************/
 
-extern control_sensor_block_t imx_sensors_defaults[];
+extern imx_control_sensor_block_t imx_sensors_defaults[];
 extern IOT_Device_Config_t device_config;
 
 /******************************************************
@@ -58,5 +58,5 @@ extern IOT_Device_Config_t device_config;
  ******************************************************/
 void load_config_defaults_generic_scb( uint16_t arg )
 {
-	memcpy( &device_config.scb[ arg ], &imx_sensors_defaults[ arg ], sizeof( control_sensor_block_t ) );
+	memcpy( &device_config.scb[ arg ], &imx_sensors_defaults[ arg ], sizeof( imx_control_sensor_block_t ) );
 }

@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -28,19 +22,19 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
-/*
- * hal_rssi.h
+
+/** @file .h
  *
- *  Created on: December, 2015
+ *  Created on: October 28, 2017
  *      Author: greg.phillips
+ *
  */
 
-#ifndef HAL_RSSI_H_
-#define HAL_RSSI_H_
+#ifndef WIFI_LOGGING_H_
+#define WIFI_LOGGING_H_
 
-/** @file
- *
- *
+/*
+ *	Defines for Wi Fi Cloud logging events
  *
  */
 
@@ -67,16 +61,6 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void load_config_defaults_rssi( uint16_t arg );
-void load_config_defaults_noise( uint16_t arg );
-uint16_t sample_rssi(uint16_t arg, void *value );
-int32_t hal_get_wifi_rssi(void);
-uint16_t sample_rfnoise(uint16_t arg, void *value );
-int32_t hal_get_wifi_noise(void);
-int16_t hal_get_wifi_tx_power(void);
-void load_config_defaults_wifi_channel( uint16_t arg );
-uint16_t sample_wifi_channel(uint16_t arg, void *value );
-uint32_t hal_get_wifi_channel(void);
-void hal_get_wifi_bssid( wiced_mac_t *bssid );
-
-#endif /* HAL_RSSI_H_ */
+void log_wifi_connection(void);
+void wifi_logging(void);
+#endif /* WIFI_LOGGING_H_ */

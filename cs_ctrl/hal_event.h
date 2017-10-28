@@ -61,5 +61,5 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void hal_event( peripheral_type_t type, wiced_time_t current_time, void *value );
+void hal_event( peripheral_type_t type, uint16_t entry, void *value );
 #endif /* HAL_EVENT_H_ */

@@ -376,10 +376,13 @@ typedef struct IOT_Device_Config {
     float longitude, latitude, elevation;
     wiced_security_t ap_security;
     wiced_utc_time_ms_t last_ntp_updated_time;
-    control_sensor_block_t ccb[ MAX_NO_CONTROLS ];
-    control_sensor_block_t scb[ MAX_NO_SENSORS ];
+    imx_control_sensor_block_t ccb[ MAX_NO_CONTROLS ];
+    imx_control_sensor_block_t scb[ MAX_NO_SENSORS ];
     var_data_config_t var_data_config[ NO_VAR_POOLS ];
     arduino_config_t acb;
+    unsigned int log_wifi_AP                : 1;    // Log Wi Fi Events and levels
+    unsigned int log_wifi_rssi              : 1;
+    unsigned int log_wifi_rfnoise           : 1;
     unsigned int at_command_mode            : 1;    // Determines CLI output styles
     unsigned int application_loaded         : 1;    // Has the application already loaded
     unsigned int api_loaded                 : 1;    // Has API loaded values - use to overide defaults

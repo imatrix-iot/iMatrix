@@ -63,6 +63,6 @@
  ******************************************************/
 void cs_reset_defaults(void);
 void cs_init(void);
-void print_common_config( peripheral_type_t type, control_sensor_block_t *cs_block );
+void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *cs_block );
 
 #endif /* PRINT_COMMON_CONFIG_H_ */

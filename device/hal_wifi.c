@@ -90,7 +90,7 @@ extern IOT_Device_Config_t device_config;
   * @param  None
   * @retval : None
   */
-uint16_t sample_rssi(uint16_t arg, void *value )
+uint16_t imx_hal_sample_rssi(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);
@@ -102,6 +102,18 @@ uint16_t sample_rssi(uint16_t arg, void *value )
 	} else
 		return IMX_GENERAL_FAILURE;
 }
+/**
+  * @brief  get the BSSID from the wifi radio
+  * @param  pointer to BSSID
+  * @retval : None
+  */
+void hal_get_wifi_bssid( wiced_mac_t *bssid )
+{
+
+    if( ( icb.wifi_up == true ) && ( device_config.AP_setup_mode == false ) )
+        wwd_wifi_get_bssid( bssid );
+}
+
 /**
   * @brief	get the rssi from the wifi radio
   * @param  None
@@ -121,7 +133,7 @@ int32_t hal_get_wifi_rssi(void)
   * @param  None
   * @retval : None
   */
-uint16_t sample_rfnoise(uint16_t arg, void *value )
+uint16_t imx_imx_sample_rfnoise(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);
@@ -166,7 +178,7 @@ int16_t hal_get_wifi_tx_power(void)
   * @param  None
   * @retval : None
   */
-uint16_t sample_wifi_channel(uint16_t arg, void *value )
+uint16_t imx_sample_wifi_channel(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);

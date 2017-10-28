@@ -96,7 +96,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 	uint16_t i;
 	bool percent_change_detected;
 	control_sensor_data_t *data;
-	control_sensor_block_t *csb;
+	imx_control_sensor_block_t *csb;
 	wiced_time_t current_time;
 	wiced_utc_time_t upload_utc_time;
 

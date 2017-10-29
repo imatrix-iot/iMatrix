@@ -170,16 +170,16 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
                 for( i = 0; i < device_config.no_controls; i++ )
                     if( device_config.ccb[ i ].id == id ) {
                         switch( device_config.ccb[ i ].data_type ) {
-                            case IMX_DO_UINT32 :
+                            case IMX_UINT32 :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"uint_value\" : %lu }", device_config.ccb[ i ].name, cd[ i ].last_value.uint_32bit );
                                 break;
-                            case IMX_DO_INT32 :
+                            case IMX_INT32 :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"int_value\" : %ld }", device_config.ccb[ i ].name, cd[ i ].last_value.uint_32bit );
                                 break;
-                            case IMX_AO_FLOAT :
+                            case IMX_FLOAT :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.ccb[ i ].name, cd[ i ].last_value.float_32bit );
                                 break;
-                            case IMX_DI_VARIABLE_LENGTH :
+                            case IMX_VARIABLE_LENGTH :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
                                         device_config.ccb[ i ].name, ( cd[ i ].last_value.var_data == NULL ? "" : (char* ) cd[ i ].last_value.var_data->data ) );
                                 break;
@@ -190,16 +190,16 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
                 for( i = 0; i < device_config.no_sensors; i++ )
                     if( device_config.scb[ i ].id == id ) {
                         switch( device_config.scb[ i ].data_type ) {
-                            case IMX_DO_UINT32 :
+                            case IMX_UINT32 :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"uint_value\" : %lu }", device_config.scb[ i ].name, sd[ i ].last_value.uint_32bit );
                                 break;
-                            case IMX_DO_INT32 :
+                            case IMX_INT32 :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"int_value\" : %ld }", device_config.scb[ i ].name, sd[ i ].last_value.uint_32bit );
                                 break;
-                            case IMX_AO_FLOAT :
+                            case IMX_FLOAT :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.scb[ i ].name, sd[ i ].last_value.float_32bit );
                                 break;
-                            case IMX_DI_VARIABLE_LENGTH :
+                            case IMX_VARIABLE_LENGTH :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
                                         device_config.scb[ i ].name, ( sd[ i ].last_value.var_data == NULL ? "" : (char *) sd[ i ].last_value.var_data->data ) );
                                 break;
@@ -292,11 +292,11 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     /*
      * Scan array for entry
      */
-    // imx_printf( "Updating: %lu, 0x%08lx - to: %lu, %ld, %f, %s\r\n", id, id, uint_value, int_value, float_value, string_value );
+    imx_printf( "Updating: %lu, 0x%08lx - to: %lu, %ld, %f, %s\r\n", id, id, uint_value, int_value, float_value, string_value );
     for( i = 0; i < device_config.no_controls; i++ )
         if( device_config.ccb[ i ].id == id ) {
             switch( device_config.ccb[ i ].data_type ) {
-                case IMX_DO_UINT32 :
+                case IMX_UINT32 :
                     if( uint_value != NO_VALUE_VALUE ) {
                         cd[ i ].last_value.uint_32bit = uint_value;
                         if( imx_control_functions[ i ].update != NULL )
@@ -306,7 +306,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                         goto create_response_and_exit;
                     }
                     break;
-                case IMX_DO_INT32 :
+                case IMX_INT32 :
                     if( int_value != NO_VALUE_VALUE ) {
                         cd[ i ].last_value.uint_32bit = int_value;
                         if( imx_control_functions[ i ].update != NULL )
@@ -316,7 +316,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                         goto create_response_and_exit;
                     }
                     break;
-                case IMX_AO_FLOAT :
+                case IMX_FLOAT :
                     if( float_value != NO_FLOAT_VALUE ) {
                         cd[ i ].last_value.float_32bit = float_value;
                         if( imx_control_functions[ i ].update != NULL )
@@ -327,12 +327,12 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
 
                     }
                     break;
-                case IMX_DI_VARIABLE_LENGTH :
+                case IMX_VARIABLE_LENGTH :
                     /*
                      * Free last one if present
                      */
                     if( cd[ i ].last_value.var_data != NULL )
-                        add_var_free_pool( cd[ i ].last_value.var_data );
+                            add_var_free_pool( cd[ i ].last_value.var_data );
                     /*
                      * Get a buffer to save this too
                      */
@@ -351,8 +351,8 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                 /*
                  * We just set the value of control without a sample rate so send a notification of this event, as controls/sensors with a sample rate of 0 are not uploaded
                  */
-                cli_print( "Event Notification: Writing Control %u, Value: uint32: %lu, int32: %ld, float: %f\r\n", i,
-                        cd[ i].last_value.uint_32bit, cd[ i ].last_value.int_32bit, cd[ i ].last_value.float_32bit );
+                cli_print( "Event Notification: Writing Control %u, Value: uint32: %lu, int32: %ld, float: %f, @0x%08x: \r\n", i,
+                        cd[ i ].last_value.uint_32bit, cd[ i ].last_value.int_32bit, cd[ i ].last_value.float_32bit, (uint32_t) cd[ i ].last_value.var_data );
                 hal_event( IMX_CONTROLS, i, &cd[ i ].last_value.uint_32bit );
             }
             goto done;

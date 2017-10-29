@@ -42,10 +42,13 @@
 
 #include "../storage.h"
 #include "../host_support.h"
+#include "../cli/interface.h"
 #include "../cs_ctrl/imx_cs_interface.h"
 #include "../device/icb_def.h"
 #include "../device/hal_wifi.h"
+#include "../device/var_data.h"
 
+#include "wifi_logging.h"
 
 /******************************************************
  *                      Macros
@@ -90,23 +93,40 @@ void log_wifi_connection(void)
 {
     int32_t channel, noise, rssi;
     wiced_mac_t bssid;
+    var_data_entry_t *var_data_ptr;
+
+    if( ( icb.wifi_up == false ) || ( device_config.AP_setup_mode == true ) )
+        return;     // Nothing to log
+
+    imx_printf( "Logging Wi Fi Connection:" );
 
     if( device_config.log_wifi_AP == true ) {
         channel = hal_get_wifi_channel();
+        /*
+         * Get a buffer to put the data in
+         */
+        var_data_ptr = get_var_data( sizeof( wiced_mac_t ) );
+        var_data_ptr->header.length = sizeof( wiced_mac_t );
         hal_get_wifi_bssid( &bssid );
-        imx_set_sensor( imx_get_wifi_bssid_scb(), (void *) &bssid );
+        imx_printf( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", bssid.octet[ 0 ], bssid.octet[ 1 ], bssid.octet[ 2 ], bssid.octet[ 3 ],
+                bssid.octet[ 4 ], bssid.octet[ 5 ] );
+        imx_set_sensor( imx_get_wifi_bssid_scb(), (void *) var_data_ptr->data );
+        imx_printf( " Channel: %ld", channel );
         imx_set_sensor( imx_get_wifi_channel_scb(), &channel );
     }
 
     if( device_config.log_wifi_rssi == true ) {
         rssi = hal_get_wifi_rssi();
+        imx_printf( " RSSI: %ld", rssi );
         imx_set_sensor( imx_get_wifi_rssi_scb(), (void *) &rssi );
     }
 
     if( device_config.log_wifi_rfnoise == true ) {
         noise = hal_get_wifi_noise();
+        imx_printf( " RF Noise: %ld", noise );
         imx_set_sensor( imx_get_wifi_rf_noise_scb(), (void *) &noise );
     }
 
+    imx_printf( "\r\n" );
 
 }

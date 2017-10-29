@@ -37,7 +37,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include <stdbool.h>
+#include <ctype.h>
 #include "wiced.h"
 
 #include "../storage.h"
@@ -59,7 +60,8 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define FEET_IN_1METER	3.28084
+#define FEET_IN_1METER	    3.28084
+#define VAR_PRINT_LENGTH    16
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -78,7 +80,7 @@ extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
 /******************************************************
  *               Function Declarations
  ******************************************************/
-
+static void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data );
 /******************************************************
  *               Variable Definitions
  ******************************************************/
@@ -164,50 +166,62 @@ void cli_status( uint16_t arg )
 	 * Display status of controls
 	 */
 	peripheral_type_t type;
+	control_sensor_data_t *csd;
 	imx_control_sensor_block_t *cs_block;
 	uint16_t no_items;
 
 	for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
-	    if( type == IMX_CONTROLS )
+	    if( type == IMX_CONTROLS ) {
 	        cs_block = &device_config.ccb[ 0 ];
-	    else
+	        csd = &cd[ 0 ];
+	    } else {
 	        cs_block = &device_config.scb[ 0 ];
+            csd = &sd[ 0 ];
+	    }
         cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors, ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
         for( i = 0; i < no_items; i++ ) {
             if( cs_block[ i ].enabled == true ) {
-                cli_print( "No: %u, %s, ID: 0x%08lx, ", i, cs_block[ i ].name, cs_block[ i ].id );
+                cli_print( "  No: %u, %32s, ID: 0x%08lx, ", i, cs_block[ i ].name, cs_block[ i ].id );
                 if( cs_block[ i ].valid == true ) {
                     cli_print( "Current setting: " );
                     switch( cs_block[ i ].data_type ) {
-                        case IMX_DO_UINT32 :
-                            cli_print( "0x%08lx - %lu", cd[ i ].last_value.uint_32bit, cd[ i ].last_value.uint_32bit );
+                        case IMX_UINT32 :
+                            cli_print( "0x%08lx - %lu", csd[ i ].last_value.uint_32bit, csd[ i ].last_value.uint_32bit );
                             break;
-                        case IMX_DO_INT32 :
-                            cli_print( "%ld", cd[ i ].last_value.int_32bit );
+                        case IMX_INT32 :
+                            cli_print( "%ld", csd[ i ].last_value.int_32bit );
                             break;
-                        case IMX_AO_FLOAT :
-                            cli_print( "%0.6f", cd[ i ].last_value.float_32bit );
+                        case IMX_FLOAT :
+                            cli_print( "%0.6f", csd[ i ].last_value.float_32bit );
+                            break;
+                        case IMX_VARIABLE_LENGTH :
+                            print_var_data( VR_DATA_MAC_ADDRESS, csd[ i ].last_value.var_data );
                             break;
                     }
                     cli_print( ", " );
                     switch( cs_block[ i ].data_type ) {
-                        case IMX_DO_INT32 :
-                            cli_print( "32 Bit signed" );
-                            break;
-                        case IMX_DO_UINT32 :
+                        case IMX_UINT32 :
                             cli_print( "32 Bit Unsigned" );
                             break;
-                        case IMX_AO_FLOAT :
+                        case IMX_INT32 :
+                            cli_print( "32 Bit signed" );
+                            break;
+                        case IMX_FLOAT :
                             cli_print( "32 Bit Float" );
                             break;
                     }
                     cli_print( ", Errors: %lu, ", cd[ i ].errors );
                     if( cs_block[ i ].sample_rate == 0 )
                         cli_print( ", Event Driven" );
-                    else
-                        cli_print( ", Refresh rate: %u mS", cs_block[ i ].sample_rate );
+                    else {
+                        if( cs_block[ i ].sample_rate >= 1000 )
+                            cli_print( "Sample Every: %4.1f Sec", ( (float) cs_block[ i ].sample_rate ) / 1000.0 );
+                        else
+                            cli_print( "Sample Every: %5u mSec", cs_block[ i ].sample_rate );
+
+                    }
                 } else
                     cli_print( "No Data Recorded");
                 cli_print( "\r\n" );
@@ -220,5 +234,35 @@ void cli_status( uint16_t arg )
 	 * BLE Scan Status
 	 */
 //	print_ble_scan_results( 1 );
+
+}
+
+static void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
+{
+    uint16_t i;
+    wiced_mac_t *bssid;
+
+    if( var_data == NULL ) {
+        cli_print( "None" );
+        return;
+    }
+
+    switch( data_type ) {
+        case VR_DATA_MAC_ADDRESS :
+            bssid = ( wiced_mac_t *) var_data->data;
+            cli_print( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", bssid->octet[ 0 ], bssid->octet[ 1 ], bssid->octet[ 2 ], bssid->octet[ 3 ],
+                            bssid->octet[ 4 ], bssid->octet[ 5 ] );
+            break;
+        default :
+            /*
+             * Just print up to the first 16 Characters as Hex and Char
+             */
+            for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->header.length ) ); i++ )
+                cli_print( " 0x%02X", var_data->data[ i ] );
+            cli_print( "  " );
+            for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->header.length ) ); i++ )
+                cli_print( " %c", ( isprint( (int) var_data->data[ i ] ) == true ) ? (char) var_data->data[ i ] : "*" );
+            break;
+    }
 
 }

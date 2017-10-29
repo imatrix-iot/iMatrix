@@ -381,7 +381,7 @@ void imatrix_upload(wiced_time_t current_time)
             	    		data = &cd[ i ];
                             csb = &device_config.ccb[ i ];
                             // imx_printf( "Control: %u - Data type: %u\r\n", i, device_config.ccb[ i ].data_type );
-            	    		if( device_config.ccb[ i ].data_type == IMX_DO_VARIABLE_LENGTH ) {
+            	    		if( device_config.ccb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
             	    		    variable_length_data = true;
             	    		} else
             	    		    variable_length_data = false;
@@ -389,7 +389,7 @@ void imatrix_upload(wiced_time_t current_time)
             	    		data = &sd[ i ];
                             csb = &device_config.scb[ i ];
             	    		// imx_printf( "Sensor: %u - Data type: %u\r\n", i, device_config.scb[ i ].data_type );
-                            if( device_config.scb[ i ].data_type == IMX_DI_VARIABLE_LENGTH ) {
+                            if( device_config.scb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
                                 // imx_printf( "Processing Variable length record\r\n" );
                                 variable_length_data = true;
                             } else
@@ -500,10 +500,12 @@ void imatrix_upload(wiced_time_t current_time)
 
                                         memcpy( &upload_data->data[ data_index ], data_ptr, variable_data_length );
                                         /*
-                                         * Now this data is loaded in free up resources and decrement no samples
+                                         * Now this data is loaded in structure, If it is not the current value free up resources
                                          */
-                                        imx_printf( "About to free data\r\n" );
-                                        add_var_free_pool( data->data[ var_data_ptr ].var_data );
+                                        if( data->data[ var_data_ptr ].var_data != data->last_value.var_data ) {
+                                            imx_printf( "About to free data\r\n" );
+                                            add_var_free_pool( data->data[ var_data_ptr ].var_data );
+                                        }
                                         /*
                                          * Move up the data and re calculate the last sample time
                                          */
@@ -831,13 +833,13 @@ void imatrix_status( uint16_t arg)
     			if( cd[ i ].no_samples > 0 ) {
         			for( j = 0; j < cd[ i ].no_samples; j++ ) {
         				switch( device_config.ccb[ i ].data_type ) {
-        					case IMX_DI_UINT32 :
+        					case IMX_UINT32 :
         						cli_print( "%lu ", cd[ i ].data[ j ].uint_32bit );
         						break;
-        					case IMX_DI_INT32 :
+        					case IMX_INT32 :
         						cli_print( "%ld ", cd[ i ].data[ j ].int_32bit );
         						break;
-        					case IMX_AI_FLOAT :
+        					case IMX_FLOAT :
         						cli_print( "%f ", cd[ i ].data[ j ].float_32bit );
         						break;
         				}
@@ -850,13 +852,13 @@ void imatrix_status( uint16_t arg)
     			cli_print( "Sensor 0x%08lx: %s ", device_config.scb[ i ].id, device_config.scb[ i ].name );
     			for( j = 0; j < sd[ i ].no_samples; j++ ) {
     				switch( device_config.scb[ i ].data_type ) {
-    					case IMX_DI_UINT32 :
+    					case IMX_UINT32 :
     						cli_print( "%lu ", sd[ i ].data[ j ].uint_32bit );
     						break;
-    					case IMX_DI_INT32 :
+    					case IMX_INT32 :
     						cli_print( "%ld ", sd[ i ].data[ j ].int_32bit );
     						break;
-    					case IMX_AI_FLOAT :
+    					case IMX_FLOAT :
     						cli_print( "%f ", sd[ i ].data[ j ].float_32bit );
     						break;
     				}

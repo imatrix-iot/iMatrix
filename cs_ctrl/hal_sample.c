@@ -138,7 +138,6 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 		status = 0;	// Controls may not have an update function as the may just be set remotely
 		if( f->update != NULL ) {
 			status = ( f->update)( f->arg, &data->data[ data->no_samples ] );
-			csb->valid = true;  // We have a sample
 			/*
 			if( type == CONTROLS )
 				print_status( "Sampled Control: %u, result: %u", *active, status );
@@ -160,7 +159,8 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 			print_status( "\r\n" );
 			*/
 		}
-		if( status == 0 ) {
+		if( status == IMX_SUCCESS ) {
+            csb->valid = true;  // We have a sample
 			data->error = status;	// Reset for correction
 			/*
 			 * Check if the data is in warning levels for the sensor
@@ -176,15 +176,15 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 				 */
 				if( ( csb->use_warning_level_low & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
 					switch( csb->data_type ) {
-						case IMX_DI_INT32 :
+						case IMX_INT32 :
 							if( data->data[ data->no_samples ].int_32bit < csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
 								data->warning = i;	// Now set to this level
 							break;
-						case IMX_AI_FLOAT :
+						case IMX_FLOAT :
 							if( data->data[ data->no_samples ].float_32bit < csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
 								data->warning = i;	// Now set to this level
 							break;
-						case IMX_DI_UINT32 :
+						case IMX_UINT32 :
 						default :
 							if( data->data[ data->no_samples ].uint_32bit < csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
 								data->warning = i;	// Now set to this level
@@ -195,15 +195,15 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 				 */
 				if( ( csb->use_warning_level_high & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
 					switch( csb->data_type ) {
-						case IMX_DI_INT32 :
+						case IMX_INT32 :
 							if( data->data[ data->no_samples ].int_32bit > csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
 								data->warning = i;	// Now set to this level
 							break;
-						case IMX_AI_FLOAT :
+						case IMX_FLOAT :
 							if( data->data[ data->no_samples ].float_32bit > csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
 								data->warning = i;	// Now set to this level
 							break;
-						case IMX_DI_UINT32 :
+						case IMX_UINT32 :
 						default :
 							if( data->data[ data->no_samples ].uint_32bit > csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
 								data->warning = i;	// Now set to this level
@@ -216,15 +216,15 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 			percent_change_detected = false;
 			if( csb->send_on_percent_change == true )
 				switch( csb->data_type ) {
-					case IMX_DI_INT32 :
+					case IMX_INT32 :
 						if( check_int_percent( data->data[ data->no_samples ].int_32bit, data->last_value.int_32bit, csb->percent_change_to_send ) )
 							percent_change_detected = true;
 						break;
-					case IMX_AI_FLOAT :
+					case IMX_FLOAT :
 						if( check_float_percent( data->data[ data->no_samples ].float_32bit, data->last_value.float_32bit, csb->percent_change_to_send ) )
 							percent_change_detected = true;
 						break;
-					case IMX_DI_UINT32 :
+					case IMX_UINT32 :
 					default :
 						if( check_uint_percent( data->data[ data->no_samples ].uint_32bit, data->last_value.uint_32bit, csb->percent_change_to_send ) )
 							percent_change_detected = true;

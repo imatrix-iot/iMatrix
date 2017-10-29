@@ -160,12 +160,15 @@ void imx_init_led_blue_ismart( void );
 void imx_update_led_red_status_ismart( bool state );
 void imx_update_led_green_status_ismart( bool state );
 void imx_update_led_blue_status_ismart( bool state );
+void imx_init_temp(void);
+uint16_t imx_sample_temp(uint16_t arg, void *value );
+
 uint16_t imx_get_wifi_channel_scb(void);
 uint16_t imx_get_wifi_rssi_scb(void);
 uint16_t imx_get_wifi_bssid_scb(void);
 uint16_t imx_get_wifi_rf_noise_scb(void);
-uint16_t imx_hal_sample_rssi(uint16_t arg, void *value );
-uint16_t imx_imx_sample_rfnoise(uint16_t arg, void *value );
+uint16_t imx_sample_rssi(uint16_t arg, void *value );
+uint16_t imx_sample_rfnoise(uint16_t arg, void *value );
 uint16_t imx_sample_wifi_channel(uint16_t arg, void *value );
 /*
  * CoAP Processing defines

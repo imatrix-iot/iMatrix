@@ -61,11 +61,13 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void imx_init_led_red_ismart( void );
-void imx_init_led_green_ismart( void );
-void imx_init_led_blue_ismart( void );
+void imx_init_led_red_ismart(uint16_t arg);
+void imx_init_led_green_ismart(uint16_t arg);
+void imx_init_led_blue_ismart(uint16_t arg);
 void imx_update_led_red_status_ismart( bool state );
 void imx_update_led_green_status_ismart( bool state );
 void imx_update_led_blue_status_ismart( bool state );
+void imx_init_temp(uint16_t arg);
+uint16_t imx_sample_temp(uint16_t arg, void *value );
 
 #endif /* ISMART_REV_D_H_ */

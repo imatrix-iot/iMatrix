@@ -111,7 +111,7 @@ uint16_t get_imatrix_ip_address( wiced_time_t current_time )
 			imx_printf( "iMatrix DNS IP Address lookup successful " );
 			result = true;
 		} else {
-			imx_printf( "iMatrix IP Address DNS lookup failed " );
+			imx_printf( "iMatrix IP Address DNS lookup failed for: %s ", device_config.imatrix_public_url );
 			icb.dns_failure_count += 1;
 			local_dns_failure_count += 1;
 			if( local_dns_failure_count >= MAX_DNS_FAILURE ) {

@@ -221,10 +221,6 @@ uint16_t wifi_init(void)
 		if ( wiced_network_register_link_callback( link_up, link_down, interface ) != WICED_SUCCESS ) {
 	        goto connectivity_deinit_and_fail;
 		}
-		/*
-		 * Log this connection
-		 */
-		log_wifi_connection();
 	}
 	/*
 	 * Always set up the UDP Server
@@ -271,6 +267,10 @@ uint16_t wifi_init(void)
 	    }
 	}
 	icb.wifi_up = true;
+    /*
+     * Log this connection
+     */
+    log_wifi_connection();
 	/*
 	 * If we are powered up and online and don't have a serial number contact the server and get one.
 	 */

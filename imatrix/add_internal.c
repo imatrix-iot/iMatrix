@@ -105,7 +105,7 @@ void add_registration( upload_data_t **upload_data, uint16_t *remaining_data_len
      * Registration
      */
     (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_THING_EVENT );
-    header_bits.bits.data_type = IMX_DI_UINT32;  // Floating point data for GPS
+    header_bits.bits.data_type = IMX_UINT32;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htonl( 0 );
     header_bits.bits.block_type = IMX_BLOCK_EVENT_SENSOR;
 
@@ -173,7 +173,7 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
      * Latitude
      */
     (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_GPS_LATITUDE );
-    header_bits.bits.data_type = IMX_AI_FLOAT;  // Floating point data for GPS
+    header_bits.bits.data_type = IMX_FLOAT;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htons( 0 );
     header_bits.bits.block_type = IMX_BLOCK_GPS_COORDINATES;
 
@@ -199,7 +199,7 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
      * Longitude
      */
     (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_GPS_LONGITUDE );
-    header_bits.bits.data_type = IMX_AI_FLOAT;  // Floating point data for GPS
+    header_bits.bits.data_type = IMX_FLOAT;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htons( 0 );
     header_bits.bits.block_type = IMX_BLOCK_GPS_COORDINATES;
 
@@ -225,7 +225,7 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
      * Elevation
      */
     (*upload_data)->header.id = htonl( IMX_INTERNAL_SENSOR_GPS_ELEVATION );
-    header_bits.bits.data_type = IMX_AI_FLOAT;  // Floating point data for GPS
+    header_bits.bits.data_type = IMX_FLOAT;  // Floating point data for GPS
     (*upload_data)->header.sample_rate = htons( 0 );
     header_bits.bits.block_type = IMX_BLOCK_GPS_COORDINATES;
 

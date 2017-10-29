@@ -47,6 +47,7 @@
 #include "../storage.h"
 #include "../cli/interface.h"
 #include "../device/config.h"
+#include "../device/var_data.h"
 #include "../time/ck_time.h"
 #include "hal_sample.h"
 #include "hal_event.h"
@@ -95,6 +96,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 {
 	uint16_t i;
 	bool percent_change_detected;
+	var_data_entry_t *var_data_ptr;
 	control_sensor_data_t *data;
 	imx_control_sensor_block_t *csb;
 	wiced_time_t current_time;
@@ -115,9 +117,9 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 			return;	// Nothing to do
 		else {
 			data = &sd[ entry ];
-//			imx_printf( "Sample - Setting Sensor %u Data to: 0x%08lx\r\n", entry, (uint32_t) data );
 			csb = &device_config.scb[ entry ];
-//			( "Event Sensor: %u\r\n", entry );
+	        imx_printf( "Sample - Setting Sensor %u Data @: 0x%08lx\r\n", entry, (uint32_t) data );
+//			imx_printf( "Event Sensor: %u\r\n", entry );
 		}
 	}
     /*
@@ -134,7 +136,20 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     wiced_time_get_utc_time( &upload_utc_time );
     memcpy( &data->data[ data->no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
     data->no_samples += 1;
-	memcpy( &data->data[ data->no_samples ], value, SAMPLE_LENGTH );
+    if( csb->data_type == IMX_VARIABLE_LENGTH ) {
+        var_data_ptr = (var_data_entry_t *) value;
+        memcpy( &data->data[ data->no_samples ], var_data_ptr, SAMPLE_LENGTH );
+        if( ( data->no_samples == 1 ) && ( data->last_value.var_data != NULL ) ){
+            /*
+             * Free the last value as it has been kept as a current value, old data has been sent to iMatrix
+             */
+                add_var_free_pool( data->last_value.var_data );
+        }
+        memcpy( &data->last_value, var_data_ptr, SAMPLE_LENGTH );
+    } else {
+        memcpy( &data->data[ data->no_samples ], value, SAMPLE_LENGTH );
+        memcpy( &data->last_value, value, SAMPLE_LENGTH );
+    }
     csb->valid = true;  // We have a sample
 
     /*
@@ -170,17 +185,17 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
          */
         if( ( csb->use_warning_level_low & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
             switch( csb->data_type ) {
-                case IMX_DI_INT32 :
+                case IMX_INT32 :
                     if( data->data[ data->no_samples ].int_32bit < csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
                         data->warning = i;  // Now set to this level
                     break;
-                case IMX_AI_FLOAT :
+                case IMX_FLOAT :
                     if( data->data[ data->no_samples ].float_32bit < csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
                         data->warning = i;  // Now set to this level
                     break;
-                case IMX_DI_VARIABLE_LENGTH :
+                case IMX_VARIABLE_LENGTH :
                     break;
-                case IMX_DI_UINT32 :
+                case IMX_UINT32 :
                 default :
                     if( data->data[ data->no_samples ].uint_32bit < csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
                         data->warning = i;  // Now set to this level
@@ -191,17 +206,17 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
          */
         if( ( csb->use_warning_level_high & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
             switch( csb->data_type ) {
-                case IMX_DI_INT32 :
+                case IMX_INT32 :
                     if( data->data[ data->no_samples ].int_32bit > csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
                         data->warning = i;  // Now set to this level
                     break;
-                case IMX_AI_FLOAT :
+                case IMX_FLOAT :
                     if( data->data[ data->no_samples ].float_32bit > csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
                         data->warning = i;  // Now set to this level
                     break;
-                case IMX_DI_VARIABLE_LENGTH :
+                case IMX_VARIABLE_LENGTH :
                     break;
-                case IMX_DI_UINT32 :
+                case IMX_UINT32 :
                 default :
                     if( data->data[ data->no_samples ].uint_32bit > csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
                         data->warning = i;  // Now set to this level
@@ -214,17 +229,17 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     percent_change_detected = false;
     if( csb->send_on_percent_change == true ) {
         switch( csb->data_type ) {
-            case IMX_DI_INT32 :
+            case IMX_INT32 :
                 if( check_int_percent( data->data[ data->no_samples ].int_32bit, data->last_value.int_32bit, csb->percent_change_to_send ) )
                     percent_change_detected = true;
                 break;
-            case IMX_AI_FLOAT :
+            case IMX_FLOAT :
                 if( check_float_percent( data->data[ data->no_samples ].float_32bit, data->last_value.float_32bit, csb->percent_change_to_send ) )
                     percent_change_detected = true;
                 break;
-            case IMX_DI_VARIABLE_LENGTH :
+            case IMX_VARIABLE_LENGTH :
                 break;
-            case IMX_DI_UINT32 :
+            case IMX_UINT32 :
             default :
                 if( check_uint_percent( data->data[ data->no_samples ].uint_32bit, data->last_value.uint_32bit, csb->percent_change_to_send ) )
                     percent_change_detected = true;
@@ -234,7 +249,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 
     data->no_samples += 1;
     data->last_sample_time = current_time;
-    if( csb->data_type == IMX_DI_VARIABLE_LENGTH ) {
+    if( csb->data_type == IMX_VARIABLE_LENGTH ) {
         /*
          * Clear the current data as it has now been saved in the history queue - this pointer is used to determine if the entry needs to be freed. The upload process will free this entry
          */

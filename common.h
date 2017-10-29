@@ -187,23 +187,14 @@ typedef enum {
 } imx_errors_t;
 
 /*
- * Define data types for Controls
+ * Define data types for Controls & Sensors
  */
 typedef enum {
-    IMX_DO_UINT32 = 0,
-    IMX_DO_INT32,
-    IMX_AO_FLOAT,
-    IMX_DO_VARIABLE_LENGTH,
-} imx_do_types_t;
-/*
- * Define data types for Sensors
- */
-typedef enum {
-    IMX_DI_UINT32 = 0,
-    IMX_DI_INT32,
-    IMX_AI_FLOAT,
-    IMX_DI_VARIABLE_LENGTH,
-} imx_di_types_t;
+    IMX_UINT32 = 0,
+    IMX_INT32,
+    IMX_FLOAT,
+    IMX_VARIABLE_LENGTH,
+} imx_data_types_t;
 
 typedef enum {
     IMX_AT_VERBOSE_NONE = 0,
@@ -256,8 +247,9 @@ typedef enum {
 typedef uint32_t imx_status_t;
 
 typedef struct var_data_header {
-    uint16_t pool_id;
-    uint16_t length;
+    unsigned int pool_id : 8;
+    unsigned int reserved : 8;
+    unsigned int length : 16;
     void *next;
 } var_data_header_t;
 

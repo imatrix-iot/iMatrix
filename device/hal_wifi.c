@@ -90,7 +90,7 @@ extern IOT_Device_Config_t device_config;
   * @param  None
   * @retval : None
   */
-uint16_t imx_hal_sample_rssi(uint16_t arg, void *value )
+uint16_t imx_sample_rssi(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);
@@ -103,18 +103,6 @@ uint16_t imx_hal_sample_rssi(uint16_t arg, void *value )
 		return IMX_GENERAL_FAILURE;
 }
 /**
-  * @brief  get the BSSID from the wifi radio
-  * @param  pointer to BSSID
-  * @retval : None
-  */
-void hal_get_wifi_bssid( wiced_mac_t *bssid )
-{
-
-    if( ( icb.wifi_up == true ) && ( device_config.AP_setup_mode == false ) )
-        wwd_wifi_get_bssid( bssid );
-}
-
-/**
   * @brief	get the rssi from the wifi radio
   * @param  None
   * @retval : None
@@ -123,6 +111,7 @@ int32_t hal_get_wifi_rssi(void)
 {
 	int32_t rssi;
 
+	rssi = 0;
     if( ( icb.wifi_up == true ) && ( device_config.AP_setup_mode == false ) )
 		wwd_wifi_get_rssi( &rssi );
 
@@ -133,7 +122,7 @@ int32_t hal_get_wifi_rssi(void)
   * @param  None
   * @retval : None
   */
-uint16_t imx_imx_sample_rfnoise(uint16_t arg, void *value )
+uint16_t imx_sample_rfnoise(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);
@@ -154,9 +143,9 @@ int32_t hal_get_wifi_noise(void)
 {
 	int32_t noise;
 
+	noise = 0;
 	if( ( icb.wifi_up == true ) && ( device_config.AP_setup_mode == false ) )
 		wwd_wifi_get_noise( &noise );
-
 
 	return( noise );
 }
@@ -199,6 +188,7 @@ uint32_t hal_get_wifi_channel(void)
 {
 	uint32_t channel;
 
+	channel = 0;
 	if( icb.wifi_up == true ) {
 		if( device_config.AP_setup_mode == true )
 			wwd_wifi_get_channel( WWD_AP_INTERFACE, &channel );
@@ -206,5 +196,16 @@ uint32_t hal_get_wifi_channel(void)
 			wwd_wifi_get_channel( WWD_STA_INTERFACE, &channel );
 	}
 	return( channel );
+}
+/**
+  * @brief  get the BSSID from the wifi radio
+  * @param  pointer to BSSID
+  * @retval : None
+  */
+void hal_get_wifi_bssid( wiced_mac_t *bssid )
+{
+
+    if( ( icb.wifi_up == true ) && ( device_config.AP_setup_mode == false ) )
+        wwd_wifi_get_bssid( bssid );
 }
 

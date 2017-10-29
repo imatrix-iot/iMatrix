@@ -59,6 +59,13 @@
 #define IMATRIX_MUST_SUPPLY_SAMPLE          0x301
 
 #define IMX_AT_VAR_DATA_TIMEOUT             ( 10000 )   // 10 Seconds total for packet
+/*
+ * Known Variable Length Data formats that we can print
+ */
+typedef enum var_data_types {
+    VR_DATA_MAC_ADDRESS,
+    NO_VR_DATA_TYPES
+} var_data_types_t;
 
 #define IMX_MAX_CONNECTION_RETRY_COUNT      2
 

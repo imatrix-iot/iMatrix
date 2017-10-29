@@ -98,13 +98,13 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 		 */
 //        cli_print( "Setting AT IC%u Control( %s ): %u, data type: %u with value %s\r\n", entry, device_config.ccb[ entry].name, entry, device_config.ccb[ entry].data_type, value );
 		switch( device_config.ccb[ entry ].data_type ) {
-			case IMX_DI_INT32 :
+			case IMX_INT32 :
 				cd[ entry ].last_value.int_32bit = (int32_t) atoi( value );
 				break;
-			case IMX_AI_FLOAT :
+			case IMX_FLOAT :
 				cd[ entry ].last_value.float_32bit = (float) atof( value );
 				break;
-			case IMX_DI_UINT32 :
+			case IMX_UINT32 :
 			default :
 				cd[ entry ].last_value.uint_32bit = (uint32_t) atol( value );
 //                cli_print( "cd @: 0x%08lx, Value Set to: %lu\r\n", (uint32_t) &cd, cd[ AT_CONTROL_START + entry ].last_value.uint_32bit );
@@ -130,14 +130,14 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 		 */
 //        cli_print( "Setting AT Sensor: %u, data type: %u with value %s\r\n", entry, device_config.scb[ entry].data_type, value );
 		switch( device_config.scb[ entry ].data_type ) {
-			case IMX_DI_INT32 :
+			case IMX_INT32 :
 				sd[ entry ].last_value.int_32bit = (int32_t) atoi( value );
 //				cli_print( "Value Set to: %lu\r\n", sd[ AT_SENSOR_START + entry].last_value.int_32bit );
 				break;
-			case IMX_AI_FLOAT :
+			case IMX_FLOAT :
 				sd[ entry ].last_value.float_32bit = (float) atof( value );
 				break;
-			case IMX_DI_UINT32 :
+			case IMX_UINT32 :
 			default :
 				sd[ entry ].last_value.uint_32bit = (uint32_t) atol( value );
 				break;
@@ -169,13 +169,13 @@ uint16_t print_register( peripheral_type_t type, uint16_t entry )
 		if( entry >= device_config.no_controls )
 			return false;
 		switch( device_config.ccb[ entry].data_type ) {
-			case IMX_DI_INT32 :
+			case IMX_INT32 :
 				cli_print( "%d", cd[ entry].last_value.int_32bit );
 				break;
-			case IMX_AI_FLOAT :
+			case IMX_FLOAT :
 				cli_print( "%f", cd[ entry].last_value.float_32bit );
 				break;
-			case IMX_DI_UINT32 :
+			case IMX_UINT32 :
 			default :
 				cli_print( "%u", cd[ entry].last_value.uint_32bit );
 				break;
@@ -184,13 +184,13 @@ uint16_t print_register( peripheral_type_t type, uint16_t entry )
 		if( entry >= device_config.no_sensors )
 			return false;
 		switch( device_config.scb[ entry].data_type ) {
-			case IMX_DI_INT32 :
+			case IMX_INT32 :
 				cli_print( "%d", sd[ entry].last_value.int_32bit );
 				break;
-			case IMX_AI_FLOAT :
+			case IMX_FLOAT :
 				cli_print( "%f", sd[ entry].last_value.float_32bit );
 				break;
-			case IMX_DI_UINT32 :
+			case IMX_UINT32 :
 			default :
 				cli_print( "%u", sd[ entry].last_value.uint_32bit );
 				break;
@@ -212,13 +212,13 @@ uint16_t sample_sensor(uint16_t arg, void *value )
 	if( arg >= device_config.no_sensors )
 		return IMX_GENERAL_FAILURE;
 	switch( device_config.scb[ arg ].data_type ) {
-		case IMX_DI_INT32 :
+		case IMX_INT32 :
 			memcpy( value, &sd[ arg ].last_value.int_32bit, SAMPLE_LENGTH );
 			break;
-		case IMX_AI_FLOAT :
+		case IMX_FLOAT :
 			memcpy( value, &sd[ arg ].last_value.float_32bit, SAMPLE_LENGTH );
 			break;
-		case IMX_DI_UINT32 :
+		case IMX_UINT32 :
 		default :
 			memcpy( value, &sd[ arg ].last_value.uint_32bit, SAMPLE_LENGTH );
 			break;
@@ -237,13 +237,13 @@ uint16_t sample_control(uint16_t arg, void *value )
 	if( arg >= device_config.no_controls )
 		return IMX_GENERAL_FAILURE;
 	switch( device_config.ccb[ arg ].data_type ) {
-		case IMX_DI_INT32 :
+		case IMX_INT32 :
 			memcpy( value, &cd[ arg ].last_value.int_32bit, SAMPLE_LENGTH );
 			break;
-		case IMX_AI_FLOAT :
+		case IMX_FLOAT :
 			memcpy( value, &cd[ arg ].last_value.float_32bit, SAMPLE_LENGTH );
 			break;
-		case IMX_DI_UINT32 :
+		case IMX_UINT32 :
 		default :
 			memcpy( value, &cd[ arg ].last_value.uint_32bit, SAMPLE_LENGTH );
 			break;

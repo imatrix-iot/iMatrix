@@ -63,6 +63,7 @@
  * Known Variable Length Data formats that we can print
  */
 typedef enum var_data_types {
+    VR_DATA_STRING,
     VR_DATA_MAC_ADDRESS,
     NO_VR_DATA_TYPES
 } var_data_types_t;

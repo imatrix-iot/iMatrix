@@ -162,7 +162,7 @@ cli_commands_t command[ NO_CMDS ] = {
         { "f", &cli_dump, DUMP_SFLASH, "f [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of SFLASH data" },
 		{ "get_mac", &get_sn_mac, 0, "Get MAC and SN from Manufacturing server" },
 		{ "get_latest", &cli_get_latest, 0, "Load the latest firmware with OTA" },
-		{ "imatrix", &imatrix_status, 0, "Display status of iMatrix client system" },
+		{ "imx", &imatrix_status, 0, "Display status of iMatrix Client System" },
 		{ "l", &print_lut, 0, "Print the LUT" },
 		{ "led", &cli_set_led, 0, "Set led state <led led_no | state <on|off|blink_rate per second>" },
 		{ "m", &cli_dump, DUMP_MEMORY, "m [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of SRAM data" },

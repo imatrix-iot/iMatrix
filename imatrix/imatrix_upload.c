@@ -53,6 +53,7 @@
 #include "../coap/que_manager.h"
 #include "../coap/add_coap_option.h"
 #include "../cli/interface.h"
+#include "../cli/cli_status.h"
 #include "../networking/utility.h"
 #include "../time/ck_time.h"
 #include "add_internal.h"
@@ -71,8 +72,9 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define MIN_IMATRIX_PACKET	256	// Arbitrary length
-#define URI_PATH_LENGTH		20	// SN is 10 + 4 characters
+#define MIN_IMATRIX_PACKET	256	    // Arbitrary length
+#define MAX_VARIABLE_LENGTH 1024    // Limit to a single UDP Packet for now
+#define URI_PATH_LENGTH		20	    // SN is 10 + 4 characters
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -417,6 +419,7 @@ void imatrix_upload(wiced_time_t current_time)
                                         variable_data_length = data->data[ 1 ].var_data->header.length; // Events have timestamp / Value pairs
                                     else
                                         variable_data_length = data->data[ 0 ].var_data->header.length; // Take first entry
+                                    imx_printf( "Trying to add variable length data record of: %u bytes\r\n", variable_data_length );
                                 }
                                 /*
                                  * See if we have space for at least one header and one record or if Variable Data the length of the data for one sample
@@ -620,6 +623,29 @@ void imatrix_upload(wiced_time_t current_time)
                                         imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
                                     }
                                 } else {
+                                    if( variable_length_data == true ) {
+                                        /*
+                                         * Check if the data is too long to process, even with an empty packet. if so drop it
+                                         */
+                                        if( (variable_data_length >= MAX_VARIABLE_LENGTH ) ) {
+                                            /*
+                                             * If it is not the current value free up resources
+                                             */
+                                            if( csb->sample_rate == 0 ) {
+                                                /*
+                                                 * This is an event entry - put timestamp in first
+                                                 */
+                                                var_data_ptr = 1;
+                                             } else {
+                                                 var_data_ptr = 0;
+                                             }
+
+                                            if( data->data[ var_data_ptr ].var_data != data->last_value.var_data ) {
+                                                imx_printf( "About to free data\r\n" );
+                                                add_var_free_pool( data->data[ var_data_ptr ].var_data );
+                                            }
+                                        }
+                                    }
                                     imx_printf( "\r\niMatrix Packet FULL\r\n" );
                                     packet_full = true;
                                 }
@@ -822,48 +848,57 @@ void imatrix_status( uint16_t arg)
 
     UNUSED_PARAMETER( arg );
 	uint16_t i, j;
+	wiced_time_t current_time;
+    peripheral_type_t type;
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *cs_block;
+    uint16_t no_items;
+
+    wiced_time_get_time( &current_time );
 
 	cli_print( "iMatrix state: " );
     switch( imatrix.state ) {
     	case IMATRIX_INIT :
-    		cli_print( "Initializing - checking for ready to upload" );
+    		cli_print( "Initializing - checking for ready to upload @%lu", (uint32_t) current_time );
     		cli_print( "Current Control/Sensor Data pending upload:\r\n" );
-    		for( i = 0; i < device_config.no_controls; i++ ) {
-    			cli_print( "Control 0x%08lx: %s ", device_config.ccb[ i ].id, device_config.ccb[ i ].name );
-    			if( cd[ i ].no_samples > 0 ) {
-        			for( j = 0; j < cd[ i ].no_samples; j++ ) {
-        				switch( device_config.ccb[ i ].data_type ) {
-        					case IMX_UINT32 :
-        						cli_print( "%lu ", cd[ i ].data[ j ].uint_32bit );
-        						break;
-        					case IMX_INT32 :
-        						cli_print( "%ld ", cd[ i ].data[ j ].int_32bit );
-        						break;
-        					case IMX_FLOAT :
-        						cli_print( "%f ", cd[ i ].data[ j ].float_32bit );
-        						break;
-        				}
-        			}
-    			} else
-    				cli_print( "No Samples stored" );
-    			cli_print( "\r\n" );
-			}
-    		for( i = 0; i < device_config.no_sensors; i++ ) {
-    			cli_print( "Sensor 0x%08lx: %s ", device_config.scb[ i ].id, device_config.scb[ i ].name );
-    			for( j = 0; j < sd[ i ].no_samples; j++ ) {
-    				switch( device_config.scb[ i ].data_type ) {
-    					case IMX_UINT32 :
-    						cli_print( "%lu ", sd[ i ].data[ j ].uint_32bit );
-    						break;
-    					case IMX_INT32 :
-    						cli_print( "%ld ", sd[ i ].data[ j ].int_32bit );
-    						break;
-    					case IMX_FLOAT :
-    						cli_print( "%f ", sd[ i ].data[ j ].float_32bit );
-    						break;
-    				}
-    			}
-				cli_print( "\r\n" );
+    	    for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
+    	        if( type == IMX_CONTROLS ) {
+    	            cs_block = &device_config.ccb[ 0 ];
+    	            csd = &cd[ 0 ];
+    	        } else {
+    	            cs_block = &device_config.scb[ 0 ];
+    	            csd = &sd[ 0 ];
+    	        }
+    	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
+    	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
+    	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
+
+    	        for( i = 0; i < no_items; i++ ) {
+    	            if( cs_block[ i ].enabled == true ) {
+    	                cli_print( "No: %u: 0x%08lx: %32s ", i, device_config.ccb[ i ].id, device_config.ccb[ i ].name );
+    	                if( cd[ i ].no_samples > 0 ) {
+    	                    for( j = 0; j < csd[ i ].no_samples; j++ ) {
+    	                        switch( cs_block[ i ].data_type ) {
+    	                            case IMX_UINT32 :
+    	                                cli_print( "%lu ", csd[ i ].data[ j ].uint_32bit );
+    	                                break;
+    	                            case IMX_INT32 :
+    	                                cli_print( "%ld ", csd[ i ].data[ j ].int_32bit );
+    	                                break;
+    	                            case IMX_FLOAT :
+    	                                cli_print( "%f ", csd[ i ].data[ j ].float_32bit );
+    	                                break;
+    	                            case IMX_VARIABLE_LENGTH :
+    	                                print_var_data( VR_DATA_MAC_ADDRESS, csd[ i ].last_value.var_data );
+    	                                break;
+    	                        }
+    	                    }
+    	                } else {
+    	                    cli_print( "No Samples stored, next sample due @ %lu mSec", ( csd[ i ].last_sample_time + (wiced_time_t) ( cs_block[ i ].sample_rate ) ) - current_time );
+    	                }
+    	                cli_print( "\r\n" );
+    	            }
+    	        }
     		}
     		break;
     	case IMATRIX_LOAD_PACKET :

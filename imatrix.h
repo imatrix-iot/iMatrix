@@ -160,7 +160,7 @@ void imx_init_led_blue_ismart( void );
 void imx_update_led_red_status_ismart( bool state );
 void imx_update_led_green_status_ismart( bool state );
 void imx_update_led_blue_status_ismart( bool state );
-void imx_init_temp(void);
+void imx_init_temp(uint16_t arg);
 uint16_t imx_sample_temp(uint16_t arg, void *value );
 
 uint16_t imx_get_wifi_channel_scb(void);

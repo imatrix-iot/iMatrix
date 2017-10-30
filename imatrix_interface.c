@@ -175,6 +175,8 @@ imx_status_t imx_process(void)
 {
     wiced_time_t current_time;
 
+    wiced_time_get_time( &current_time );
+
     cli_process();
     /*
      * Process controls Controls are set by direct action from logic or from CoAP POST
@@ -192,8 +194,9 @@ imx_status_t imx_process(void)
      * Process iMatrix Uploads
      */
     imatrix_upload( current_time );
-    wiced_time_get_time( &current_time );
+
     process_wifi( current_time );
+
     coap_recv( true );
     coap_transmit( true );
 

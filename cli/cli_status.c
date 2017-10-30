@@ -80,7 +80,7 @@ extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
 /******************************************************
  *               Function Declarations
  ******************************************************/
-static void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data );
+
 /******************************************************
  *               Variable Definitions
  ******************************************************/
@@ -214,13 +214,12 @@ void cli_status( uint16_t arg )
                     }
                     cli_print( ", Errors: %lu, ", cd[ i ].errors );
                     if( cs_block[ i ].sample_rate == 0 )
-                        cli_print( ", Event Driven" );
+                        cli_print( "Event Driven" );
                     else {
                         if( cs_block[ i ].sample_rate >= 1000 )
                             cli_print( "Sample Every: %4.1f Sec", ( (float) cs_block[ i ].sample_rate ) / 1000.0 );
                         else
                             cli_print( "Sample Every: %5u mSec", cs_block[ i ].sample_rate );
-
                     }
                 } else
                     cli_print( "No Data Recorded");
@@ -237,7 +236,7 @@ void cli_status( uint16_t arg )
 
 }
 
-static void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
+void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
 {
     uint16_t i;
     wiced_mac_t *bssid;

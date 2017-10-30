@@ -68,4 +68,5 @@
  *               Function Definitions
  ******************************************************/
 void cli_status( uint16_t arg );
+void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data );
 #endif /* CLI_STATUS_H_ */

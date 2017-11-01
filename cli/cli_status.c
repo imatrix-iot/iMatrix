@@ -247,6 +247,9 @@ void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
     }
 
     switch( data_type ) {
+        case VR_DATA_STRING :
+            cli_print( " String: %s", (char *) var_data->data );
+            break;
         case VR_DATA_MAC_ADDRESS :
             bssid = ( wiced_mac_t *) var_data->data;
             cli_print( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", bssid->octet[ 0 ], bssid->octet[ 1 ], bssid->octet[ 2 ], bssid->octet[ 3 ],

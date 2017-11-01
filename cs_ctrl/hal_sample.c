@@ -101,7 +101,6 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	control_sensor_data_t *data;
 	imx_control_sensor_block_t *csb;
 	imx_functions_t *f;
-	wiced_utc_time_ms_t current_ms_time;
 
 	/*
 	 * iMatrix uses mS sampling - so get time in mS
@@ -246,7 +245,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 			 * is this sample a change of >= Change percentage level - if enabled
 			 *
 			 */
-			if( ( is_later( current_ms_time, data->last_sample_time + (wiced_time_t) ( csb->sample_rate ) ) == true ) ||
+			if( ( is_later( current_time, data->last_sample_time + (wiced_time_t) ( csb->sample_rate ) ) == true ) ||
 				( data->warning != data->last_warning ) ||
 				( percent_change_detected == true ) ) {
 
@@ -259,7 +258,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 					memmove( &data->data[ 0 ], &data->data[ 1 ], ( HISTORY_SIZE - 1 ) * SAMPLE_LENGTH );
 				} else
 					data->no_samples += 1;
-				data->last_sample_time = current_ms_time;
+				data->last_sample_time = current_time;
 				/*
 				 * See if the batch is ready to go
 				 */
@@ -286,9 +285,13 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 			 * see if change in error or all we are getting is errors. - Only send once per batch
 			 */
 			if( ( data->error != data->last_error ) ||
-				( is_later( current_ms_time, data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) ) == true ) ) {
-//				print_status( "Error: %u, Last Error: %u, current_ms_time: %lu, time difference: %lu\r\n", data->error, data->last_error, data->last_sample_time, ( data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) - (uint32_t) current_ms_time )  );
-				data->last_sample_time = current_ms_time;
+				( is_later( current_time, data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) ) == true ) ) {
+/*
+ *
+   				print_status( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", data->error, data->last_error, data->last_sample_time,
+			        ( data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) - (uint32_t) current_ms_time )  );
+*/
+				data->last_sample_time = current_time;
 				data->last_error = data->error;
 				data->send_on_error = true;
 			}

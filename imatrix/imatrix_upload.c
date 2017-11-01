@@ -169,7 +169,7 @@ void imatrix_upload(wiced_time_t current_time)
 
     uint8_t options[ max_options_length ], uri_path[ URI_PATH_LENGTH ], *data_ptr;
     uint16_t packet_length, current_option_number, options_length, remaining_data_length, no_samples, i, j, k, item_count, peripheral, variable_data_length, data_index, var_data_ptr;
-    bool packet_full, variable_length_data;
+    bool packet_full, entry_loaded;
     uint32_t foo32bit;
     wiced_utc_time_ms_t upload_utc_ms_time;
     wiced_iso8601_time_t iso8601_time;
@@ -242,7 +242,7 @@ void imatrix_upload(wiced_time_t current_time)
             					imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
             					        peripheral == IMX_CONTROLS ? "Control" : "Sensor", i, data->no_samples, data->send_batch == true ? "true" : "false" );
             				} else {
-            					imx_printf( "Found %s: %u with error\r\n" , i );
+            					imx_printf( "Found %s: %u with error\r\n" , peripheral == IMX_CONTROLS ? "Control" : "Sensor", i );
             				}
             				imatrix.state = IMATRIX_GET_PACKET;
             				break;
@@ -280,6 +280,9 @@ void imatrix_upload(wiced_time_t current_time)
     		}
     		break;
     	case IMATRIX_LOAD_PACKET :
+    	    /*
+    	     * There is something to do here. First build the packet
+    	     */
     	    imx_set_led( IMX_LED_GREEN, IMX_LED_ON );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
     	    imx_printf( "Sending History to iMatrix Server: %03u.%03u.%03u.%03u ",
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
@@ -297,7 +300,6 @@ void imatrix_upload(wiced_time_t current_time)
     	    }
     		imatrix.sensor_no = 0;
     		imatrix.last_upload_time = current_time;
-
 	        /*
 	         * Prepare a msg
 	         */
@@ -365,9 +367,12 @@ void imatrix_upload(wiced_time_t current_time)
         		add_indoor_location( &upload_data, &remaining_data_length, upload_utc_ms_time );
         	}
         	/*
-        	 * Step thru peripheral records - Controls first then Sensors
+        	 * Step thru peripheral records - Controls first then Sensors.
+        	 *
+        	 * Add data to packet that is ready to send
+        	 *
         	 */
-    	    for( peripheral = 0; peripheral < IMX_NO_PERIPHERAL_TYPES; peripheral++ ) {
+    	    for( peripheral = IMX_CONTROLS; peripheral < IMX_NO_PERIPHERAL_TYPES; peripheral++ ) {
     	    	/*
     	    	 * Step thru record types - Warnings first then regular
     	    	 */
@@ -376,28 +381,15 @@ void imatrix_upload(wiced_time_t current_time)
     	    	} else {
     	    		item_count = device_config.no_sensors;
     	    	}
-            	for( k = 0; ( k < NO_TYPE_OF_RECORDS ) && ( packet_full == false ); k++ ) {
+            	for( k = CHECK_WARNING; ( k < NO_TYPE_OF_RECORDS ) && ( packet_full == false ); k++ ) {
             	    // imx_printf( "Checking: %s, Type: %s\r\n", peripheral == CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
         	        for( i = 0; ( i < item_count ) && ( packet_full == false ); i++ )  {
             	    	if( peripheral == IMX_CONTROLS ) {
             	    		data = &cd[ i ];
                             csb = &device_config.ccb[ i ];
-                            // imx_printf( "Control: %u - Data type: %u\r\n", i, device_config.ccb[ i ].data_type );
-            	    		if( device_config.ccb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
-            	    		    variable_length_data = true;
-            	    		} else
-            	    		    variable_length_data = false;
             	    	} else {
             	    		data = &sd[ i ];
                             csb = &device_config.scb[ i ];
-            	    		// imx_printf( "Sensor: %u - Data type: %u\r\n", i, device_config.scb[ i ].data_type );
-                            if( device_config.scb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
-                                // imx_printf( "Processing Variable length record\r\n" );
-                                variable_length_data = true;
-                            } else
-                                variable_length_data = false;
-//            				imx_printf( "iMatrix - Setting Sensor: %u Data to: 0x%08lx\r\n", i, (uint32_t) data );
-
             	    	}
             	    	/*
             	    	imx_printf( "Checking %s for %s, No Samples: %u, Warning Level: %u\r\n",
@@ -408,30 +400,33 @@ void imatrix_upload(wiced_time_t current_time)
         	        	 *
         	        	 * ADD logic for WHILE LOOP to continue processing variable length data if available.
         	        	 */
+            	    	entry_loaded = false;
             	    	do {
                             if( ( ( data->no_samples > 0 ) && ( data->warning != data->last_warning ) && ( k == CHECK_WARNING )  ) ||
                                 ( ( data->no_samples > 0 ) && ( k == CHECK_REGULAR ) ) ||
                                 ( data->send_on_error == true ) ) {
-                                data->last_warning = data->warning; // Always set
+                                data->last_warning = data->warning; // Save last warning
                                 data->send_on_error = false;        // Not after this send
-                                if( variable_length_data == true )  {
-                                    if( csb->sample_rate == 0 )
-                                        variable_data_length = data->data[ 1 ].var_data->header.length; // Events have timestamp / Value pairs
-                                    else
-                                        variable_data_length = data->data[ 0 ].var_data->header.length; // Take first entry
-                                    imx_printf( "Trying to add variable length data record of: %u bytes\r\n", variable_data_length );
-                                }
-                                /*
-                                 * See if we have space for at least one header and one record or if Variable Data the length of the data for one sample
-                                 */
-                                imx_printf( "*** Check - Remaining Length %u, Header + 1 sample: %u, Header + all samples: %u",
-                                        remaining_data_length, ( sizeof( header_t ) + SAMPLE_LENGTH ),( sizeof( header_t ) + ( SAMPLE_LENGTH * data->no_samples ) ) );
-                                if( ( ( variable_length_data == false ) && ( remaining_data_length >= ( sizeof( header_t ) + SAMPLE_LENGTH ) ) ) ||
-                                    ( ( variable_length_data == true ) && ( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) ) ) {
+                                // imx_printf( "%s: %u - Data type: %u\r\n", ( peripheral == IMX_CONTROLS ) ? "Control" : "Sensor", i, csb[ i ].data_type );
+                                if( csb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
                                     /*
-                                     * Load data into packet - Can be Variable length or variable number of samples
+                                     * Process Variable Length record
                                      */
-                                    if( variable_length_data == true ) {
+                                    if( csb->sample_rate == 0 ) {
+                                        /*
+                                         * This is an event entry - timestamp is first item
+                                         */
+                                        var_data_ptr = 1;
+                                     } else {
+                                         var_data_ptr = 0;
+                                     }
+
+                                    variable_data_length = data->data[ var_data_ptr ].var_data->header.length; // Events have timestamp / Value pairs
+                                    imx_printf( "Trying to add variable length data record of: %u bytes\r\n", variable_data_length );
+                                    if( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) {
+                                        /*
+                                         * Load data into packet
+                                         */
                                         /*
                                          * Load first variable length record
                                          */
@@ -481,10 +476,8 @@ void imatrix_upload(wiced_time_t current_time)
                                              * This is an event entry - put timestamp in first
                                              */
                                             upload_data->data[ data_index++ ].uint_32bit = htonl( data->data[ 0 ].uint_32bit );
-                                            var_data_ptr = 1;
                                             no_samples = 2; // Two samples for event data
                                          } else {
-                                             var_data_ptr = 0;
                                             no_samples = 1; // One sample for Time Series data
                                          }
                                         data_ptr =  data->data[ var_data_ptr ].var_data->data;
@@ -516,6 +509,9 @@ void imatrix_upload(wiced_time_t current_time)
                                             data->no_samples = 0;   // No need to move any data
                                             data->send_batch = false;
                                         } else {
+                                            /*
+                                             * Move data up and free up variable data records
+                                             */
                                             memmove( &data->data[ 0 ].uint_32bit, &data->data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
                                             upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( data->no_samples - no_samples ) ) );
                                             data->no_samples = data->no_samples - no_samples;
@@ -533,8 +529,49 @@ void imatrix_upload(wiced_time_t current_time)
                                         imx_printf( "Added %lu Bytes\r\n", foo32bit );
                                         upload_data = ( upload_data_t *) ( uint32_t) ( upload_data ) + foo32bit;
                                         remaining_data_length -= foo32bit;
+                                        /*
+                                         * Free up packet if not current value
+                                         */
+                                        if( data->data[ var_data_ptr ].var_data != data->last_value.var_data ) {
+                                            imx_printf( "About to free data\r\n" );
+                                            add_var_free_pool( data->data[ var_data_ptr ].var_data );
+                                            memmove( &data->data[ 0 ].uint_32bit, &data->data[ 1 ].uint_32bit, SAMPLE_LENGTH * 1 );
+                                        }
+                                        entry_loaded = true;
                                         imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
                                     } else {
+                                        /*
+                                         *  Can not fit in this packet
+                                         */
+                                        packet_full = true;
+                                        /*
+                                         * Check for long variable length packet that is too big for ANY UDP packet, and discard
+                                         */
+                                        if( (variable_data_length >= MAX_VARIABLE_LENGTH ) ) {
+                                            imx_printf( "Discarding Variable length data, too long to process, %u Bytes\r\n", variable_data_length );
+                                            /*
+                                             * If it is not the current value free up resources
+                                             */
+                                            if( data->last_value.var_data != data->data[ var_data_ptr ].var_data ) {
+                                                imx_printf( "About to free data\r\n" );
+                                                add_var_free_pool( data->data[ var_data_ptr ].var_data );
+                                                /*
+                                                 * Move data up in history
+                                                 */
+                                                memmove( &data->data[ 0 ].uint_32bit, &data->data[ 1 ].uint_32bit, SAMPLE_LENGTH * 1 );
+                                            }
+                                            /*
+                                             * Sanity check
+                                             */
+                                            if( data->no_samples > 0 )
+                                                data->no_samples -= 1;
+                                        }
+                                    }
+                                } else {
+                                    /*
+                                     * Process Regular data record
+                                     */
+                                    if( remaining_data_length >= ( sizeof( header_t ) + SAMPLE_LENGTH ) ) {
                                         /*
                                          * Process a regular set of samples
                                          */
@@ -554,8 +591,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             no_samples = ( remaining_data_length - sizeof( header_t ) ) / ( SAMPLE_LENGTH );
                                             imx_printf( " *** - Can Can Fit: %u\r\n", no_samples );
                                         }
-                                        imx_printf( "Adding %u samples for %s: %u - ID: 0x%08lx ",
-                                                no_samples, peripheral == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
+                                        imx_printf( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, peripheral == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
                                         /*
                                          * Set up the header and copy in the samples that will fit
                                          */
@@ -612,7 +648,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             memmove( &data->data[ 0 ].uint_32bit, &data->data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
                                             upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( data->no_samples - no_samples ) ) );
                                             data->no_samples = data->no_samples - no_samples;
-                                            packet_full = true;
+                                            entry_loaded = true;
                                         }
                                         /*
                                         * Update the pointer and amount number of bytes left in buffer
@@ -621,35 +657,15 @@ void imatrix_upload(wiced_time_t current_time)
                                         upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
                                         remaining_data_length -= foo32bit;
                                         imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
+                                    } else {
+                                        packet_full = true;
                                     }
-                                } else {
-                                    if( variable_length_data == true ) {
-                                        /*
-                                         * Check if the data is too long to process, even with an empty packet. if so drop it
-                                         */
-                                        if( (variable_data_length >= MAX_VARIABLE_LENGTH ) ) {
-                                            /*
-                                             * If it is not the current value free up resources
-                                             */
-                                            if( csb->sample_rate == 0 ) {
-                                                /*
-                                                 * This is an event entry - put timestamp in first
-                                                 */
-                                                var_data_ptr = 1;
-                                             } else {
-                                                 var_data_ptr = 0;
-                                             }
-
-                                            if( data->data[ var_data_ptr ].var_data != data->last_value.var_data ) {
-                                                imx_printf( "About to free data\r\n" );
-                                                add_var_free_pool( data->data[ var_data_ptr ].var_data );
-                                            }
-                                        }
-                                    }
-                                    imx_printf( "\r\niMatrix Packet FULL\r\n" );
-                                    packet_full = true;
+                                    entry_loaded = true;
                                 }
                             } else {
+                                /*
+                                 * Nothing matched in this entry
+                                 */
                                 /*
                                 if( k == CHECK_WARNING )
                                     imx_printf( "No Warning Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
@@ -657,7 +673,9 @@ void imatrix_upload(wiced_time_t current_time)
                                     imx_printf( "No History Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
                                 */
                             }
-            	    	} while( false && ( packet_full == false ) );   /* Add logic for multiple variable length data processing */
+                            if( packet_full == true )
+                                imx_printf( "\r\niMatrix Packet FULL\r\n" );
+            	    	} while( ( packet_full == false ) && (entry_loaded == false ) );   /* Add logic for multiple variable length data processing */
         	        }
             	}
     	    }

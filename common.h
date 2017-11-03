@@ -167,6 +167,7 @@ typedef enum {
  */
 typedef enum {
     IMX_SUCCESS = 0,
+    IMX_NO_DATA,
     IMX_INVALID_ENTRY,
     IMX_CONTROL_DISABLED,
     IMX_SENSOR_DISABLED,

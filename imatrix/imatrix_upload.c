@@ -382,7 +382,7 @@ void imatrix_upload(wiced_time_t current_time)
     	    		item_count = device_config.no_sensors;
     	    	}
             	for( k = CHECK_WARNING; ( k < NO_TYPE_OF_RECORDS ) && ( packet_full == false ); k++ ) {
-            	    // imx_printf( "Checking: %s, Type: %s\r\n", peripheral == CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
+            	    imx_printf( "Checking: %s, Type: %s\r\n", peripheral == IMX_CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
         	        for( i = 0; ( i < item_count ) && ( packet_full == false ); i++ )  {
             	    	if( peripheral == IMX_CONTROLS ) {
             	    		data = &cd[ i ];
@@ -401,13 +401,14 @@ void imatrix_upload(wiced_time_t current_time)
         	        	 * ADD logic for WHILE LOOP to continue processing variable length data if available.
         	        	 */
             	    	entry_loaded = false;
-            	    	do {
-                            if( ( ( data->no_samples > 0 ) && ( data->warning != data->last_warning ) && ( k == CHECK_WARNING )  ) ||
-                                ( ( data->no_samples > 0 ) && ( k == CHECK_REGULAR ) ) ||
-                                ( data->send_on_error == true ) ) {
+                        if( ( ( data->no_samples > 0 ) && ( data->warning != data->last_warning ) && ( k == CHECK_WARNING )  ) ||
+                            ( ( data->no_samples > 0 ) && ( k == CHECK_REGULAR ) ) ||
+                            ( data->send_on_error == true ) ) {
+                            do {
+
                                 data->last_warning = data->warning; // Save last warning
                                 data->send_on_error = false;        // Not after this send
-                                // imx_printf( "%s: %u - Data type: %u\r\n", ( peripheral == IMX_CONTROLS ) ? "Control" : "Sensor", i, csb[ i ].data_type );
+                                imx_printf( "%s: %u - Data type: %u ", ( peripheral == IMX_CONTROLS ) ? "Control" : "Sensor", i, csb[ i ].data_type );
                                 if( csb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
                                     /*
                                      * Process Variable Length record
@@ -567,6 +568,8 @@ void imatrix_upload(wiced_time_t current_time)
                                                 data->no_samples -= 1;
                                         }
                                     }
+                                    if( data->no_samples == 0 )
+                                        data->send_batch = false;
                                 } else {
                                     /*
                                      * Process Regular data record
@@ -578,6 +581,7 @@ void imatrix_upload(wiced_time_t current_time)
                                         /*
                                          * See how many we can fit
                                          */
+                                        imx_printf( "Checking to see if %u samples can fit in %u", data->no_samples, remaining_data_length );
                                         if( remaining_data_length >= ( sizeof( header_t ) + ( SAMPLE_LENGTH * data->no_samples ) ) ) {
                                             /*
                                              * They can all fit
@@ -662,20 +666,20 @@ void imatrix_upload(wiced_time_t current_time)
                                     }
                                     entry_loaded = true;
                                 }
-                            } else {
-                                /*
-                                 * Nothing matched in this entry
-                                 */
-                                /*
-                                if( k == CHECK_WARNING )
-                                    imx_printf( "No Warning Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
-                                else
-                                    imx_printf( "No History Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
-                                */
-                            }
-                            if( packet_full == true )
-                                imx_printf( "\r\niMatrix Packet FULL\r\n" );
-            	    	} while( ( packet_full == false ) && (entry_loaded == false ) );   /* Add logic for multiple variable length data processing */
+                                if( packet_full == true )
+                                    imx_printf( "\r\niMatrix Packet FULL\r\n" );
+                            } while( ( packet_full == false ) && (entry_loaded == false ) );   /* Add logic for multiple variable length data processing */
+                        } else {
+                            /*
+                             * Nothing matched in this entry
+                             */
+                            /*
+                            if( k == CHECK_WARNING )
+                                imx_printf( "No Warning Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
+                            else
+                                imx_printf( "No History Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
+                            */
+                        }
         	        }
             	}
     	    }

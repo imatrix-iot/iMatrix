@@ -164,7 +164,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 			*/
 		}
 		if( status == IMX_SUCCESS ) {
-            csb->valid = true;  // We have a sample
+            csb->valid = true;      // We have a sample
 			data->error = status;	// Reset for correction
 			/*
 			 * Check if the data is in warning levels for the sensor
@@ -277,7 +277,9 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 					data->send_batch = true;	// Send this now
 				}
 			}
-		} else {
+		} else if( status == IMX_NO_DATA )
+		    ;   // Do nothing
+		else {
 //			print_status( "Error Reading sensor %u\r\n", *active );
 			data->errors += 1;
 			data->error = status;

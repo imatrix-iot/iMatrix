@@ -100,7 +100,7 @@ uint16_t imx_sample_rssi(uint16_t arg, void *value )
 		memcpy( value, &foo, sizeof( foo ) );
 		return IMX_SUCCESS;
 	} else
-		return IMX_GENERAL_FAILURE;
+		return IMX_NO_DATA;
 }
 /**
   * @brief	get the rssi from the wifi radio
@@ -132,7 +132,7 @@ uint16_t imx_sample_rfnoise(uint16_t arg, void *value )
 		memcpy( value, &foo, sizeof( foo ) );
 		return IMATRIX_SUCCESS;
 	} else
-		return IMX_GENERAL_FAILURE;
+		return IMX_NO_DATA;
 }
 /**
   * @brief	get the noise from the wifi radio
@@ -177,7 +177,7 @@ uint16_t imx_sample_wifi_channel(uint16_t arg, void *value )
 		memcpy( value, &foo, sizeof( foo ) );
 		return IMATRIX_SUCCESS;
 	} else
-		return IMX_GENERAL_FAILURE;
+		return IMX_NO_DATA;
 }
 /**
   * @brief	get the wifi radio channel

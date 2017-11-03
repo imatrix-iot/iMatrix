@@ -92,27 +92,34 @@ extern iMatrix_Control_Block_t icb;
 void log_wifi_connection(void)
 {
     int32_t channel, noise, rssi;
-    wiced_mac_t bssid;
     var_data_entry_t *var_data_ptr;
 
     if( ( icb.wifi_up == false ) || ( device_config.AP_setup_mode == true ) )
         return;     // Nothing to log
 
-    imx_printf( "Logging Wi Fi Connection:" );
-
     if( device_config.log_wifi_AP == true ) {
-        channel = hal_get_wifi_channel();
+        imx_printf( "Logging Wi Fi Connection:" );
         /*
-         * Get a buffer to put the data in
+         * Add Channel
          */
-        var_data_ptr = get_var_data( sizeof( wiced_mac_t ) );
-        var_data_ptr->header.length = sizeof( wiced_mac_t );
-        hal_get_wifi_bssid( &bssid );
-        imx_printf( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", bssid.octet[ 0 ], bssid.octet[ 1 ], bssid.octet[ 2 ], bssid.octet[ 3 ],
-                bssid.octet[ 4 ], bssid.octet[ 5 ] );
-        imx_set_sensor( imx_get_wifi_bssid_scb(), (void *) var_data_ptr->data );
+        channel = hal_get_wifi_channel();
         imx_printf( " Channel: %ld", channel );
         imx_set_sensor( imx_get_wifi_channel_scb(), &channel );
+        /*
+         * This is variable length data, get a buffer to put the data in
+         */
+        var_data_ptr = get_var_data( sizeof( wiced_mac_t ) );
+        if( var_data_ptr != NULL ) {
+            /*
+             * Add BSSID Address
+             */
+            hal_get_wifi_bssid( ( wiced_mac_t *) var_data_ptr->data );
+            var_data_ptr->header.length = sizeof( wiced_mac_t );
+            imx_printf( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", var_data_ptr->data[ 0 ], var_data_ptr->data[ 1 ], var_data_ptr->data[ 2 ], var_data_ptr->data[ 3 ],
+                    var_data_ptr->data[ 4 ], var_data_ptr->data[ 5 ] );
+            imx_set_sensor( imx_get_wifi_bssid_scb(), (void *) var_data_ptr );
+        } else
+            imx_printf( "Unable to get variable length data buffer\r\n" );
     }
 
     if( device_config.log_wifi_rssi == true ) {

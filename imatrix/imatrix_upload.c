@@ -168,7 +168,7 @@ void imatrix_upload(wiced_time_t current_time)
     const uint16_t max_options_length = 30;
 
     uint8_t options[ max_options_length ], uri_path[ URI_PATH_LENGTH ], *data_ptr;
-    uint16_t packet_length, current_option_number, options_length, remaining_data_length, no_samples, i, j, k, item_count, peripheral, variable_data_length, data_index, var_data_ptr;
+    uint16_t packet_length, current_option_number, options_length, remaining_data_length, no_samples, i, j, k, item_count, peripheral, variable_data_length, data_index, var_data_index;
     bool packet_full, entry_loaded;
     uint32_t foo32bit;
     wiced_utc_time_ms_t upload_utc_ms_time;
@@ -405,25 +405,24 @@ void imatrix_upload(wiced_time_t current_time)
                             ( ( data->no_samples > 0 ) && ( k == CHECK_REGULAR ) ) ||
                             ( data->send_on_error == true ) ) {
                             do {
-
                                 data->last_warning = data->warning; // Save last warning
                                 data->send_on_error = false;        // Not after this send
-                                imx_printf( "%s: %u - Data type: %u ", ( peripheral == IMX_CONTROLS ) ? "Control" : "Sensor", i, csb[ i ].data_type );
-                                if( csb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
+                                imx_printf( "%s - %s: %u - Data type: %u ", ( peripheral == IMX_CONTROLS ) ? "Control" : "Sensor", csb->name, i, csb->data_type );
+                                if( csb->data_type == IMX_VARIABLE_LENGTH ) {
                                     /*
                                      * Process Variable Length record
                                      */
                                     if( csb->sample_rate == 0 ) {
                                         /*
-                                         * This is an event entry - timestamp is first item
+                                         * This is an event entry - timestamp is first item, sample is second entry
                                          */
-                                        var_data_ptr = 1;
+                                        var_data_index = 1;
                                      } else {
-                                         var_data_ptr = 0;
+                                         var_data_index = 0;
                                      }
 
-                                    variable_data_length = data->data[ var_data_ptr ].var_data->header.length; // Events have timestamp / Value pairs
-                                    imx_printf( "Trying to add variable length data record of: %u bytes\r\n", variable_data_length );
+                                    variable_data_length = data->data[ var_data_index ].var_data->header.length; // Events have timestamp / Value pairs
+                                    imx_printf( "Trying to add variable length data record, ptr @ 0x%08x of: %u bytes\r\n", data->data[ var_data_index ].uint_32bit, variable_data_length );
                                     if( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) {
                                         /*
                                          * Load data into packet
@@ -481,7 +480,7 @@ void imatrix_upload(wiced_time_t current_time)
                                          } else {
                                             no_samples = 1; // One sample for Time Series data
                                          }
-                                        data_ptr =  data->data[ var_data_ptr ].var_data->data;
+                                        data_ptr =  data->data[ var_data_index ].var_data->data;
                                         /*
                                          * Data for variable length data is stored in a structure with the length in the header.
                                          */
@@ -499,9 +498,9 @@ void imatrix_upload(wiced_time_t current_time)
                                         /*
                                          * Now this data is loaded in structure, If it is not the current value free up resources
                                          */
-                                        if( data->data[ var_data_ptr ].var_data != data->last_value.var_data ) {
+                                        if( data->data[ var_data_index ].var_data != data->last_value.var_data ) {
                                             imx_printf( "About to free data\r\n" );
-                                            add_var_free_pool( data->data[ var_data_ptr ].var_data );
+                                            add_var_free_pool( data->data[ var_data_index ].var_data );
                                         }
                                         /*
                                          * Move up the data and re calculate the last sample time
@@ -527,17 +526,8 @@ void imatrix_upload(wiced_time_t current_time)
                                                 + SAMPLE_LENGTH                                         // Data length
                                                 + variable_data_length                                  // Data + padding
                                                 + ( ( variable_data_length % SAMPLE_LENGTH == 0 ) ? 0 : ( SAMPLE_LENGTH - ( variable_data_length % SAMPLE_LENGTH ) ) );
-                                        imx_printf( "Added %lu Bytes\r\n", foo32bit );
                                         upload_data = ( upload_data_t *) ( uint32_t) ( upload_data ) + foo32bit;
                                         remaining_data_length -= foo32bit;
-                                        /*
-                                         * Free up packet if not current value
-                                         */
-                                        if( data->data[ var_data_ptr ].var_data != data->last_value.var_data ) {
-                                            imx_printf( "About to free data\r\n" );
-                                            add_var_free_pool( data->data[ var_data_ptr ].var_data );
-                                            memmove( &data->data[ 0 ].uint_32bit, &data->data[ 1 ].uint_32bit, SAMPLE_LENGTH * 1 );
-                                        }
                                         entry_loaded = true;
                                         imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
                                     } else {
@@ -553,9 +543,9 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * If it is not the current value free up resources
                                              */
-                                            if( data->last_value.var_data != data->data[ var_data_ptr ].var_data ) {
+                                            if( data->last_value.var_data != data->data[ var_data_index ].var_data ) {
                                                 imx_printf( "About to free data\r\n" );
-                                                add_var_free_pool( data->data[ var_data_ptr ].var_data );
+                                                add_var_free_pool( data->data[ var_data_index ].var_data );
                                                 /*
                                                  * Move data up in history
                                                  */

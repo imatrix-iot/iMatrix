@@ -249,7 +249,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 				( data->warning != data->last_warning ) ||
 				( percent_change_detected == true ) ) {
 
-			    imx_printf( "Saving %s value for sensor: %u - %s - Saved entries: %u\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", *active, device_config.scb[ *active ].name, ( data->no_samples + 1 ) );
+			    // imx_printf( "Saving %s value for sensor: %u - %s - Saved entries: %u\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", *active, device_config.scb[ *active ].name, ( data->no_samples + 1 ) );
 
 				/*
 				 * Check for overflow - Save only the last sample values

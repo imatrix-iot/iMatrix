@@ -96,7 +96,6 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 {
 	uint16_t i;
 	bool percent_change_detected;
-	var_data_entry_t *var_data_ptr;
 	control_sensor_data_t *data;
 	imx_control_sensor_block_t *csb;
 	wiced_time_t current_time;
@@ -118,10 +117,9 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 		else {
 			data = &sd[ entry ];
 			csb = &device_config.scb[ entry ];
-	        imx_printf( "Sample - Setting Sensor %u Data @: 0x%08lx\r\n", entry, (uint32_t) data );
-//			imx_printf( "Event Sensor: %u\r\n", entry );
 		}
 	}
+    imx_printf( "Event - Setting %s %u Data @: 0x%08lx\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", entry, (uint32_t) data );
     /*
      * Check for overflow - Save only the last sample values
      */
@@ -136,20 +134,28 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     wiced_time_get_utc_time( &upload_utc_time );
     memcpy( &data->data[ data->no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
     data->no_samples += 1;
+    /*
+     * Add Data
+     */
     if( csb->data_type == IMX_VARIABLE_LENGTH ) {
+        return;     // do not process at this
+
+        var_data_entry_t *var_data_ptr;
         var_data_ptr = (var_data_entry_t *) value;
-        memcpy( &data->data[ data->no_samples ], var_data_ptr, SAMPLE_LENGTH );
+        imx_printf( "Adding variable length data %u Bytes\r\n", var_data_ptr->header.length );
         if( ( data->no_samples == 1 ) && ( data->last_value.var_data != NULL ) ){
             /*
              * Free the last value as it has been kept as a current value, old data has been sent to iMatrix
              */
                 add_var_free_pool( data->last_value.var_data );
         }
-        memcpy( &data->last_value, var_data_ptr, SAMPLE_LENGTH );
-    } else {
-        memcpy( &data->data[ data->no_samples ], value, SAMPLE_LENGTH );
-        memcpy( &data->last_value, value, SAMPLE_LENGTH );
     }
+
+    /*
+     * All Data is really just 32 bit - value or point to variable length
+     */
+    memcpy( &data->data[ data->no_samples ].uint_32bit, value, SAMPLE_LENGTH );
+    memcpy( &data->last_value, value, SAMPLE_LENGTH );
     csb->valid = true;  // We have a sample
 
     /*
@@ -247,14 +253,13 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
         }
     }
 
+    /*
+     * Done processing this item - its in the history and saved as current value
+     */
     data->no_samples += 1;
+
     data->last_sample_time = current_time;
-    if( csb->data_type == IMX_VARIABLE_LENGTH ) {
-        /*
-         * Clear the current data as it has now been saved in the history queue - this pointer is used to determine if the entry needs to be freed. The upload process will free this entry
-         */
-        data->last_value.var_data = NULL;
-    }
+
     imx_printf( "Event added\r\n" );
     /*
      * See if the batch is ready to go now
@@ -283,5 +288,8 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
         data->send_on_error = true;
     }
 
+    imx_printf( "Event Added Data History now contains: %u Samples\r\n", data->no_samples );
+    for( i = 0; i < (data->no_samples ); i+= 2 )
+        imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, data->data[ i ], data->data[ i + 1] );
 }
 

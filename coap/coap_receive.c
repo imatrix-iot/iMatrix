@@ -217,6 +217,7 @@ void coap_recv(uint16_t process_to_end )
             /*
              * We have a message - process it
              */
+///*
             imx_printf( "UDP from IP %u.%u.%u.%u:%d Data: ",
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 24 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 16 ) & 0xff ),
@@ -227,7 +228,7 @@ void coap_recv(uint16_t process_to_end )
             imx_printf( "\r\nCoap MSG Version: %u, Type: %u, Token Length: %u, Code: %u.%02u, Message ID: %.4x, Length: %u\r\n",
                     msg->coap.header.ver, msg->coap.header.t, msg->coap.header.tkl, MSG_CLASS(msg->coap.header.code), MSG_DETAIL(msg->coap.header.code),
                     msg->coap.header.id, msg->coap.msg_length );
-
+//*/
             /*
              * Process a received CoAP message - based on the Type
              * Do some basic checks to see if this is valid

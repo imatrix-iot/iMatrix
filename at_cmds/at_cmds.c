@@ -96,7 +96,7 @@ void cli_at( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 	bool process_ct = false;
-	uint16_t at_register, result, base, count, i;
+	uint16_t at_register, result, i;
 	peripheral_type_t type;
 	char *token;
 
@@ -126,15 +126,6 @@ void cli_at( uint16_t arg )
 	        cli_print( "&ICn - ? - Get value for Control register n | = <xx> - Set Control Register n to value xxx. Value must match data type\r\n" );
 	        cli_print( "&IP - Set Provisioning Mode\r\n" );
 	        cli_print( "&ISn - ? - Get value for Sensor register n\r\n" );
-	        cli_print( "System Defined with the following Controls & Sensors\r\n" );
-	        count = device_config.no_at_controls;
-	        base = device_config.at_control_start;
-	        for( at_register = 0; at_register < count; at_register++ )
-	            cli_print( "C%u - %s\r\n", at_register, device_config.ccb[ base + at_register  ].name );
-            count = device_config.no_at_sensors;
-	        base = device_config.at_sensor_start;
-            for( at_register = 0; at_register < count; at_register++ )
-                cli_print( "S%u - %s\r\n", at_register, device_config.scb[ base + at_register ].name );
 	    } else if( token[ 0 ] == 'E') {
 	        /*
 	         * Process E

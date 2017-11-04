@@ -277,6 +277,9 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 					data->send_batch = true;	// Send this now
 				}
 			}
+		} else if( status == IMX_SAVE_VALUE_ONLY ) {
+            csb->valid = true;      // We have a sample
+            data->last_value.uint_32bit = data->data[ data->no_samples ].uint_32bit;    // save value for reference
 		} else if( status == IMX_NO_DATA )
 		    ;   // Do nothing
 		else {

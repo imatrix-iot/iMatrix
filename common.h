@@ -92,13 +92,6 @@
 #define IMX_IMATRIX_URI_LENGTH          ( 64 )
 #define IMX_IMATRIX_SITE_LENGTH         ( 64 )
 
-//#define IMX_USE_HOT_SPOT
-
-#ifdef USE_HOT_SPOT
-#define IMX_DEFAULT_ST_SSID             "2ROOS Mobile"
-#define IMX_DEFAULT_ST_KEY              "happydog"
-#define IMX_DEFAULT_ST_SECURITY         WICED_SECURITY_WPA2_AES_PSK
-#else
 /*
  * Options are
  *
@@ -125,14 +118,6 @@
 
  *
  */
-#define IMX_DEFAULT_ST_SSID             "SierraTelecom"
-#define IMX_DEFAULT_ST_KEY              "happydog"
-#define IMX_DEFAULT_ST_SECURITY         WICED_SECURITY_WPA2_AES_PSK
-#endif
-
-#define IMX_DEFAULT_AP_SSID             "ISMART-ConnectKit"
-#define IMX_DEFAULT_AP_KEY              ""
-#define IMX_DEFAULT_AP_SECURITY         WICED_SECURITY_OPEN
 
 #define IMX_SEC_IN_DAY                  ( 24UL * 60UL * 60UL )
 /*
@@ -168,6 +153,7 @@ typedef enum {
 typedef enum {
     IMX_SUCCESS = 0,
     IMX_NO_DATA,
+    IMX_SAVE_VALUE_ONLY,    // Used when sampling but does not require saving in history
     IMX_INVALID_ENTRY,
     IMX_CONTROL_DISABLED,
     IMX_SENSOR_DISABLED,
@@ -282,14 +268,18 @@ typedef struct {
     char imatrix_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char ota_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char manufacturing_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
+    char default_ap_ssid[ IMX_SSID_LENGTH + 1];
+    char default_ap_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
+    char default_st_ssid[ IMX_SSID_LENGTH + 1 ];
+    char default_st_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
+    uint16_t default_ap_eap_mode;
+    uint16_t default_st_eap_mode;
+    uint32_t default_ap_security_mode;
+    uint32_t default_st_security_mode;
     uint16_t no_sensors;
     uint16_t no_controls;
     uint16_t no_arduino_sensors;
     uint16_t no_arduino_controls;
-    uint16_t ap_eap_mode;
-    uint16_t st_eap_mode;
-    uint32_t ap_security_mode;
-    uint32_t st_security_mode;
     uint32_t product_capabilities;
     uint32_t product_id;
     uint32_t manufactuer_id;
@@ -300,10 +290,11 @@ typedef struct {
     float longitude;
     float latitude;
     float elevation;
-    unsigned int at_command_mode    : 1;                // What type of command interface is used
-    unsigned int log_wifi_AP        : 1;
-    unsigned int log_wifi_rssi      : 1;
-    unsigned int log_wifi_rfnoise   : 1;
+    unsigned int start_in_station_mode  : 1;                // Start Client with default Station Settings - Use for Development only
+    unsigned int at_command_mode        : 1;                // What type of command interface is used
+    unsigned int log_wifi_AP            : 1;
+    unsigned int log_wifi_rssi          : 1;
+    unsigned int log_wifi_rfnoise       : 1;
     imx_led_functions_t led_functions[ IMX_NO_LEDS ];   // Red, Green, Blue
 } imx_imatrix_init_config_t;
 
@@ -316,11 +307,13 @@ typedef struct control_sensor_block {
     unsigned int enabled                : 1;    // 0    Is this entry used
     unsigned int read_only              : 1;    // 1    Read only Sensor (Internal - Can not change with AT command)
     unsigned int valid                  : 1;    // 2    Has data be read yet
-    unsigned int send_on_percent_change : 1;    // 3
+    unsigned int send_on_percent_change : 1;    // 3    Do you send update if this changes by a percentage
     unsigned int data_type              : 2;    // 4-5  Standard data types, Int Uint Float and Variable length
-    unsigned int use_warning_level_low  : 3;    // 6-7
-    unsigned int use_warning_level_high : 3;    // 8-9
-    unsigned int reserved               : 17;   // 10-31
+    unsigned int use_warning_level_low  : 3;    // 6-7  What warning levels for low levels do we notify on
+    unsigned int use_warning_level_high : 3;    // 8-9  What warning levels for high levels do we notify on
+    unsigned int set_default            : 1;    // 10   Does the system set the default value
+    unsigned int send_imatrix           : 1;    // 11   Does the system send this entry to iMatrix
+    unsigned int reserved               : 16;   // 12-31
     data_32_t default_value;
     data_32_t warning_level_low[ WARNING_LEVELS ];
     data_32_t warning_level_high[ WARNING_LEVELS ];

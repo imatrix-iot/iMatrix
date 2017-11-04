@@ -346,6 +346,10 @@ typedef struct IOT_Device_Config {
     char device_name[ IMX_DEVICE_NAME_LENGTH + 1 ];
     serial_number_t sn;
     char device_serial_number[ IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ];
+    char default_ap_ssid[ IMX_SSID_LENGTH + 1];
+    char default_ap_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
+    char default_st_ssid[ IMX_SSID_LENGTH + 1 ];
+    char default_st_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
     char ap_ssid[ IMX_SSID_LENGTH + 1];
     char ap_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
     char st_ssid[ IMX_SSID_LENGTH + 1 ];
@@ -359,11 +363,11 @@ typedef struct IOT_Device_Config {
     uint16_t no_controls;
     uint16_t no_arduino_sensors;
     uint16_t no_arduino_controls;
-    uint16_t no_at_controls;
-    uint16_t at_control_start;
-    uint16_t no_at_sensors;
-    uint16_t at_sensor_start;
     uint16_t AT_variable_data_timeout;      // Duration for time for data to load a packet
+    uint16_t default_ap_eap_mode;
+    uint16_t default_st_eap_mode;
+    uint32_t default_ap_security_mode;
+    uint32_t default_st_security_mode;
     uint16_t ap_eap_mode;
     uint16_t st_eap_mode;
     uint32_t ap_security_mode;

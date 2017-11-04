@@ -220,13 +220,14 @@ void coap_transmit( uint16_t process_to_end )
 
             if( protocol == COMM_UDP ) {
                 /* Send the UDP packet */
+/*
                 imx_printf( "Sending UDP Packet to: %u.%u.%u.%u data length: %u \r\n",
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 24 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >> 16 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >>  8 ) & 0xff ),
                     (unsigned char) ( ( msg->coap.ip_addr.ip.v4  >>  0 ) & 0xff ),
                     msg->coap.msg_length );
-
+*/
                 wiced_result = wiced_udp_send( &udp_coap_socket, &msg->coap.ip_addr, msg->coap.port, packet );
                 if ( wiced_result != WICED_SUCCESS ) {
                     imx_printf("UDP packet send failed: %u\r\n", wiced_result );

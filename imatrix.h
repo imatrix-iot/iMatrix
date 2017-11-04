@@ -54,10 +54,6 @@ imx_imatrix_init_config_t imatrix_config = {
     .no_controls = IMX_NO_CONTROLS,
     .no_arduino_sensors = IMX_NO_ARDUINO_SENSORS,
     .no_arduino_controls = IMX_NO_ARDUINO_CONTROLS,
-    .no_at_controls = IMX_NO_AT_CONTROLS,
-    .at_control_start = IMX_AT_CONTROL_START,
-    .no_at_sensors = IMX_NO_AT_SENSORS,
-    .at_sensor_start = IMX_AT_SENSOR_START,
     .ap_eap_mode = 0,
     .st_eap_mode = 0,
     .ap_security_mode = WICED_SECURITY_OPEN,
@@ -162,7 +158,9 @@ void imx_update_led_green_status_ismart( bool state );
 void imx_update_led_blue_status_ismart( bool state );
 void imx_init_temp(uint16_t arg);
 uint16_t imx_sample_temp(uint16_t arg, void *value );
-
+/*
+ * General Wi Fi Status routines
+ */
 uint16_t imx_get_wifi_channel_scb(void);
 uint16_t imx_get_wifi_rssi_scb(void);
 uint16_t imx_get_wifi_bssid_scb(void);
@@ -170,6 +168,10 @@ uint16_t imx_get_wifi_rf_noise_scb(void);
 uint16_t imx_sample_rssi(uint16_t arg, void *value );
 uint16_t imx_sample_rfnoise(uint16_t arg, void *value );
 uint16_t imx_sample_wifi_channel(uint16_t arg, void *value );
+/*
+ * UTC Time Update
+ */
+uint16_t imx_get_utc(uint16_t arg, void *value );
 /*
  * CoAP Processing defines
  */

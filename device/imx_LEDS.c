@@ -35,7 +35,7 @@
  *
  *  When setting a setting Dual flashing LEDs the high bit in the 16bits is set - 0x1000
  *      The two LEDs are defined as Master and Slave. The Master will be on for 500mS and the Slave will be ON for the slave flash count
- *      The mode is broken into two sections
+ *      The mode value is separated into two sections
  *      0xF00 - Right shifted 8 bits is the number of seconds for the cycle
  *      0x00F - is the duration of the slave flash in counts of 100 mS
  *
@@ -316,7 +316,8 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
              * Start Off
              */
             for( i = 0; i < IMX_NO_LEDS; i++ )
-                (*lcb[ i ].init_led)();
+                if( lcb[ i ].init_led != NULL )
+                    (*lcb[ i ].init_led)();
             /*
              * Set up the timers used for LEDS
              */
@@ -351,6 +352,7 @@ void imx_init_led_functions( imx_led_functions_t *led_functions )
         if( led_functions[ i ].set_led != NULL )
             lcb[ i ].update_led_status = led_functions[ i ].set_led;
     }
+    imx_set_led( 0, IMX_LED_INIT );
 }
 
 /**

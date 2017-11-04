@@ -851,9 +851,10 @@ void print_msg( message_t *msg )
     uint16_t i;
     bool payload = false;
 
-    imx_printf( "Message Contents\r\n");
-    imx_printf( "  Next: %lu, Prev %lu\r\n", (uint32_t)msg->header.next, (uint32_t) msg->header.prev );
-    imx_printf( "  CoAP: IP Address: %u.%u.%u.%u, Port: %u\r\n", (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4 ) >> 24 ) & 0xff ),
+
+   imx_printf( "Message Contents\r\n");
+   imx_printf( "  Next: %lu, Prev %lu\r\n", (uint32_t)msg->header.next, (uint32_t) msg->header.prev );
+   imx_printf( "  CoAP: IP Address: %u.%u.%u.%u, Port: %u\r\n", (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4 ) >> 24 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 16 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 8 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 0 ) & 0xff ), msg->coap.port );

@@ -73,18 +73,13 @@
 * Smart Arduino Controls
 */
 #define IMX_NO_ARDUINO_CONTROLS ( 0 )
-/*
-* AT Controls
-*/
-#define IMX_NO_AT_CONTROLS 0
-#define IMX_AT_CONTROL_START 0x00
 
 #define CCB_DIM_LEVEL_1598884125        0x0
 #define CCB_FIXTURE_1775572943          0x1
 #define CCB_LED_FIXTURE_GREEN_1610619002 0x2
 #define CCB_LED_FIXTURE_RED_190481833   0x3
 
-#define IMX_NO_CONTROLS ( IMX_NO_INTEGRATED_CONTROLS + IMX_NO_PRODUCT_CONTROLS + IMX_NO_AT_CONTROLS )
+#define IMX_NO_CONTROLS ( IMX_NO_INTEGRATED_CONTROLS + IMX_NO_PRODUCT_CONTROLS )
 
 /*
 * Define Sensor IDs for Sensors
@@ -114,11 +109,6 @@
 * Smart Arduino Sensors
 */
 #define IMX_NO_ARDUINO_SENSORS              ( 0 )
-/*
-* AT Sensors
-*/
-#define IMX_NO_AT_SENSORS                   ( 0 )
-#define IMX_AT_SENSOR_START     0x00
 
 #define SCB_WIFI_RSSI_101600364         0x0
 #define SCB_WIFI_CHANNEL_173916172      0x1
@@ -134,7 +124,7 @@
 #define SCB_SOUND_OCCUPANCY_1912437427  0xB
 #define SCB_TEMPERATURE_1654801688      0xC
 
-#define IMX_NO_SENSORS ( IMX_NO_INTEGRATED_SENSORS + IMX_NO_PRODUCT_SENSORS + IMX_NO_AT_SENSORS )
+#define IMX_NO_SENSORS ( IMX_NO_INTEGRATED_SENSORS + IMX_NO_PRODUCT_SENSORS )
 
 /******************************************************
  *                   Enumerations

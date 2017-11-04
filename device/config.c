@@ -130,14 +130,32 @@ wiced_result_t imatrix_load_config(void)
     strncpy( device_config.product_name, imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
     strncpy( device_config.ota_public_url, imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.manufacturing_url, imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
+    strncpy( device_config.default_ap_ssid, imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.default_ap_wpa, imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
+    strncpy( device_config.default_st_ssid, imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.default_st_wpa, imatrix_init_config.default_st_wpa, IMX_WPA2PSK_LENGTH );
+    strncpy( device_config.ap_ssid, imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.ap_wpa, imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
+    strncpy( device_config.st_ssid, imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.st_wpa, imatrix_init_config.default_st_wpa, IMX_WPA2PSK_LENGTH );
+    device_config.default_ap_eap_mode = imatrix_init_config.default_ap_eap_mode;
+    device_config.default_st_eap_mode = imatrix_init_config.default_st_eap_mode;
+    device_config.default_ap_security_mode = imatrix_init_config.default_ap_security_mode;
+    device_config.default_st_security_mode = imatrix_init_config.default_st_security_mode;
+    device_config.ap_eap_mode = imatrix_init_config.default_ap_eap_mode;
+    device_config.st_eap_mode = imatrix_init_config.default_st_eap_mode;
+    device_config.ap_security_mode = imatrix_init_config.default_ap_security_mode;
+    device_config.st_security_mode = imatrix_init_config.default_st_security_mode;
+    if( imatrix_init_config.start_in_station_mode == true ) {
+        /*
+         * App is forcing to use default settings Wi Fi to Station mode using presets
+         */
+        device_config.AP_setup_mode = false;
+    }
     device_config.no_sensors = imatrix_init_config.no_sensors;
     device_config.no_controls = imatrix_init_config.no_controls;
     device_config.no_arduino_sensors = imatrix_init_config.no_arduino_sensors;
     device_config.no_arduino_controls = imatrix_init_config.no_arduino_controls;
-    device_config.ap_eap_mode = imatrix_init_config.ap_eap_mode;
-    device_config.st_eap_mode = imatrix_init_config.st_eap_mode;
-    device_config.ap_security_mode = imatrix_init_config.ap_security_mode;
-    device_config.st_security_mode = imatrix_init_config.st_security_mode;
     device_config.building_id = imatrix_init_config.building_id;
     device_config.product_capabilities = imatrix_init_config.product_capabilities;
     device_config.level_id = imatrix_init_config.level_id;
@@ -239,7 +257,13 @@ void imatrix_print_config( uint16_t arg )
 	cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
 	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
-	cli_print( "Operating Mode: %s, SSID: %s, Passphrase: ->%s<-\r\n", device_config.AP_setup_mode ? "Provisioning" : "Normal Online", device_config.st_ssid, device_config.st_wpa );
+    cli_print( "Default AP SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
+    cli_print( "Default ST SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_st_ssid, device_config.default_st_wpa, device_config.default_st_security_mode );
+	cli_print( "Operating Mode: %s, ", ( device_config.AP_setup_mode == true ) ? "Wi Fi Access Point" : "Wi Fi Station" );
+	if( device_config.AP_setup_mode == true )
+	    cli_print( "SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.ap_ssid, device_config.ap_wpa, device_config.ap_security_mode );
+	else
+	    cli_print( "SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.st_ssid, device_config.st_wpa, device_config.st_security_mode );
 
 	cli_print( "Controls Configuration:\r\n" );
 	print_common_config( IMX_CONTROLS, &device_config.ccb[ 0 ] );

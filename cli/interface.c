@@ -131,8 +131,7 @@ void imx_printf( char *format, ... )
      *
      * This is only valid if this system is not using AT commands or in set up mode
      */
-    if( (( device_config.no_at_controls + device_config.no_at_sensors ) == 0 ) || ( device_config.AT_verbose == IMX_AT_VERBOSE_STANDARD_STATUS )
-            || ( device_config.AP_setup_mode == true ) || ( icb.print_debugs == true ) ) {
+    if( ( device_config.AT_verbose == IMX_AT_VERBOSE_STANDARD_STATUS ) || ( device_config.AP_setup_mode == true ) || ( icb.print_debugs == true ) ) {
         va_list args;// Arguments from the expanded elipsis "..."
         va_start( args, format );// Initialize list of arguments.
         vprintf( format, args );

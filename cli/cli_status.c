@@ -159,8 +159,20 @@ void cli_status( uint16_t arg )
 	            icb.ip_stats[ i ].packet_creation_failure, icb.ip_stats[ i ].fail_to_send_packet, icb.ip_stats[ i ].packets_sent, icb.ip_stats[ i ].rec_error );
 	}
 
-    cli_print( "AT Commands processed: %lu, Errors: %lu\r\n", icb.AT_commands_processed, icb.AT_command_errors );
+    cli_print( "AT Commands processed: %lu, Errors: %lu, Verbose mode: ", icb.AT_commands_processed, icb.AT_command_errors );
+    switch( device_config.AT_verbose ) {
+    case IMX_AT_VERBOSE_NONE :
+        cli_print( "None" );
+        break;
+    case IMX_AT_VERBOSE_STANDARD :
+        cli_print( "AT Commands & CLI Responses ONLY" );
+        break;
+    case IMX_AT_VERBOSE_STANDARD_STATUS :
+        cli_print( "AT Responses & Status Messages" );
+        break;
+    }
 
+    cli_print( "\r\n" );
 	wiced_time_get_time( &current_time );
 	/*
 	 * Display status of controls
@@ -263,7 +275,7 @@ void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
                 cli_print( " 0x%02X", var_data->data[ i ] );
             cli_print( "  " );
             for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->header.length ) ); i++ )
-                cli_print( " %c", ( isprint( (int) var_data->data[ i ] ) == true ) ? (char) var_data->data[ i ] : "*" );
+                cli_print( " %c", ( isprint( (int) var_data->data[ i ] ) == true ) ? (char) var_data->data[ i ] : '*' );
             break;
     }
 

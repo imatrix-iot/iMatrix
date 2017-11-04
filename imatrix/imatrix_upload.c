@@ -68,6 +68,19 @@
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
+/*
+ *  Set up standard variables based on the type of data we are using
+ */
+#define SET_CSB_VARS( type )    \
+                if( type == IMX_CONTROLS ) {        \
+                    csb = &device_config.ccb[ 0 ];  \
+                    csd = &cd[ 0 ];                 \
+                } else {                            \
+                    csb = &device_config.scb[ 0 ];  \
+                    csd = &sd[ 0 ];                 \
+                }                                   \
+                no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
+
 
 /******************************************************
  *                    Constants
@@ -168,15 +181,16 @@ void imatrix_upload(wiced_time_t current_time)
     const uint16_t max_options_length = 30;
 
     uint8_t options[ max_options_length ], uri_path[ URI_PATH_LENGTH ], *data_ptr;
-    uint16_t packet_length, current_option_number, options_length, remaining_data_length, no_samples, i, j, k, item_count, peripheral, variable_data_length, data_index, var_data_index;
+    uint16_t packet_length, current_option_number, options_length, remaining_data_length, no_samples, i, j, k, no_items, variable_data_length, data_index, var_data_index;
     bool packet_full, entry_loaded;
     uint32_t foo32bit;
     wiced_utc_time_ms_t upload_utc_ms_time;
     wiced_iso8601_time_t iso8601_time;
+    peripheral_type_t type;
     bits_t header_bits;
     upload_data_t *upload_data;
+    control_sensor_data_t *csd;
     imx_control_sensor_block_t *csb;    // Temp pointer to control structure
-    control_sensor_data_t *data;    // Temp pointer to data
 
     variable_data_length = 0;
 
@@ -198,55 +212,48 @@ void imatrix_upload(wiced_time_t current_time)
     	    /*
     		 * Check if we have any data to process at this time - first check critical uploads
     		 */
-    	    for( peripheral = 0; peripheral < IMX_NO_PERIPHERAL_TYPES; peripheral++ ) {
-    	    	if( peripheral == IMX_CONTROLS ) {
-    	    		item_count = device_config.no_controls;
-    	    	} else {
-    	    		item_count = device_config.no_sensors;
-    	    	}
-        		for( i = 0; i < item_count; i++ ) {
-        	    	if( peripheral == IMX_CONTROLS ) {
-        	    		data = &cd[ i ];
-        	    	} else {
-        	    		data = &sd[ i ];
+    	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
+//    	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
+//    	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
+                SET_CSB_VARS( type );
+                for( i = 0; i < no_items; i++ ) {
+        	    	if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
+                        if( ( csd[ i ].warning >= device_config.send_now_on_warning_level ) &&
+                            ( csd[ i ].warning != csd[ i ].last_warning ) &&  // Seen a change
+                            ( device_config.send_now_on_warning_level != IMX_INFORMATIONAL ) ){     // Make sure this is actually set to something
+                            /*
+                             * Only need one
+                             */
+                            imatrix.tusnami_warning = true;
+    //                      imx_printf( "Found %s: %u in Warning State: %u\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].warning );
+                            imatrix.state = IMATRIX_GET_PACKET;
+                            break;
+                        }
         	    	}
-        			if( ( data->warning >= device_config.send_now_on_warning_level ) &&
-        				( data->warning != data->last_warning ) &&	// Seen a change
-        				( device_config.send_now_on_warning_level != IMX_INFORMATIONAL ) ){		// Make sure this is actually set to something
-        				/*
-        				 * Only need one
-        				 */
-        				imatrix.tusnami_warning = true;
-        				imx_printf( "Found %s: %u in Warning State: %u\r\n" , peripheral == IMX_CONTROLS ? "Control" : "Sensor", i, data->warning );
-        				imatrix.state = IMATRIX_GET_PACKET;
-        				break;
-        			}
         		}
 
         		/*
         		 * See if it is time to check for batches completed
         		 */
         		if( is_later( current_time, imatrix.last_upload_time + device_config.imatrix_batch_check_time ) ) {
-            		for( i = 0; i < item_count; i++ ) {
-            	    	if( peripheral == IMX_CONTROLS ) {
-            	    		data = &cd[ i ];
-            	    	} else {
-            	    		data = &sd[ i ];
-            	    	}
-            			if( ( data->send_batch == true ) ||
-            				( data->send_on_error == true ) ){
-            				/*
-            				 * Only need one
-            				 */
-            				if( data->send_batch == true ) {
-            					imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
-            					        peripheral == IMX_CONTROLS ? "Control" : "Sensor", i, data->no_samples, data->send_batch == true ? "true" : "false" );
-            				} else {
-            					imx_printf( "Found %s: %u with error\r\n" , peripheral == IMX_CONTROLS ? "Control" : "Sensor", i );
-            				}
-            				imatrix.state = IMATRIX_GET_PACKET;
-            				break;
-            			}
+            		for( i = 0; i < no_items; i++ ) {
+                        if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
+                            if( ( csd[ i ].send_batch == true ) ||
+                                ( csd[ i ].send_on_error == true ) ){
+                                /*
+                                 * Only need one
+                                 */
+                                if( csd[ i ].send_batch == true ) {
+    /*                              imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
+                                            type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].no_samples, csd[ i ].send_batch == true ? "true" : "false" );
+    */
+                                } else {
+                                    imx_printf( "Found %s: %u with error\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i );
+                                }
+                                imatrix.state = IMATRIX_GET_PACKET;
+                                break;
+                            }
+                        }
             		}
         		}
 
@@ -284,18 +291,21 @@ void imatrix_upload(wiced_time_t current_time)
     	     * There is something to do here. First build the packet
     	     */
     	    imx_set_led( IMX_LED_GREEN, IMX_LED_ON );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
+/*
+ *
     	    imx_printf( "Sending History to iMatrix Server: %03u.%03u.%03u.%03u ",
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x00ff0000 ) >> 16 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x0000ff00 ) >> 8 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x000000ff ) ) );
+*/
     	    if( icb.time_set_with_NTP == true ) {
     	        wiced_time_get_utc_time_ms( &upload_utc_ms_time );
     	    	wiced_time_get_iso8601_time( &iso8601_time );
-    	    	imx_printf( "System UTC time is: %.26s\r\n", (char*)&iso8601_time );
+//    	    	imx_printf( "System UTC time is: %.26s\r\n", (char*)&iso8601_time );
     	    	icb.imatrix_upload_count += 1;
     	    } else {
-    	    	imx_printf( "System does not have NTP - Sending with 0 for time stamp\r\n" );
+//    	    	imx_printf( "System does not have NTP - Sending with 0 for time stamp\r\n" );
     	    	upload_utc_ms_time = 0;
     	    }
     		imatrix.sensor_no = 0;
@@ -367,308 +377,298 @@ void imatrix_upload(wiced_time_t current_time)
         		add_indoor_location( &upload_data, &remaining_data_length, upload_utc_ms_time );
         	}
         	/*
-        	 * Step thru peripheral records - Controls first then Sensors.
+        	 * Step thru type records - Controls first then Sensors.
         	 *
         	 * Add data to packet that is ready to send
         	 *
         	 */
-    	    for( peripheral = IMX_CONTROLS; peripheral < IMX_NO_PERIPHERAL_TYPES; peripheral++ ) {
+    	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
+                SET_CSB_VARS( type );
     	    	/*
     	    	 * Step thru record types - Warnings first then regular
     	    	 */
-    	    	if( peripheral == IMX_CONTROLS ) {
-    	    		item_count = device_config.no_controls;
-    	    	} else {
-    	    		item_count = device_config.no_sensors;
-    	    	}
             	for( k = CHECK_WARNING; ( k < NO_TYPE_OF_RECORDS ) && ( packet_full == false ); k++ ) {
-            	    imx_printf( "Checking: %s, Type: %s\r\n", peripheral == IMX_CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
-        	        for( i = 0; ( i < item_count ) && ( packet_full == false ); i++ )  {
-            	    	if( peripheral == IMX_CONTROLS ) {
-            	    		data = &cd[ i ];
-                            csb = &device_config.ccb[ i ];
-            	    	} else {
-            	    		data = &sd[ i ];
-                            csb = &device_config.scb[ i ];
-            	    	}
-            	    	/*
-            	    	imx_printf( "Checking %s for %s, No Samples: %u, Warning Level: %u\r\n",
-            	    			k == CHECK_WARNING ? "Warning" : "Regular", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, data->no_samples, data->warning );
-            	    	*/
-        	        	/*
-        	        	 * Look first for critical records or errors
-        	        	 *
-        	        	 * ADD logic for WHILE LOOP to continue processing variable length data if available.
-        	        	 */
-            	    	entry_loaded = false;
-                        if( ( ( data->no_samples > 0 ) && ( data->warning != data->last_warning ) && ( k == CHECK_WARNING )  ) ||
-                            ( ( data->no_samples > 0 ) && ( k == CHECK_REGULAR ) ) ||
-                            ( data->send_on_error == true ) ) {
-                            do {
-                                data->last_warning = data->warning; // Save last warning
-                                data->send_on_error = false;        // Not after this send
-                                imx_printf( "%s - %s: %u - Data type: %u ", ( peripheral == IMX_CONTROLS ) ? "Control" : "Sensor", csb->name, i, csb->data_type );
-                                if( csb->data_type == IMX_VARIABLE_LENGTH ) {
-                                    /*
-                                     * Process Variable Length record
-                                     */
-                                    if( csb->sample_rate == 0 ) {
+//            	    imx_printf( "Checking: %s, Type: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
+        	        for( i = 0; ( i < no_items ) && ( packet_full == false ); i++ )  {
+                        if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
+                            /*
+                            imx_printf( "Checking %s for %s, No Samples: %u, Warning Level: %u\r\n",
+                                    k == CHECK_WARNING ? "Warning" : "Regular", type == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, csd[ i ]->no_samples, csd[ i ]->warning );
+                            */
+                            /*
+                             * Look first for critical records or errors
+                             *
+                             * ADD logic for WHILE LOOP to continue processing variable length data if available.
+                             */
+                            entry_loaded = false;
+                            if( ( ( csd[ i ].no_samples > 0 ) && ( csd[ i ].warning != csd[ i ].last_warning ) && ( k == CHECK_WARNING )  ) ||
+                                ( ( csd[ i ].no_samples > 0 ) && ( k == CHECK_REGULAR ) ) ||
+                                ( csd[ i ].send_on_error == true ) ) {
+                                do {
+                                    csd[ i ].last_warning = csd[ i ].warning; // Save last warning
+                                    csd[ i ].send_on_error = false;        // Not after this send
+    //                                imx_printf( "%s - %s: %u - Data type: %u ", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", csb->name, i, csb->data_type );
+                                    if( csb->data_type == IMX_VARIABLE_LENGTH ) {
                                         /*
-                                         * This is an event entry - timestamp is first item, sample is second entry
-                                         */
-                                        var_data_index = 1;
-                                     } else {
-                                         var_data_index = 0;
-                                     }
-
-                                    variable_data_length = data->data[ var_data_index ].var_data->header.length; // Events have timestamp / Value pairs
-                                    imx_printf( "Trying to add variable length data record, ptr @ 0x%08x of: %u bytes\r\n", data->data[ var_data_index ].uint_32bit, variable_data_length );
-                                    if( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) {
-                                        /*
-                                         * Load data into packet
-                                         */
-                                        /*
-                                         * Load first variable length record
-                                         */
-                                        imx_printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx ",
-                                                variable_data_length, peripheral == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
-                                        /*
-                                         * Set up the header and copy in the data
-                                         */
-                                        upload_data->header.id = htonl( csb->id );
-                                        header_bits.bits.data_type = csb->data_type;
-                                        upload_data->header.sample_rate = htonl( csb->sample_rate );
-                                        if( csb->sample_rate != 0 ) {
-                                            /*
-                                             * These are individual sensor readings over time sample time
-                                             */
-                                            header_bits.bits.block_type = peripheral == IMX_CONTROLS ? IMX_BLOCK_CONTROL : IMX_BLOCK_SENSOR;
-                                        } else {
-                                            /*
-                                             * These are a set of Events
-                                             */
-                                            header_bits.bits.block_type = peripheral == IMX_CONTROLS ? IMX_BLOCK_EVENT_CONTROL : IMX_BLOCK_EVENT_SENSOR;
-                                            imx_printf( "- Sending Event Block" );
-                                        }
-                                        header_bits.bits.no_samples = 1;            // Limit to 1 sample - enhance later
-                                        header_bits.bits.version = IMATRIX_VERSION_1;
-                                        header_bits.bits.warning = data->warning;
-                                        if( data->errors > 0 ) {
-                                            header_bits.bits.sensor_error = data->error;
-                                            data->errors = 0;
-                                            imx_printf( " --- Errors detected with this entry: %u", (uint16_t) data->error );
-                                        } else
-                                            header_bits.bits.sensor_error = 0;
-                                        imx_printf( "\r\n" );
-                                        header_bits.bits.reserved = 0;
-                                        upload_data->header.bits.bit_data = htonl( header_bits.bit_data );
-                                        imx_printf( "Header bits: 0x%08lx\r\n", upload_data->header.bits.bit_data );
-                                        upload_data->header.last_utc_ms_sample_time = 0;
-                                        if( icb.time_set_with_NTP == true )
-                                            upload_data->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-
-                                        data_index = 0;
-                                        /*
-                                         * Add Timestamp if Event data and select base of data
+                                         * Process Variable Length record
                                          */
                                         if( csb->sample_rate == 0 ) {
                                             /*
-                                             * This is an event entry - put timestamp in first
+                                             * This is an event entry - timestamp is first item, sample is second entry
                                              */
-                                            upload_data->data[ data_index++ ].uint_32bit = htonl( data->data[ 0 ].uint_32bit );
-                                            no_samples = 2; // Two samples for event data
+                                            var_data_index = 1;
                                          } else {
-                                            no_samples = 1; // One sample for Time Series data
+                                             var_data_index = 0;
                                          }
-                                        data_ptr =  data->data[ var_data_index ].var_data->data;
-                                        /*
-                                         * Data for variable length data is stored in a structure with the length in the header.
-                                         */
-                                        upload_data->data[ data_index++ ].uint_32bit = htonl( (uint32_t) variable_data_length );
-                                        /*
-                                         * Copy Data
-                                         */
-                                        imx_printf( "Variable length data: " );
-                                        uint16_t l;
-                                        for( l = 0; l < variable_data_length; l++ )
-                                            imx_printf( "[0x%02x]", data_ptr[ l ] );
-                                        imx_printf( "\r\n" );
 
-                                        memcpy( &upload_data->data[ data_index ], data_ptr, variable_data_length );
-                                        /*
-                                         * Now this data is loaded in structure, If it is not the current value free up resources
-                                         */
-                                        if( data->data[ var_data_index ].var_data != data->last_value.var_data ) {
-                                            imx_printf( "About to free data\r\n" );
-                                            add_var_free_pool( data->data[ var_data_index ].var_data );
-                                        }
-                                        /*
-                                         * Move up the data and re calculate the last sample time
-                                         */
-                                        if( data->no_samples == no_samples ) {
-                                            data->no_samples = 0;   // No need to move any data
-                                            data->send_batch = false;
-                                        } else {
+                                        variable_data_length = csd[ i ].data[ var_data_index ].var_data->header.length; // Events have timestamp / Value pairs
+    //                                    imx_printf( "Trying to add variable length data record, ptr @ 0x%08x of: %u bytes\r\n", csd[ i ].data[ var_data_index ].uint_32bit, variable_data_length );
+                                        if( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) {
                                             /*
-                                             * Move data up and free up variable data records
+                                             * Load data into packet
                                              */
-                                            memmove( &data->data[ 0 ].uint_32bit, &data->data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
-                                            upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( data->no_samples - no_samples ) ) );
-                                            data->no_samples = data->no_samples - no_samples;
-                                        }
-                                        /*
-                                        * Update the pointer and amount number of bytes left in buffer
-                                        *
-                                        * Amount = ?time stamp ( 4 bytes ) + data length ( 4 bytes ) + actual variable length data + padding to fill out 32 bits.
-                                        */
-                                        foo32bit = sizeof( header_t )
-                                                + ( ( csb->sample_rate == 0 ) ? SAMPLE_LENGTH : 0 )    // Timestamp
-                                                + SAMPLE_LENGTH                                         // Data length
-                                                + variable_data_length                                  // Data + padding
-                                                + ( ( variable_data_length % SAMPLE_LENGTH == 0 ) ? 0 : ( SAMPLE_LENGTH - ( variable_data_length % SAMPLE_LENGTH ) ) );
-                                        upload_data = ( upload_data_t *) ( uint32_t) ( upload_data ) + foo32bit;
-                                        remaining_data_length -= foo32bit;
-                                        entry_loaded = true;
-                                        imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
-                                    } else {
-                                        /*
-                                         *  Can not fit in this packet
-                                         */
-                                        packet_full = true;
-                                        /*
-                                         * Check for long variable length packet that is too big for ANY UDP packet, and discard
-                                         */
-                                        if( (variable_data_length >= MAX_VARIABLE_LENGTH ) ) {
-                                            imx_printf( "Discarding Variable length data, too long to process, %u Bytes\r\n", variable_data_length );
                                             /*
-                                             * If it is not the current value free up resources
+                                             * Load first variable length record
                                              */
-                                            if( data->last_value.var_data != data->data[ var_data_index ].var_data ) {
-                                                imx_printf( "About to free data\r\n" );
-                                                add_var_free_pool( data->data[ var_data_index ].var_data );
+    //                                        imx_printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx ", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
+                                            /*
+                                             * Set up the header and copy in the data
+                                             */
+                                            upload_data->header.id = htonl( csb->id );
+                                            header_bits.bits.data_type = csb->data_type;
+                                            upload_data->header.sample_rate = htonl( csb->sample_rate );
+                                            if( csb->sample_rate != 0 ) {
                                                 /*
-                                                 * Move data up in history
+                                                 * These are individual sensor readings over time sample time
                                                  */
-                                                memmove( &data->data[ 0 ].uint_32bit, &data->data[ 1 ].uint_32bit, SAMPLE_LENGTH * 1 );
+                                                header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_CONTROL : IMX_BLOCK_SENSOR;
+                                            } else {
+                                                /*
+                                                 * These are a set of Events
+                                                 */
+                                                header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_EVENT_CONTROL : IMX_BLOCK_EVENT_SENSOR;
+    //                                            imx_printf( "- Sending Event Block" );
                                             }
-                                            /*
-                                             * Sanity check
-                                             */
-                                            if( data->no_samples > 0 )
-                                                data->no_samples -= 1;
-                                        }
-                                    }
-                                    if( data->no_samples == 0 )
-                                        data->send_batch = false;
-                                } else {
-                                    /*
-                                     * Process Regular data record
-                                     */
-                                    if( remaining_data_length >= ( sizeof( header_t ) + SAMPLE_LENGTH ) ) {
-                                        /*
-                                         * Process a regular set of samples
-                                         */
-                                        /*
-                                         * See how many we can fit
-                                         */
-                                        imx_printf( "Checking to see if %u samples can fit in %u", data->no_samples, remaining_data_length );
-                                        if( remaining_data_length >= ( sizeof( header_t ) + ( SAMPLE_LENGTH * data->no_samples ) ) ) {
-                                            /*
-                                             * They can all fit
-                                             */
-                                            no_samples = data->no_samples;
-                                            imx_printf( " *** - ALL Can Fit: %u\r\n", no_samples );
-                                        } else {
-                                            /*
-                                             * Calculate how many will fit
-                                             */
-                                            no_samples = ( remaining_data_length - sizeof( header_t ) ) / ( SAMPLE_LENGTH );
-                                            imx_printf( " *** - Can Can Fit: %u\r\n", no_samples );
-                                        }
-                                        imx_printf( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, peripheral == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
-                                        /*
-                                         * Set up the header and copy in the samples that will fit
-                                         */
-                                        upload_data->header.id = htonl( csb->id );
-                                        header_bits.bits.data_type = csb->data_type;
-                                        upload_data->header.sample_rate = htonl( csb->sample_rate );
-                                        if( csb->sample_rate != 0 ) {
-                                            /*
-                                             * These are individual sensor readings over time sample time
-                                             */
-                                            header_bits.bits.block_type = peripheral == IMX_CONTROLS ? IMX_BLOCK_CONTROL : IMX_BLOCK_SENSOR;
-                                        } else {
-                                            /*
-                                             * These are a set of Events
-                                             */
-                                            header_bits.bits.block_type = peripheral == IMX_CONTROLS ? IMX_BLOCK_EVENT_CONTROL : IMX_BLOCK_EVENT_SENSOR;
-                                            imx_printf( "- Sending Event Block" );
-                                        }
+                                            header_bits.bits.no_samples = 1;            // Limit to 1 sample - enhance later
+                                            header_bits.bits.version = IMATRIX_VERSION_1;
+                                            header_bits.bits.warning = csd[ i ].warning;
+                                            if( csd[ i ].errors > 0 ) {
+                                                header_bits.bits.sensor_error = csd[ i ].error;
+                                                csd[ i ].errors = 0;
+    //                                            imx_printf( " --- Errors detected with this entry: %u", (uint16_t) csd[ i ].error );
+                                            } else
+                                                header_bits.bits.sensor_error = 0;
+    //                                        imx_printf( "\r\n" );
+                                            header_bits.bits.reserved = 0;
+                                            upload_data->header.bits.bit_data = htonl( header_bits.bit_data );
+    //                                        imx_printf( "Header bits: 0x%08lx\r\n", upload_data->header.bits.bit_data );
+                                            upload_data->header.last_utc_ms_sample_time = 0;
+                                            if( icb.time_set_with_NTP == true )
+                                                upload_data->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
 
-                                        header_bits.bits.no_samples = no_samples;
-                                        header_bits.bits.version = IMATRIX_VERSION_1;
-                                        header_bits.bits.warning = data->warning;
-                                        if( data->errors > 0 ) {
-                                            header_bits.bits.sensor_error = data->error;
-                                            data->errors = 0;
-                                            imx_printf( " --- Errors detected with this entry: %u", (uint16_t) data->error );
-                                        } else
-                                            header_bits.bits.sensor_error = 0;
-                                        imx_printf( "\r\n" );
-                                        header_bits.bits.reserved = 0;
-                                        upload_data->header.bits.bit_data = htonl( header_bits.bit_data );
-
-                                        upload_data->header.last_utc_ms_sample_time = 0;
-                                        if( icb.time_set_with_NTP == true )
-                                            upload_data->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-
-                                        for( j = 0; j < no_samples; j++ ) {
+                                            data_index = 0;
                                             /*
-                                             * Raw copy the data so sign & float are not cast
+                                             * Add Timestamp if Event data and select base of data
                                              */
-                                            memcpy( &foo32bit, &data->data[ j ].uint_32bit, SAMPLE_LENGTH );
-                                            upload_data->data[ j ].uint_32bit = htonl( foo32bit );
-                                        }
-                                        /*
-                                         * Update the structure based on how many items were used
-                                         */
-                                        if( no_samples == data->no_samples ) {
-                                            data->no_samples = 0;
-                                            data->send_batch = false;
-                                        } else {
+                                            if( csb->sample_rate == 0 ) {
+                                                /*
+                                                 * This is an event entry - put timestamp in first
+                                                 */
+                                                upload_data->data[ data_index++ ].uint_32bit = htonl( csd[ i ].data[ 0 ].uint_32bit );
+                                                no_samples = 2; // Two samples for event data
+                                             } else {
+                                                no_samples = 1; // One sample for Time Series data
+                                             }
+                                            data_ptr =  csd[ i ].data[ var_data_index ].var_data->data;
+                                            /*
+                                             * Data for variable length data is stored in a structure with the length in the header.
+                                             */
+                                            upload_data->data[ data_index++ ].uint_32bit = htonl( (uint32_t) variable_data_length );
+                                            /*
+                                             * Copy Data
+                                             */
+    /*                                      imx_printf( "Variable length data: " );
+                                            uint16_t l;
+                                            for( l = 0; l < variable_data_length; l++ )
+                                                imx_printf( "[0x%02x]", data_ptr[ l ] );
+                                            imx_printf( "\r\n" );
+    */
+                                            memcpy( &upload_data->data[ data_index ], data_ptr, variable_data_length );
+                                            /*
+                                             * Now this data is loaded in structure, If it is not the current value free up resources
+                                             */
+                                            if( csd[ i ].data[ var_data_index ].var_data != csd[ i ].last_value.var_data ) {
+                                                imx_printf( "About to free data\r\n" );
+                                                add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
+                                            }
                                             /*
                                              * Move up the data and re calculate the last sample time
                                              */
-                                            memmove( &data->data[ 0 ].uint_32bit, &data->data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
-                                            upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( data->no_samples - no_samples ) ) );
-                                            data->no_samples = data->no_samples - no_samples;
+                                            if( csd[ i ].no_samples == no_samples ) {
+                                                csd[ i ].no_samples = 0;   // No need to move any data
+                                                csd[ i ].send_batch = false;
+                                            } else {
+                                                /*
+                                                 * Move data up and free up variable data records
+                                                 */
+                                                memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
+                                                upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
+                                                csd[ i ].no_samples = csd[ i ].no_samples - no_samples;
+                                            }
+                                            /*
+                                            * Update the pointer and amount number of bytes left in buffer
+                                            *
+                                            * Amount = ?time stamp ( 4 bytes ) + data length ( 4 bytes ) + actual variable length data + padding to fill out 32 bits.
+                                            */
+                                            foo32bit = sizeof( header_t )
+                                                    + ( ( csb->sample_rate == 0 ) ? SAMPLE_LENGTH : 0 )    // Timestamp
+                                                    + SAMPLE_LENGTH                                         // Data length
+                                                    + variable_data_length                                  // Data + padding
+                                                    + ( ( variable_data_length % SAMPLE_LENGTH == 0 ) ? 0 : ( SAMPLE_LENGTH - ( variable_data_length % SAMPLE_LENGTH ) ) );
+                                            upload_data = ( upload_data_t *) ( uint32_t) ( upload_data ) + foo32bit;
+                                            remaining_data_length -= foo32bit;
                                             entry_loaded = true;
+                                            imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
+                                        } else {
+                                            /*
+                                             *  Can not fit in this packet
+                                             */
+                                            packet_full = true;
+                                            /*
+                                             * Check for long variable length packet that is too big for ANY UDP packet, and discard
+                                             */
+                                            if( (variable_data_length >= MAX_VARIABLE_LENGTH ) ) {
+                                                imx_printf( "Discarding Variable length data, too long to process, %u Bytes\r\n", variable_data_length );
+                                                /*
+                                                 * If it is not the current value free up resources
+                                                 */
+                                                if( csd[ i ].last_value.var_data != csd[ i ].data[ var_data_index ].var_data ) {
+                                                    imx_printf( "About to free data\r\n" );
+                                                    add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
+                                                    /*
+                                                     * Move data up in history
+                                                     */
+                                                    memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ 1 ].uint_32bit, SAMPLE_LENGTH * 1 );
+                                                }
+                                                /*
+                                                 * Sanity check
+                                                 */
+                                                if( csd[ i ].no_samples > 0 )
+                                                    csd[ i ].no_samples -= 1;
+                                            }
                                         }
-                                        /*
-                                        * Update the pointer and amount number of bytes left in buffer
-                                        */
-                                        foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH * no_samples );
-                                        upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
-                                        remaining_data_length -= foo32bit;
-                                        imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
+                                        if( csd[ i ].no_samples == 0 )
+                                            csd[ i ].send_batch = false;
                                     } else {
-                                        packet_full = true;
+                                        /*
+                                         * Process Regular data record
+                                         */
+                                        if( remaining_data_length >= ( sizeof( header_t ) + SAMPLE_LENGTH ) ) {
+                                            /*
+                                             * Process a regular set of samples
+                                             */
+                                            /*
+                                             * See how many we can fit
+                                             */
+    //                                        imx_printf( "Checking to see if %u samples can fit in %u", csd[ i ].no_samples, remaining_data_length );
+                                            if( remaining_data_length >= ( sizeof( header_t ) + ( SAMPLE_LENGTH * csd[ i ].no_samples ) ) ) {
+                                                /*
+                                                 * They can all fit
+                                                 */
+                                                no_samples = csd[ i ].no_samples;
+    //                                            imx_printf( " *** - ALL Can Fit: %u\r\n", no_samples );
+                                            } else {
+                                                /*
+                                                 * Calculate how many will fit
+                                                 */
+                                                no_samples = ( remaining_data_length - sizeof( header_t ) ) / ( SAMPLE_LENGTH );
+    //                                            imx_printf( " *** - Can Can Fit: %u\r\n", no_samples );
+                                            }
+    //                                        imx_printf( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
+                                            /*
+                                             * Set up the header and copy in the samples that will fit
+                                             */
+                                            upload_data->header.id = htonl( csb->id );
+                                            header_bits.bits.data_type = csb->data_type;
+                                            upload_data->header.sample_rate = htonl( csb->sample_rate );
+                                            if( csb->sample_rate != 0 ) {
+                                                /*
+                                                 * These are individual sensor readings over time sample time
+                                                 */
+                                                header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_CONTROL : IMX_BLOCK_SENSOR;
+                                            } else {
+                                                /*
+                                                 * These are a set of Events
+                                                 */
+                                                header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_EVENT_CONTROL : IMX_BLOCK_EVENT_SENSOR;
+    //                                            imx_printf( "- Sending Event Block" );
+                                            }
+
+                                            header_bits.bits.no_samples = no_samples;
+                                            header_bits.bits.version = IMATRIX_VERSION_1;
+                                            header_bits.bits.warning = csd[ i ].warning;
+                                            if( csd[ i ].errors > 0 ) {
+                                                header_bits.bits.sensor_error = csd[ i ].error;
+                                                csd[ i ].errors = 0;
+                                                imx_printf( " --- Errors detected with this entry: %u", (uint16_t) csd[ i ].error );
+                                            } else
+                                                header_bits.bits.sensor_error = 0;
+    //                                        imx_printf( "\r\n" );
+                                            header_bits.bits.reserved = 0;
+                                            upload_data->header.bits.bit_data = htonl( header_bits.bit_data );
+
+                                            upload_data->header.last_utc_ms_sample_time = 0;
+                                            if( icb.time_set_with_NTP == true )
+                                                upload_data->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
+
+                                            for( j = 0; j < no_samples; j++ ) {
+                                                /*
+                                                 * Raw copy the data so sign & float are not cast
+                                                 */
+                                                memcpy( &foo32bit, &csd[ i ].data[ j ].uint_32bit, SAMPLE_LENGTH );
+                                                upload_data->data[ j ].uint_32bit = htonl( foo32bit );
+                                            }
+                                            /*
+                                             * Update the structure based on how many items were used
+                                             */
+                                            if( no_samples == csd[ i ].no_samples ) {
+                                                csd[ i ].no_samples = 0;
+                                                csd[ i ].send_batch = false;
+                                            } else {
+                                                /*
+                                                 * Move up the data and re calculate the last sample time
+                                                 */
+                                                memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
+                                                upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
+                                                csd[ i ].no_samples = csd[ i ].no_samples - no_samples;
+                                                entry_loaded = true;
+                                            }
+                                            /*
+                                            * Update the pointer and amount number of bytes left in buffer
+                                            */
+                                            foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH * no_samples );
+                                            upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
+                                            remaining_data_length -= foo32bit;
+    //                                        imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
+                                        } else {
+                                            packet_full = true;
+                                        }
+                                        entry_loaded = true;
                                     }
-                                    entry_loaded = true;
-                                }
-                                if( packet_full == true )
-                                    imx_printf( "\r\niMatrix Packet FULL\r\n" );
-                            } while( ( packet_full == false ) && (entry_loaded == false ) );   /* Add logic for multiple variable length data processing */
-                        } else {
-                            /*
-                             * Nothing matched in this entry
-                             */
-                            /*
-                            if( k == CHECK_WARNING )
-                                imx_printf( "No Warning Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
-                            else
-                                imx_printf( "No History Data for %s: %u\r\n", peripheral == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
-                            */
+    //                                if( packet_full == true )
+    //                                    imx_printf( "\r\niMatrix Packet FULL\r\n" );
+                                } while( ( packet_full == false ) && (entry_loaded == false ) );   /* Add logic for multiple variable length data processing */
+                            } else {
+                                /*
+                                 * Nothing matched in this entry
+                                 */
+                                /*
+                                if( k == CHECK_WARNING )
+                                    imx_printf( "No Warning Data for %s: %u\r\n", type == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
+                                else
+                                    imx_printf( "No History Data for %s: %u\r\n", type == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
+                                */
+                            }
                         }
         	        }
             	}
@@ -690,7 +690,7 @@ void imatrix_upload(wiced_time_t current_time)
 	         */
 	        print_msg( imatrix.msg );
 	        list_add( &list_udp_coap_xmit, imatrix.msg );
-    	    imx_printf( "Time Series Data message added to queue\r\n" );
+//    	    imx_printf( "Time Series Data message added to queue\r\n" );
 	        imatrix.state = IMATRIX_UPLOAD_COMPLETE;
     		break;
     	case IMATRIX_UPLOAD_COMPLETE :
@@ -863,7 +863,7 @@ void imatrix_status( uint16_t arg)
 	wiced_time_t current_time;
     peripheral_type_t type;
     control_sensor_data_t *csd;
-    imx_control_sensor_block_t *cs_block;
+    imx_control_sensor_block_t *csb;
     uint16_t no_items;
 
     wiced_time_get_time( &current_time );
@@ -873,12 +873,12 @@ void imatrix_status( uint16_t arg)
     	case IMATRIX_INIT :
     		cli_print( "Initializing - checking for ready to upload @%lu", (uint32_t) current_time );
     		cli_print( "Current Control/Sensor Data pending upload:\r\n" );
-    	    for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
+    	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
     	        if( type == IMX_CONTROLS ) {
-    	            cs_block = &device_config.ccb[ 0 ];
+    	            csb = &device_config.ccb[ 0 ];
     	            csd = &cd[ 0 ];
     	        } else {
-    	            cs_block = &device_config.scb[ 0 ];
+    	            csb = &device_config.scb[ 0 ];
     	            csd = &sd[ 0 ];
     	        }
     	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
@@ -886,11 +886,11 @@ void imatrix_status( uint16_t arg)
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
     	        for( i = 0; i < no_items; i++ ) {
-    	            if( cs_block[ i ].enabled == true ) {
+    	            if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
     	                cli_print( "No: %u: 0x%08lx: %32s ", i, device_config.ccb[ i ].id, device_config.ccb[ i ].name );
     	                if( cd[ i ].no_samples > 0 ) {
     	                    for( j = 0; j < csd[ i ].no_samples; j++ ) {
-    	                        switch( cs_block[ i ].data_type ) {
+    	                        switch( csb[ i ].data_type ) {
     	                            case IMX_UINT32 :
     	                                cli_print( "%lu ", csd[ i ].data[ j ].uint_32bit );
     	                                break;
@@ -906,7 +906,11 @@ void imatrix_status( uint16_t arg)
     	                        }
     	                    }
     	                } else {
-    	                    cli_print( "No Samples stored, next sample due @ %lu mSec", ( csd[ i ].last_sample_time + (wiced_time_t) ( cs_block[ i ].sample_rate ) ) - current_time );
+    	                    cli_print( "No Samples stored, " );
+    	                    if( csb[ i ].sample_rate == 0 )
+    	                        cli_print( "Event Driven" );
+    	                    else
+    	                        cli_print( "next sample due @ %lu mSec", ( csd[ i ].last_sample_time + (wiced_time_t) ( csb[ i ].sample_rate ) ) - current_time );
     	                }
     	                cli_print( "\r\n" );
     	            }

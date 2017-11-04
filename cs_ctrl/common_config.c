@@ -113,6 +113,7 @@ void cs_init(void)
 {
     peripheral_type_t type;
     control_sensor_data_t *data;
+    imx_control_sensor_block_t *cs_block;
     imx_functions_t *f;
     uint16_t no_items, i;
     wiced_time_t current_time;
@@ -130,15 +131,21 @@ void cs_init(void)
     for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
         if( type == IMX_CONTROLS ) {
             data = &cd[ 0 ];
+            cs_block = &device_config.ccb[ 0 ];
             f = &imx_control_functions[ 0 ];
         } else {
             data = &sd[ 0 ];
+            cs_block = &device_config.scb[ 0 ];
             f = &imx_sensor_functions[ 0 ];
         }
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
         cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) data, no_items );
         for( i = 0; i < no_items; i++ ) {
+            if( cs_block[ i ].set_default == true ) {
+                data[ i ].last_value.uint_32bit = cs_block[ i ].default_value.uint_32bit;
+                cs_block[ i ].valid = true;
+            }
             if( f[ i ].init != NULL )
                 (f[ i ].init)( f[ i ].arg );    // Initialize control
             data[ i ].update_now = true;

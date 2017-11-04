@@ -130,6 +130,7 @@ uint16_t wifi_init(void)
 
 	icb.wifi_up = false;
 
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH_MASK | IMX_LED_BLINK_5 | IMX_LED_FLASH_1 );
 	imx_printf( "Initializing Wi Fi\r\n" );
     /*
      * Kill the network - Code for test purposes only
@@ -163,6 +164,10 @@ uint16_t wifi_init(void)
 	        return false;
 	    }
         wiced_ip_get_ipv4_address( WICED_AP_INTERFACE, &icb.my_ip );
+        /*
+         * Network setup done
+         */
+        imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
 
 	    /*
 	     * Set the RED Link to blink 1 per second to indicate Provisioning mode
@@ -204,6 +209,11 @@ uint16_t wifi_init(void)
 	        goto connectivity_deinit_and_fail;
 	    }
 	    /*
+	     * Update LED flash to show progress
+	     */
+	    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH_MASK | IMX_LED_BLINK_5 | IMX_LED_FLASH_2 );
+
+	    /*
 	     * Network Is up
 	     */
 		icb.wifi_change = false;	// If we changed and it worked good, if not make sure we don't change again
@@ -222,6 +232,10 @@ uint16_t wifi_init(void)
 	        goto connectivity_deinit_and_fail;
 		}
 	}
+    /*
+     * Update LED flash to show progress
+     */
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH_MASK | IMX_LED_FLASH_5 );
 	/*
 	 * Always set up the UDP Server
 	 */
@@ -285,12 +299,20 @@ uint16_t wifi_init(void)
 #endif
 	telnetd_init();// Returns void( all it does is set the state variable so that the first call to tellnetd() will do the init.
 
+    /*
+     * All done here
+     */
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
     return true;
 
 connectivity_deinit_and_fail:
     wiced_wlan_connectivity_deinit();// Always returns success even when it fails.
     deinit_tcp();
 
+    /*
+     * All done here
+     */
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
     return false;// When the network was successfully torn down after an error.
 }
 
@@ -377,7 +399,7 @@ char* get_wifi_ssid( char* buffer, uint16_t index )
   */
 void wifi_set_default_st_ssid(void)
 {
-	set_wifi_st_ssid( IMX_DEFAULT_ST_SSID, IMX_DEFAULT_ST_KEY, IMX_DEFAULT_ST_SECURITY );
+	set_wifi_st_ssid( device_config.default_st_ssid, device_config.default_st_wpa, device_config.default_st_security_mode );
 }
 
 /**
@@ -446,11 +468,11 @@ void wifi_set_default_ap_ssid(void)
     dct_wifi = (platform_dct_wifi_config_t*)wiced_dct_get_current_address( DCT_WIFI_CONFIG_SECTION );
 
     if( ( strlen( device_config.product_name ) + 7 ) > IMX_SSID_LENGTH )
-        sprintf( ap_ssid, "%s", IMX_DEFAULT_AP_SSID );
+        sprintf( ap_ssid, "%s", device_config.default_ap_ssid );
     else
         sprintf( ap_ssid, "%s-%02X%02X%02X", device_config.product_name, (uint16_t) dct_wifi->mac_address.octet[ 3 ], (uint16_t) dct_wifi->mac_address.octet[ 4 ], (uint16_t) dct_wifi->mac_address.octet[ 5 ] );
     imx_printf( "Setting Access Point to SSID:%s\r\n", ap_ssid );
-    set_wifi_ap_ssid( ap_ssid, IMX_DEFAULT_AP_KEY, IMX_DEFAULT_AP_SECURITY );
+    set_wifi_ap_ssid( ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
 }
 
 /**

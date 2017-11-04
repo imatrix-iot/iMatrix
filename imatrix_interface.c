@@ -96,6 +96,10 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
      */
     imx_init_led_functions( init_config->led_functions );
     /*
+     * During Setup alternate GREEN/RED quickly
+     */
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_BLINK_5 );
+    /*
      * Save user defined product information to local storage
      */
     memcpy( &imatrix_init_config, init_config, sizeof( imx_imatrix_init_config_t ) );
@@ -120,6 +124,10 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
          */
         icb.running_in_background = true;
     }
+    /*
+     * Done Setup Turn LEDS OFF
+     */
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
 
     return IMX_SUCCESS;
 }

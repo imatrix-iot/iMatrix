@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -29,21 +23,20 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file
+/** @file host_support.h
  *
- *
+ *  Created on: November 4, 2017
+ *      Author: greg.phillips
  *
  */
 
+#ifndef RTC_TIME_H_
+#define RTC_TIME_H_
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "wiced.h"
-
-#include "../device/icb_def.h"
-#include "../device/config.h"
-#include "ntp_success.h"
+/*
+ *	Defines for rtc_time.c
+ *
+ */
 
 /******************************************************
  *                      Macros
@@ -66,36 +59,7 @@
  ******************************************************/
 
 /******************************************************
- *               Function Declarations
- ******************************************************/
-
-/******************************************************
- *               Variable Definitions
- ******************************************************/
-extern iMatrix_Control_Block_t icb;
-uint32_t ntp_succeeded_since_boot = WICED_FALSE;
-uint32_t save_time_to_sflash = WICED_FALSE;// To avoid multithreading problems use a 32 bit number.
-                                           // Thus a single machine instruction is all that is required to store this value.
-
-/******************************************************
  *               Function Definitions
  ******************************************************/
-/**
-  * @brief	Flag that we got a valid NTP time
-  * @param  None
-  * @retval : None
-  */
-void ntp_success(void)
-{
-    wiced_utc_time_t utc_time;
-    // uint32_t local_time;
-    ntp_succeeded_since_boot = WICED_TRUE;
-    save_time_to_sflash = WICED_TRUE;
-    icb.time_set_with_NTP = true;
-    /*
-     * Set the time for AT Host devices
-     */
-    wiced_time_get_utc_time( &utc_time );
-    // local_time = (uint32_t) utc_time + device_config.local_seconds_offset_from_utc;
-
-}
+uint16_t imx_get_utc(uint16_t arg, void *value );
+#endif /* RTC_TIME_H_ */

@@ -86,7 +86,7 @@ void cs_reset_defaults(void)
     imx_control_sensor_block_t *cs_block, *config_source;
     uint16_t no_items, i;
 
-    for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
+    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
         if( type == IMX_CONTROLS ) {
             cs_block = &device_config.ccb[ 0 ];
             config_source = &imx_controls_defaults[ 0 ];
@@ -99,7 +99,7 @@ void cs_reset_defaults(void)
         cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) config_source, no_items );
         for( i = 0; i < no_items; i++ ) {
             memcpy( &cs_block[ i ], &config_source[ i ], sizeof( imx_control_sensor_block_t ) );
-            imx_printf( "  Added" );
+            cli_print( "  Added" );
             print_cs_block_entry( type, cs_block, i );
         }
     }

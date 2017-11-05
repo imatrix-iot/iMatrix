@@ -313,7 +313,7 @@ typedef struct control_sensor_block {
     unsigned int use_warning_level_high : 3;    // 8-9  What warning levels for high levels do we notify on
     unsigned int set_default            : 1;    // 10   Does the system set the default value
     unsigned int send_imatrix           : 1;    // 11   Does the system send this entry to iMatrix
-    unsigned int reserved               : 16;   // 12-31
+    unsigned int reserved               : 20;   // 12-31
     data_32_t default_value;
     data_32_t warning_level_low[ WARNING_LEVELS ];
     data_32_t warning_level_high[ WARNING_LEVELS ];

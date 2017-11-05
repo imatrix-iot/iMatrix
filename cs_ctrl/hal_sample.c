@@ -52,6 +52,16 @@
 /******************************************************
  *                      Macros
  ******************************************************/
+#define SET_CSB_VARS_F( type )    \
+                if( type == IMX_CONTROLS ) {        \
+                    csb = &device_config.ccb[ 0 ];  \
+                    csd = &cd[ 0 ];                 \
+                    f = &imx_control_functions[ 0 ];\
+                } else {                            \
+                    csb = &device_config.scb[ 0 ];  \
+                    csd = &sd[ 0 ];                 \
+                    f = &imx_sensor_functions[ 0 ]; \
+                }                                   \
 
 /******************************************************
  *                    Constants
@@ -99,7 +109,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	uint8_t status;
 	bool percent_change_detected;
     data_32_t sampled_value;
-	control_sensor_data_t *data;
+	control_sensor_data_t *csd;
 	imx_control_sensor_block_t *csb;
 	imx_functions_t *f;
 
@@ -110,46 +120,35 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	if( type == IMX_CONTROLS ) {
 		if( device_config.no_controls == 0 )
 			return;	// Nothing to do
-		else {
-			active = &active_control;
-			if( *active >= device_config.no_controls )
-				*active = 0;
-			data = &cd[ *active ];
-			f = &imx_control_functions[ *active ];
-			csb = &device_config.ccb[ *active ];
-//			cli_print( "Sampling Control: %u\r\n", *active );
-		}
+        active = &active_control;
+        if( *active >= device_config.no_controls )
+            *active = 0;
 	} else {
-		if( device_config.no_sensors == 0 )
-			return;	// Nothing to do
-		else {
-			active = &active_sensor;
-			if( *active >= device_config.no_sensors )
-				*active = 0;
-			data = &sd[ *active ];
-//			print_status( "Sample - Setting Sensor %u Data to: 0x%08lx\r\n", *active, (uint32_t) data );
-			f = &imx_sensor_functions[ *active ];
-			csb = &device_config.scb[ *active ];
-//			cli_print( "Sampling Sensor: %u\r\n", *active );
-		}
+        if( device_config.no_sensors == 0 )
+            return; // Nothing to do
+        active = &active_sensor;
+        if( *active >= device_config.no_sensors )
+            *active = 0;
 	}
+
+	SET_CSB_VARS_F( type );
     wiced_rtos_delay_milliseconds( 100 );
 	/*
 	 * Check Control / Sensor, update this sensor stored data if it changes warning level or sample rate is due
 	 *
 	 * Sample rate of 0 represents event driven
 	 */
-	if( ( csb->enabled == true ) && ( csb->sample_rate > 0 ) ) {
+	if( ( csb[ *active ].enabled == true ) && ( csb[ *active ].sample_rate > 0 ) ) {
 		status = 0;	// Controls may not have an update function as the may just be set remotely
-		if( f->update != NULL ) {
-			status = ( f->update)( f->arg, &sampled_value );
-//			/*
+		if( f[ *active ].update != NULL ) {
+			status = ( f[ *active ].update)( f[ *active ].arg, &sampled_value );
+			/*
 			if( type == IMX_CONTROLS )
 			    cli_print( "Sampled Control: %u, result: %u", *active, status );
 			else
 			    cli_print( "Sampled Sensor: %u, result: %u", *active, status );
 			cli_print( ", Value: " );
-			switch( csb->data_type ) {
+			switch( csb[ *active ].data_type ) {
 				case IMX_INT32 :
 				    cli_print( "%ld", sampled_value.int_32bit );
 					break;
@@ -162,30 +161,30 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 					break;
 			}
 			cli_print( "\r\n" );
-//			*/
+			*/
 	        if( status == IMX_SUCCESS ) {
-	            data->last_value.uint_32bit = sampled_value.uint_32bit;     // Its all just 32 bit data
-	            csb->valid = true;      // We have a sample
-	            data->error = status;   // Reset for correction
+	            csd[ *active ].last_value.uint_32bit = sampled_value.uint_32bit;     // Its all just 32 bit data
+	            csb[ *active ].valid = true;      // We have a sample
+	            csd[ *active ].error = status;   // Reset for correction
 	        } else if( status == IMX_NO_DATA )
 	            ;   // Do nothing - keep using existing data
 	        else {
 	//          print_status( "Error Reading sensor %u\r\n", *active );
-	            data->errors += 1;
-	            data->error = status;
+	            csd[ *active ].errors += 1;
+	            csd[ *active ].error = status;
 	            /*
 	             * see if change in error or all we are getting is errors. - Only send once per batch
 	             */
-	            if( ( data->error != data->last_error ) ||
-	                ( is_later( current_time, data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) ) == true ) ) {
+	            if( ( csd[ *active ].error != csd[ *active ].last_error ) ||
+	                ( is_later( current_time, csd[ *active ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) ) == true ) ) {
 	/*
 	 *
-	                print_status( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", data->error, data->last_error, data->last_sample_time,
-	                    ( data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) - (uint32_t) current_ms_time )  );
+	                print_status( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ *active ].error, csd[ *active ].last_error, csd[ *active ].last_sample_time,
+	                    ( csd[ *active ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) - (uint32_t) current_ms_time )  );
 	*/
-	                data->last_sample_time = current_time;
-	                data->last_error = data->error;
-	                data->send_on_error = true;
+	                csd[ *active ].last_sample_time = current_time;
+	                csd[ *active ].last_error = csd[ *active ].error;
+	                csd[ *active ].send_on_error = true;
 	            }
 	        }
 		}
@@ -195,7 +194,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
         /*
          * Check if the data is in warning levels for the sensor
          */
-        data->warning = IMX_INFORMATIONAL;  // Assume for now
+        csd[ *active ].warning = IMX_INFORMATIONAL;  // Assume for now
         /*
          * Each time thru the loop will check for the next most severe level and set the highest by the end
          */
@@ -203,39 +202,39 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
             /*
              * Do we check if below current level
              */
-            if( ( csb->use_warning_level_low & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
-                switch( csb->data_type ) {
+            if( ( csb[ *active ].use_warning_level_low & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
+                switch( csb[ *active ].data_type ) {
                     case IMX_INT32 :
-                        if( data->last_value.int_32bit < csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
-                            data->warning = i;  // Now set to this level
+                        if( csd[ *active ].last_value.int_32bit < csb[ *active ].warning_level_low[ i - IMX_WATCH ].int_32bit )
+                            csd[ *active ].warning = i;  // Now set to this level
                         break;
                     case IMX_FLOAT :
-                        if( data->last_value.float_32bit < csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
-                            data->warning = i;  // Now set to this level
+                        if( csd[ *active ].last_value.float_32bit < csb[ *active ].warning_level_low[ i - IMX_WATCH ].float_32bit )
+                            csd[ *active ].warning = i;  // Now set to this level
                         break;
                     case IMX_UINT32 :
                     default :
-                        if( data->last_value.uint_32bit < csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
-                            data->warning = i;  // Now set to this level
+                        if( csd[ *active ].last_value.uint_32bit < csb[ *active ].warning_level_low[ i - IMX_WATCH ].uint_32bit )
+                            csd[ *active ].warning = i;  // Now set to this level
                         break;
                 }
             /*
              * Do we check if above current level
              */
-            if( ( csb->use_warning_level_high & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
-                switch( csb->data_type ) {
+            if( ( csb[ *active ].use_warning_level_high & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
+                switch( csb[ *active ].data_type ) {
                     case IMX_INT32 :
-                        if( data->last_value.int_32bit > csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
-                            data->warning = i;  // Now set to this level
+                        if( csd[ *active ].last_value.int_32bit > csb[ *active ].warning_level_low[ i - IMX_WATCH ].int_32bit )
+                            csd[ *active ].warning = i;  // Now set to this level
                         break;
                     case IMX_FLOAT :
-                        if( data->last_value.float_32bit > csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
-                            data->warning = i;  // Now set to this level
+                        if( csd[ *active ].last_value.float_32bit > csb[ *active ].warning_level_low[ i - IMX_WATCH ].float_32bit )
+                            csd[ *active ].warning = i;  // Now set to this level
                         break;
                     case IMX_UINT32 :
                     default :
-                        if( data->last_value.uint_32bit > csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
-                            data->warning = i;  // Now set to this level
+                        if( csd[ *active ].last_value.uint_32bit > csb[ *active ].warning_level_low[ i - IMX_WATCH ].uint_32bit )
+                            csd[ *active ].warning = i;  // Now set to this level
                         break;
                 }
         }
@@ -243,19 +242,19 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
          * Do we check percent change
          */
         percent_change_detected = false;
-        if( csb->send_on_percent_change == true )
-            switch( csb->data_type ) {
+        if( csb[ *active ].send_on_percent_change == true )
+            switch( csb[ *active ].data_type ) {
                 case IMX_INT32 :
-                    if( check_int_percent( data->last_value.int_32bit, data->last_value.int_32bit, csb->percent_change_to_send ) )
+                    if( check_int_percent( csd[ *active ].last_value.int_32bit, csd[ *active ].last_value.int_32bit, csb[ *active ].percent_change_to_send ) )
                         percent_change_detected = true;
                     break;
                 case IMX_FLOAT :
-                    if( check_float_percent( data->last_value.float_32bit, data->last_value.float_32bit, csb->percent_change_to_send ) )
+                    if( check_float_percent( csd[ *active ].last_value.float_32bit, csd[ *active ].last_value.float_32bit, csb[ *active ].percent_change_to_send ) )
                         percent_change_detected = true;
                     break;
                 case IMX_UINT32 :
                 default :
-                    if( check_uint_percent( data->last_value.uint_32bit, data->last_value.uint_32bit, csb->percent_change_to_send ) )
+                    if( check_uint_percent( csd[ *active ].last_value.uint_32bit, csd[ *active ].last_value.uint_32bit, csb[ *active ].percent_change_to_send ) )
                         percent_change_detected = true;
                     break;
             }
@@ -270,38 +269,39 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
          * is this sample a change of >= Change percentage level - if enabled
          *
          */
-        if( ( ( csb->send_imatrix == true ) && ( csb->valid == true ) ) &&
-            ( ( is_later( current_time, data->last_sample_time + (wiced_time_t) ( csb->sample_rate ) ) == true ) ||
-            ( data->warning != data->last_warning ) ||
+        if( ( ( csb[ *active ].send_imatrix == true ) && ( csb[ *active ].valid == true ) ) &&
+            ( ( is_later( current_time, csd[ *active ].last_sample_time + (wiced_time_t) ( csb[ *active ].sample_rate ) ) == true ) ||
+            ( csd[ *active ].warning != csd[ *active ].last_warning ) ||
             ( percent_change_detected == true ) ) ) {
-            data->data[ data->no_samples ].uint_32bit = data->last_value.uint_32bit; // Save this entry its all just 32 bit data
 
-            // imx_printf( "Saving %s value for sensor: %u - %s - Saved entries: %u\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", *active, device_config.scb[ *active ].name, ( data->no_samples + 1 ) );
+            csd[ *active ].data[ csd[ *active ].no_samples ].uint_32bit = csd[ *active ].last_value.uint_32bit; // Save this entry its all just 32 bit data
+
+            imx_printf( "Saving %s value for sensor(%u): %s, Saved entries: %u\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", *active, csb[ *active ].name, ( csd[ *active ].no_samples + 1 ) );
 
             /*
              * Check for overflow - Save only the last sample values
              */
-            if( data->no_samples >= ( HISTORY_SIZE - 1 ) ) {
-                memmove( &data->data[ 0 ], &data->data[ 1 ], ( HISTORY_SIZE - 1 ) * SAMPLE_LENGTH );
+            if( csd[ *active ].no_samples >= ( HISTORY_SIZE - 1 ) ) {
+                memmove( &csd[ *active ].data[ 0 ], &csd[ *active ].data[ 1 ], ( HISTORY_SIZE - 1 ) * SAMPLE_LENGTH );
             } else
-                data->no_samples += 1;
-            data->last_sample_time = current_time;
+                csd[ *active ].no_samples += 1;
+            csd[ *active ].last_sample_time = current_time;
             /*
              * See if the batch is ready to go
              */
-            if( ( data->warning != data->last_warning ) ||
-                ( data->no_samples >= device_config.scb[ *active ].sample_batch_size ) ||
-                ( data->no_samples >= ( HISTORY_SIZE - 1  ) ) || // We can't get any more in to this record
-                ( data->update_now == true ) ||
+            if( ( csd[ *active ].warning != csd[ *active ].last_warning ) ||
+                ( csd[ *active ].no_samples >= device_config.scb[ *active ].sample_batch_size ) ||
+                ( csd[ *active ].no_samples >= ( HISTORY_SIZE - 1  ) ) || // We can't get any more in to this record
+                ( csd[ *active ].update_now == true ) ||
                 ( percent_change_detected == true ) ) {
-                /*
-                print_status( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
-                        *active, type == IMX_CONTROLS ? device_config.ccb[ *active ].id : device_config.scb[ *active ].id, data->no_samples, csb->sample_batch_size, data->update_now ? "true" : "false",
-                        data->warning, data->last_warning, percent_change_detected ? "true" : "false" );
-                */
-                data->update_now = false;
-                data->last_warning = data->warning;
-                data->send_batch = true;    // Send this now
+
+                cli_print( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
+                        *active, csb[ *active ].id, csd[ *active ].no_samples, csb[ *active ].sample_batch_size, csd[ *active ].update_now ? "true" : "false",
+                        csd[ *active ].warning, csd[ *active ].last_warning, percent_change_detected ? "true" : "false" );
+
+                csd[ *active ].update_now = false;
+                csd[ *active ].last_warning = csd[ *active ].warning;
+                csd[ *active ].send_batch = true;    // Send this now
             }
         }
 	}

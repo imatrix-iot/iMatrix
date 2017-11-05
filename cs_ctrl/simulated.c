@@ -126,7 +126,7 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
     /*
      * Save value to last value - this will be returned by sample routine
      */
-    cli_print( "Setting %s( %s ): %u, data type: %u with value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", csb[ entry ].name, entry, csb[ entry ].data_type, value );
+//    cli_print( "Setting %s( %s ): %u, data type: %u with value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", csb[ entry ].name, entry, csb[ entry ].data_type, value );
     switch( csb[ entry ].data_type ) {
         case IMX_INT32 :
             csd[ entry ].last_value.int_32bit = (int32_t) atoi( value );
@@ -164,37 +164,34 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 
 uint16_t print_register( peripheral_type_t type, uint16_t entry )
 {
+
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;
+
 	if( type == IMX_CONTROLS ) {
 		if( entry >= device_config.no_controls )
 			return false;
-		switch( device_config.ccb[ entry].data_type ) {
-			case IMX_INT32 :
-				cli_print( "%ld", cd[ entry].last_value.int_32bit );
-				break;
-			case IMX_FLOAT :
-				cli_print( "%f", cd[ entry].last_value.float_32bit );
-				break;
-			case IMX_UINT32 :
-			default :
-				cli_print( "%lu", cd[ entry].last_value.uint_32bit );
-				break;
-		}
+	    csd = &cd[ 0 ];
+        csb = &device_config.ccb[ 0 ];  \
 	} else {
 		if( entry >= device_config.no_sensors )
 			return false;
-		switch( device_config.scb[ entry].data_type ) {
-			case IMX_INT32 :
-				cli_print( "%d", sd[ entry].last_value.int_32bit );
-				break;
-			case IMX_FLOAT :
-				cli_print( "%f", sd[ entry].last_value.float_32bit );
-				break;
-			case IMX_UINT32 :
-			default :
-				cli_print( "%u", sd[ entry].last_value.uint_32bit );
-				break;
-		}
+	    csd = &sd[ 0 ];
+        csb = &device_config.scb[ 0 ];  \
 	}
-	cli_print( "\r\n" );
+    switch( csb[ entry].data_type ) {
+        case IMX_INT32 :
+            cli_print( "%d", csd[ entry].last_value.int_32bit );
+            break;
+        case IMX_FLOAT :
+            cli_print( "%f", csd[ entry].last_value.float_32bit );
+            break;
+        case IMX_UINT32 :
+        default :
+            cli_print( "%u", csd[ entry].last_value.uint_32bit );
+            break;
+    }
+
+    cli_print( "\r\n" );
 	return true;
 }

@@ -145,11 +145,12 @@ void cs_init(void)
             if( cs_block[ i ].set_default == true ) {
                 data[ i ].last_value.uint_32bit = cs_block[ i ].default_value.uint_32bit;
                 cs_block[ i ].valid = true;
+                data[ i ].last_sample_time = current_time + ( i * 1000 );
             }
-            if( f[ i ].init != NULL )
+            if( f[ i ].init != NULL ) {
                 (f[ i ].init)( f[ i ].arg );    // Initialize control
-            data[ i ].update_now = true;
-            data[ i ].last_sample_time = current_time + ( i * 1000 );
+                data[ i ].last_sample_time = current_time + ( i * 1000 );
+            }
         }
     }
 }
@@ -183,17 +184,38 @@ void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *cs
 
 static void print_cs_block_entry( peripheral_type_t type, imx_control_sensor_block_t *cs_block, uint16_t entry )
 {
-    cli_print( " No. %u, %32s, ID: 0x%08lx, %s, ", entry, cs_block[  entry ].name, cs_block[ entry ].id, cs_block[ entry ].enabled == true ? " Enabled" : "Disabled" );
+    cli_print( " No. %2u, %32s, ID: 0x%08lx, %s, ", entry, cs_block[  entry ].name, cs_block[ entry ].id, cs_block[ entry ].enabled == true ? " Enabled" : "Disabled" );
     cli_print( "%s, ", ( cs_block[ entry ].read_only == true ) ? " Read Only" : "Read/Write" );
+    cli_print( "Initialize: " );
+    if( cs_block[ entry ].set_default == true )
+        cli_print( "None    " );
+    else {
+        switch( cs_block[ entry ].data_type ) {
+            case IMX_UINT32 :
+                cli_print( "%8lu", cs_block[ entry ].warning_level_low[ 1 ].uint_32bit );
+                break;
+            case IMX_INT32 :
+                cli_print( "%8ld", cs_block[ entry ].warning_level_low[ 1 ].int_32bit );
+                break;
+            case IMX_FLOAT :
+                cli_print( "%8.2f", cs_block[ entry ].warning_level_low[ 1 ].float_32bit );
+                break;
+            case IMX_VARIABLE_LENGTH :
+                cli_print( "Variable" );
+                break;
+        }
+    }
+    cli_print( ", " );
+
     if( cs_block[ entry ].sample_rate == 0 )
-        imx_printf( "          Event Driven" );
+        cli_print( "          Event Driven" );
     else {
         if( cs_block[ entry ].sample_rate >= 1000 )
-            imx_printf( "Sample Every: %4.1f Sec", ( (float) cs_block[ entry ].sample_rate ) / 1000.0 );
+            cli_print( "Sample Every: %4.1f Sec", ( (float) cs_block[ entry ].sample_rate ) / 1000.0 );
         else
-            imx_printf( "Sample Every: %5u mSec", cs_block[ entry ].sample_rate );
+            cli_print( "Sample Every: %5u mSec", cs_block[ entry ].sample_rate );
     }
-    imx_printf( ", Batch size: %2u", cs_block[ entry ].sample_batch_size );
+    cli_print( ", Batch size: %2u", cs_block[ entry ].sample_batch_size );
 
     cli_print( ", Monitoring Levels low enabled:" );
     if( cs_block[ entry ].use_warning_level_low == 0 )

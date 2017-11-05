@@ -84,8 +84,8 @@ imx_imatrix_init_config_t imatrix_config = {
  *  Define the number of sensors and controls in the system
  *
  */
-#define IMX_MAX_NO_SENSORS              ( 4 + 32 )      // 3 Integrated Wi Fi Channel, RSSI, Noise - 32 User Defined
-#define IMX_MAX_NO_CONTROLS             ( 0 + 8 )       // 8 User Defined
+#define IMX_MAX_NO_SENSORS              ( 5 + 32 )      // 5 Integrated Wi Fi Channel, BSSID, RSSI, Noise, On Board Temp - 32 User Defined
+#define IMX_MAX_NO_CONTROLS             ( 0 + 16 )      // 16 User Defined
 /*
  *  Define the number of Smart Arduino controls and sensors in the system
  *

@@ -126,6 +126,7 @@ void cli_at( uint16_t arg )
 	        cli_print( "&ICn - ? - Get value for Control register n | = <xx> - Set Control Register n to value xxx. Value must match data type\r\n" );
 	        cli_print( "&IP - Set Provisioning Mode\r\n" );
 	        cli_print( "&ISn - ? - Get value for Sensor register n\r\n" );
+	        cli_print( "&IT -  Print the UTC time in seconds since 1970 - 0 if NTP cannot get time\r\n" );
 	    } else if( token[ 0 ] == 'E') {
 	        /*
 	         * Process E
@@ -174,10 +175,21 @@ void cli_at( uint16_t arg )
 	         */
 		    process_ct = true;
 		    type = IMX_SENSORS;
+        } else if( strncmp( token, "&IT", 3 ) == 0x00 ) {
+            /*
+             * Process &IT - print UTC time
+             */
+            uint32_t utc_time;
+            if( icb.time_set_with_NTP == true )
+                wiced_time_get_utc_time( (wiced_utc_time_t *) &utc_time );
+            else
+                utc_time = 0;
+            cli_print( "%lu\r\n", utc_time );
 		} else {
 		    /*
 		     * Unknown command
 		     */
+		    cli_print( "Unknown Command: %s\r\n", token );
 		    icb.AT_command_errors += 1;
 		    at_print( AT_RESPONSE_ERROR );
 			return;
@@ -189,7 +201,7 @@ void cli_at( uint16_t arg )
 	             */
 	            at_register = token[ 3 ] - 0x30;
 	        } else {
-	            imx_printf( "No Register Supplied\r\n" );
+	            cli_print( "No Register Supplied\r\n" );
 	            icb.AT_command_errors += 1;
 	            at_print( AT_RESPONSE_ERROR );
 	            return;

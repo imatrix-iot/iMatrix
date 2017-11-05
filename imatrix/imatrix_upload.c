@@ -874,20 +874,14 @@ void imatrix_status( uint16_t arg)
     		cli_print( "Initializing - checking for ready to upload @%lu", (uint32_t) current_time );
     		cli_print( "Current Control/Sensor Data pending upload:\r\n" );
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
-    	        if( type == IMX_CONTROLS ) {
-    	            csb = &device_config.ccb[ 0 ];
-    	            csd = &cd[ 0 ];
-    	        } else {
-    	            csb = &device_config.scb[ 0 ];
-    	            csd = &sd[ 0 ];
-    	        }
+                SET_CSB_VARS( type );
     	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
     	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
     	        for( i = 0; i < no_items; i++ ) {
     	            if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
-    	                cli_print( "No: %u: 0x%08lx: %32s ", i, device_config.ccb[ i ].id, device_config.ccb[ i ].name );
+    	                cli_print( "No: %u: 0x%08lx: %32s ", i, csb[ i ].id, csb[ i ].name );
     	                if( cd[ i ].no_samples > 0 ) {
     	                    for( j = 0; j < csd[ i ].no_samples; j++ ) {
     	                        switch( csb[ i ].data_type ) {

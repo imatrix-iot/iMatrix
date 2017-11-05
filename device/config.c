@@ -113,13 +113,10 @@ wiced_result_t imatrix_load_config(void)
     // Replace invalid DCT with factory defaults and user defined values
 
     imx_printf( "*** Reseting to Factory Defaults ***\r\n" );
-    memcpy( &device_config, &factory_default_config, sizeof( IOT_Device_Config_t ) );
-
-    strncpy( device_config.product_name, imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
     /*
-     * Default Device name as product name
+     * Start with know values and then update based on Host configuration
      */
-    strncpy( device_config.device_name, imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
+    memcpy( &device_config, &factory_default_config, sizeof( IOT_Device_Config_t ) );
 
     device_config.product_id = imatrix_init_config.product_id;
     device_config.manufactuer_id = imatrix_init_config.manufactuer_id;
@@ -128,6 +125,10 @@ wiced_result_t imatrix_load_config(void)
      */
     strncpy( device_config.imatrix_public_url, imatrix_init_config.imatrix_public_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.product_name, imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
+    /*
+     * Default Device name as product name
+     */
+    strncpy( device_config.device_name, imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
     strncpy( device_config.ota_public_url, imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.manufacturing_url, imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.default_ap_ssid, imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );

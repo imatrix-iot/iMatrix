@@ -190,7 +190,7 @@ void cli_status( uint16_t arg )
 	        cs_block = &device_config.scb[ 0 ];
             csd = &sd[ 0 ];
 	    }
-        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors, ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
+        cli_print( "%u %s: Current Status @: %lu mSec\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors, ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
         for( i = 0; i < no_items; i++ ) {

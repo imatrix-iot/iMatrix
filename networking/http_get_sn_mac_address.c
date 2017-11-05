@@ -159,7 +159,9 @@ uint16_t http_get_sn_mac_address( void )
 		switch( state ) {
 			case GET_MAC_DNS :
 			    imx_printf( "DNS Lookup for site: %s\r\n", device_config.manufacturing_url );
-			    if( get_site_ip( device_config.manufacturing_url, &ota_loader_config.address ) == true ) {
+//			    if( get_site_ip( device_config.manufacturing_url, &ota_loader_config.address ) == true ) {
+			    if( get_imatrix_ip_address( 0 ) == true ) {
+			        memcpy( &ota_loader_config.address, &icb.imatrix_public_ip_address, sizeof(wiced_ip_address_t ) );
                     imx_printf("IP address %lu.%lu.%lu.%lu\r\n",
                             ( ota_loader_config.address.ip.v4 >> 24) & 0xFF,
                             ( ota_loader_config.address.ip.v4 >> 16) & 0xFF,
@@ -205,7 +207,7 @@ uint16_t http_get_sn_mac_address( void )
 				break;
 			case GET_MAC_SEND_REQUEST :		// Create query request and send
 				memset( local_buffer, 0x00, BUFFER_LENGTH );
-				strcat( local_buffer, "GET /device?" );
+				strcat( local_buffer, "GET /future/device?" );
 				sprintf( &local_buffer[ strlen( local_buffer ) ], "cpuid=0x%08lX%08lX%08lX&productid=0x%08lX", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.product_id );
 				strcat( local_buffer, " HTTP/1.1\nHost: " );
 				strcat( local_buffer, device_config.manufacturing_url );
@@ -227,7 +229,7 @@ uint16_t http_get_sn_mac_address( void )
 			    }
 			    break;
 			case GET_MAC_PARSE_HEADER :
-				result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 2000, &buffer_length );
+				result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 10000, &buffer_length );
 				if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
 					imx_printf( "\r\nReceived: %lu Bytes\r\n", buffer_length );
 					/*
@@ -320,8 +322,7 @@ uint16_t http_get_sn_mac_address( void )
 			    	imx_printf("Got the MAC Address.\r\n");
 
 			    	return( true );
-			    }
-			    else {
+			    } else {
 			    	imx_printf("Get MAC Address failed.\r\n");
 			    	return( false );
 			    }

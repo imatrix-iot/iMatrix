@@ -91,12 +91,13 @@ extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
 uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 {
 	if( type == IMX_CONTROLS ) {
-		if( entry >= device_config.no_controls )
+		if( ( entry >= device_config.no_controls ) || ( device_config.ccb[ entry ].read_only == true ) ) {
 			return false;
+		}
 		/*
 		 * Save value to last value - this will be returned by sample routine
 		 */
-//        cli_print( "Setting AT IC%u Control( %s ): %u, data type: %u with value %s\r\n", entry, device_config.ccb[ entry].name, entry, device_config.ccb[ entry].data_type, value );
+        cli_print( "Setting AT IC%u Control( %s ): %u, data type: %u with value %s\r\n", entry, device_config.ccb[ entry].name, entry, device_config.ccb[ entry].data_type, value );
 		switch( device_config.ccb[ entry ].data_type ) {
 			case IMX_INT32 :
 				cd[ entry ].last_value.int_32bit = (int32_t) atoi( value );
@@ -123,12 +124,13 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 
 		}
 	} else {
-		if( ( entry >= device_config.no_sensors ) || ( device_config.scb[ entry ].read_only == false ) )
+		if( ( entry >= device_config.no_sensors ) || ( device_config.scb[ entry ].read_only == true ) ) {
 			return false;
+		}
 		/*
 		 * Save value to last value - this will be returned by sample routine
 		 */
-//        cli_print( "Setting AT Sensor: %u, data type: %u with value %s\r\n", entry, device_config.scb[ entry].data_type, value );
+        cli_print( "Setting AT Sensor: %u, data type: %u with value %s\r\n", entry, device_config.scb[ entry].data_type, value );
 		switch( device_config.scb[ entry ].data_type ) {
 			case IMX_INT32 :
 				sd[ entry ].last_value.int_32bit = (int32_t) atoi( value );

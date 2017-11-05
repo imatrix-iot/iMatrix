@@ -203,7 +203,7 @@ imx_status_t imx_process(void)
     /*
      * Process iMatrix Uploads
      */
-    // imatrix_upload( current_time );
+    imatrix_upload( current_time );
 
     process_wifi( current_time );
 

@@ -407,12 +407,12 @@ void imatrix_upload(wiced_time_t current_time)
                                 do {
                                     csd[ i ].last_warning = csd[ i ].warning; // Save last warning
                                     csd[ i ].send_on_error = false;        // Not after this send
-    //                                imx_printf( "%s - %s: %u - Data type: %u ", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", csb->name, i, csb->data_type );
-                                    if( csb->data_type == IMX_VARIABLE_LENGTH ) {
+ //                                   imx_printf( "%s - %s: %u - Data type: %u ", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", csb[ i ].name, i, csb[ i ].data_type );
+                                    if( csb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
                                         /*
                                          * Process Variable Length record
                                          */
-                                        if( csb->sample_rate == 0 ) {
+                                        if( csb[ i ].sample_rate == 0 ) {
                                             /*
                                              * This is an event entry - timestamp is first item, sample is second entry
                                              */
@@ -430,14 +430,14 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * Load first variable length record
                                              */
-    //                                        imx_printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx ", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
+    //                                        imx_printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx ", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
                                             /*
                                              * Set up the header and copy in the data
                                              */
-                                            upload_data->header.id = htonl( csb->id );
-                                            header_bits.bits.data_type = csb->data_type;
-                                            upload_data->header.sample_rate = htonl( csb->sample_rate );
-                                            if( csb->sample_rate != 0 ) {
+                                            upload_data->header.id = htonl( csb[ i ].id );
+                                            header_bits.bits.data_type = csb[ i ].data_type;
+                                            upload_data->header.sample_rate = htonl( csb[ i ].sample_rate );
+                                            if( csb[ i ].sample_rate != 0 ) {
                                                 /*
                                                  * These are individual sensor readings over time sample time
                                                  */
@@ -470,7 +470,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * Add Timestamp if Event data and select base of data
                                              */
-                                            if( csb->sample_rate == 0 ) {
+                                            if( csb[ i ].sample_rate == 0 ) {
                                                 /*
                                                  * This is an event entry - put timestamp in first
                                                  */
@@ -512,7 +512,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                  * Move data up and free up variable data records
                                                  */
                                                 memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
-                                                upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
+                                                upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb[ i ].sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
                                                 csd[ i ].no_samples = csd[ i ].no_samples - no_samples;
                                             }
                                             /*
@@ -521,7 +521,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             * Amount = ?time stamp ( 4 bytes ) + data length ( 4 bytes ) + actual variable length data + padding to fill out 32 bits.
                                             */
                                             foo32bit = sizeof( header_t )
-                                                    + ( ( csb->sample_rate == 0 ) ? SAMPLE_LENGTH : 0 )    // Timestamp
+                                                    + ( ( csb[ i ].sample_rate == 0 ) ? SAMPLE_LENGTH : 0 )    // Timestamp
                                                     + SAMPLE_LENGTH                                         // Data length
                                                     + variable_data_length                                  // Data + padding
                                                     + ( ( variable_data_length % SAMPLE_LENGTH == 0 ) ? 0 : ( SAMPLE_LENGTH - ( variable_data_length % SAMPLE_LENGTH ) ) );
@@ -584,14 +584,14 @@ void imatrix_upload(wiced_time_t current_time)
                                                 no_samples = ( remaining_data_length - sizeof( header_t ) ) / ( SAMPLE_LENGTH );
     //                                            imx_printf( " *** - Can Can Fit: %u\r\n", no_samples );
                                             }
-    //                                        imx_printf( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb->id );
+    //                                        imx_printf( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ]id );
                                             /*
                                              * Set up the header and copy in the samples that will fit
                                              */
-                                            upload_data->header.id = htonl( csb->id );
-                                            header_bits.bits.data_type = csb->data_type;
-                                            upload_data->header.sample_rate = htonl( csb->sample_rate );
-                                            if( csb->sample_rate != 0 ) {
+                                            upload_data->header.id = htonl( csb[ i ].id );
+                                            header_bits.bits.data_type = csb[ i ].data_type;
+                                            upload_data->header.sample_rate = htonl( csb[ i ].sample_rate );
+                                            if( csb[ i ].sample_rate != 0 ) {
                                                 /*
                                                  * These are individual sensor readings over time sample time
                                                  */
@@ -639,7 +639,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                  * Move up the data and re calculate the last sample time
                                                  */
                                                 memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
-                                                upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb->sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
+                                                upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb[ i ].sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
                                                 csd[ i ].no_samples = csd[ i ].no_samples - no_samples;
                                                 entry_loaded = true;
                                             }
@@ -874,15 +874,16 @@ void imatrix_status( uint16_t arg)
     		cli_print( "Initializing - checking for ready to upload @%lu", (uint32_t) current_time );
     		cli_print( "Current Control/Sensor Data pending upload:\r\n" );
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
+
                 SET_CSB_VARS( type );
     	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
     	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
     	        for( i = 0; i < no_items; i++ ) {
-    	            if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
+    	            if( ( csb[ i ].enabled == true ) && ( csb[ i ].send_imatrix == true ) ) {
     	                cli_print( "No: %u: 0x%08lx: %32s ", i, csb[ i ].id, csb[ i ].name );
-    	                if( cd[ i ].no_samples > 0 ) {
+    	                if( csd[ i ].no_samples > 0 ) {
     	                    for( j = 0; j < csd[ i ].no_samples; j++ ) {
     	                        switch( csb[ i ].data_type ) {
     	                            case IMX_UINT32 :

@@ -184,6 +184,7 @@ void imx_init_temp(uint16_t arg)
 uint16_t imx_sample_temp(uint16_t arg, void *value )
 {
     float foo;
+    int temp;
     wiced_result_t result;
 
     UNUSED_PARAMETER(arg);
@@ -193,10 +194,12 @@ uint16_t imx_sample_temp(uint16_t arg, void *value )
         imx_printf( "Failed to read thermistor\r\n" );
         return IMX_GENERAL_FAILURE;
     }
-
-
     //imx_printf( "Temperature: %3.2fC\r\n", foo );
-    memcpy( value, &foo, sizeof( foo ) );
+    /*
+     * Onboard returns float, but value is actually just int so change
+     */
+    temp = (int32_t) foo;
+    memcpy( value, &temp, sizeof( temp ) );
     return IMATRIX_SUCCESS;
 }
 /**

@@ -52,6 +52,18 @@
 /******************************************************
  *                      Macros
  ******************************************************/
+/*
+ *  Set up standard variables based on the type of data we are using
+ */
+#define SET_CSB_VARS( type )    \
+                if( type == IMX_CONTROLS ) {        \
+                    csb = &device_config.ccb[ 0 ];  \
+                    csd = &cd[ 0 ];                 \
+                } else {                            \
+                    csb = &device_config.scb[ 0 ];  \
+                    csd = &sd[ 0 ];                 \
+                }
+
 
 /******************************************************
  *                    Constants
@@ -90,73 +102,58 @@ extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
   */
 uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 {
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;    // Temp pointer to control structure
+
+    SET_CSB_VARS( type );
+
+    /*
+     * Do some error checking
+     */
+    if( csb->read_only == true )
+        return false;
+
 	if( type == IMX_CONTROLS ) {
-		if( ( entry >= device_config.no_controls ) || ( device_config.ccb[ entry ].read_only == true ) ) {
+		if( entry >= device_config.no_controls )
 			return false;
-		}
-		/*
-		 * Save value to last value - this will be returned by sample routine
-		 */
-        cli_print( "Setting AT IC%u Control( %s ): %u, data type: %u with value %s\r\n", entry, device_config.ccb[ entry].name, entry, device_config.ccb[ entry].data_type, value );
-		switch( device_config.ccb[ entry ].data_type ) {
-			case IMX_INT32 :
-				cd[ entry ].last_value.int_32bit = (int32_t) atoi( value );
-				break;
-			case IMX_FLOAT :
-				cd[ entry ].last_value.float_32bit = (float) atof( value );
-				break;
-			case IMX_UINT32 :
-			default :
-				cd[ entry ].last_value.uint_32bit = (uint32_t) atol( value );
-//                cli_print( "cd @: 0x%08lx, Value Set to: %lu\r\n", (uint32_t) &cd, cd[ AT_CONTROL_START + entry ].last_value.uint_32bit );
-				break;
-		}
-		/*
-		 * Do we notify the server about this or is this control just sampled?
-		 */
-		if( device_config.ccb[ entry].sample_rate == 0 ) {
-            /*
-             * We just set the value of control without a sample rate so send a notification of this event, as controls/sensors with a sample rate of 0 are not uploaded
-             */
-//            cli_print( "Event Notification: Writing Control (AT): %u, Value: uint32: %lu, int32: %ld, float: %f\r\n", AT_CONTROL_START + entry,
-//                    cd[ entry].last_value.uint_32bit, cd[ entry].last_value.int_32bit, cd[ entry].last_value.float_32bit );
-            hal_event( IMX_CONTROLS, entry, &cd[ entry].last_value.uint_32bit );
-
-		}
 	} else {
-		if( ( entry >= device_config.no_sensors ) || ( device_config.scb[ entry ].read_only == true ) ) {
-			return false;
-		}
-		/*
-		 * Save value to last value - this will be returned by sample routine
-		 */
-        cli_print( "Setting AT Sensor: %u, data type: %u with value %s\r\n", entry, device_config.scb[ entry].data_type, value );
-		switch( device_config.scb[ entry ].data_type ) {
-			case IMX_INT32 :
-				sd[ entry ].last_value.int_32bit = (int32_t) atoi( value );
-//				cli_print( "Value Set to: %lu\r\n", sd[ AT_SENSOR_START + entry].last_value.int_32bit );
-				break;
-			case IMX_FLOAT :
-				sd[ entry ].last_value.float_32bit = (float) atof( value );
-				break;
-			case IMX_UINT32 :
-			default :
-				sd[ entry ].last_value.uint_32bit = (uint32_t) atol( value );
-				break;
-		}
-        /*
-         * Do we notify the server about this or is this control just sampled?
-         */
-        if( device_config.scb[ entry].sample_rate == 0 ) {
-            /*
-             * We just set the value of control without a sample rate so send a notification of this event, as controls/sensors with a sample rate of 0 are not uploaded
-             */
-//            cli_print( "Event Notification: Writing Sensor(AT): %u, Value: uint32: %lu, int32: %ld, float: %f\r\n", entry,
-//                    sd[ AT_SENSOR_START + entry].last_value.uint_32bit, sd[ entry].last_value.int_32bit, sd[ entry].last_value.float_32bit );
-            hal_event( IMX_SENSORS, entry, &sd[ entry].last_value.uint_32bit );
-
-        }
+        if( entry >= device_config.no_sensors )
+            return false;
 	}
+	/*
+	 * Process the entry
+	 */
+    /*
+     * Save value to last value - this will be returned by sample routine
+     */
+    cli_print( "Setting %s( %s ): %u, data type: %u with value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", csb[ entry ].name, entry, csb[ entry ].data_type, value );
+    switch( csb[ entry ].data_type ) {
+        case IMX_INT32 :
+            csd[ entry ].last_value.int_32bit = (int32_t) atoi( value );
+            break;
+        case IMX_FLOAT :
+            csd[ entry ].last_value.float_32bit = (float) atof( value );
+            break;
+        case IMX_UINT32 :
+        default :
+            csd[ entry ].last_value.uint_32bit = (uint32_t) atol( value );
+//                cli_print( "csd @: 0x%08lx, Value Set to: %lu\r\n", (uint32_t) csd, csd[ entry ].last_value.uint_32bit );
+            break;
+    }
+    csb[ entry ].valid = true;
+    /*
+     * Do we notify the server about this or is this control just sampled?
+     */
+    if( csb[ entry].sample_rate == 0 ) {
+        /*
+         * We just set the value of control without a sample rate so send a notification of this event, as controls/sensors with a sample rate of 0 are not uploaded
+         */
+//            cli_print( "Event Notification: Writing : %u, Value: uint32: %lu, int32: %ld, float: %f\r\n", entry,
+//                    csd[ entry].last_value.uint_32bit, csd[ entry].last_value.int_32bit, csd[ entry].last_value.float_32bit );
+        hal_event( type, entry, &csd[ entry].last_value.uint_32bit );
+
+    }
+
 	return true;
 }
 /**
@@ -172,14 +169,14 @@ uint16_t print_register( peripheral_type_t type, uint16_t entry )
 			return false;
 		switch( device_config.ccb[ entry].data_type ) {
 			case IMX_INT32 :
-				cli_print( "%d", cd[ entry].last_value.int_32bit );
+				cli_print( "%ld", cd[ entry].last_value.int_32bit );
 				break;
 			case IMX_FLOAT :
 				cli_print( "%f", cd[ entry].last_value.float_32bit );
 				break;
 			case IMX_UINT32 :
 			default :
-				cli_print( "%u", cd[ entry].last_value.uint_32bit );
+				cli_print( "%lu", cd[ entry].last_value.uint_32bit );
 				break;
 		}
 	} else {
@@ -197,7 +194,6 @@ uint16_t print_register( peripheral_type_t type, uint16_t entry )
 				cli_print( "%u", sd[ entry].last_value.uint_32bit );
 				break;
 		}
-
 	}
 	cli_print( "\r\n" );
 	return true;

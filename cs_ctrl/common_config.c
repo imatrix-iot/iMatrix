@@ -98,11 +98,6 @@ void cs_reset_defaults(void)
 
         cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) config_source, no_items );
         for( i = 0; i < no_items; i++ ) {
-            cli_print( "  Default" );
-            if( type == IMX_CONTROLS )
-                print_cs_block_entry( type, &imx_controls_defaults[ 0 ], i );
-            else
-                print_cs_block_entry( type, &imx_sensors_defaults[ 0 ], i );
             memcpy( &cs_block[ i ], &config_source[ i ], sizeof( imx_control_sensor_block_t ) );
             cli_print( "    Added" );
             print_cs_block_entry( type, cs_block, i );
@@ -151,7 +146,8 @@ void cs_init(void)
                 data[ i ].last_value.uint_32bit = cs_block[ i ].default_value.uint_32bit;
                 cs_block[ i ].valid = true;
                 data[ i ].last_sample_time = current_time + ( i * 1000 );
-            }
+            } else
+                cs_block[ i ].valid = false;    // Not valid until set for the first time
             if( f[ i ].init != NULL ) {
                 (f[ i ].init)( f[ i ].arg );    // Initialize control
                 data[ i ].last_sample_time = current_time + ( i * 1000 );

@@ -78,5 +78,5 @@ uint16_t imx_get_utc(uint16_t arg, void *value )
     UNUSED_PARAMETER( arg );
 
     wiced_time_get_utc_time( (wiced_utc_time_t *) value );
-    return IMX_SAVE_VALUE_ONLY;
+    return IMX_SUCCESS;
 }

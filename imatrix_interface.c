@@ -37,6 +37,7 @@
 #include "storage.h"
 #include "imatrix_interface.h"
 #include "cli/cli.h"
+#include "cli/cli_status.h"
 #include "cs_ctrl/hal_sample.h"
 #include "coap/coap_receive.h"
 #include "coap/coap_transmit.h"
@@ -112,7 +113,8 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
         /*
          * Copy factory entries to device_config
          */
-
+        printf( "\r\nSTARTING STATUS\r\n");
+        cli_status( 0 );
     }
     system_init();
     /*
@@ -201,7 +203,7 @@ imx_status_t imx_process(void)
     /*
      * Process iMatrix Uploads
      */
-    imatrix_upload( current_time );
+    // imatrix_upload( current_time );
 
     process_wifi( current_time );
 

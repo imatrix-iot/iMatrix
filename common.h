@@ -153,7 +153,6 @@ typedef enum {
 typedef enum {
     IMX_SUCCESS = 0,
     IMX_NO_DATA,
-    IMX_SAVE_VALUE_ONLY,    // Used when sampling but does not require saving in history
     IMX_INVALID_ENTRY,
     IMX_CONTROL_DISABLED,
     IMX_SENSOR_DISABLED,

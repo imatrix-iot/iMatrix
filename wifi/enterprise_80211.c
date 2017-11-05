@@ -190,7 +190,10 @@ uint16_t join_ent( char *ssid, eap_type_t eap_type, wiced_security_t auth_type, 
     wiced_tls_init_root_ca_certificates( (char*) icb.root_certificate, (uint32_t)strlen( (char*) icb.root_certificate ) );
 
     imx_printf( "Initializing Supplicant\r\n" );
-    if ( besl_supplicant_init( &supplicant_workspace, eap_type, WWD_STA_INTERFACE ) == BESL_SUCCESS ) {
+    supplicant_connection_info_t conn_info;
+    conn_info.interface = WWD_STA_INTERFACE;
+    conn_info.eap_type = eap_type;
+    if ( besl_supplicant_init( &supplicant_workspace, &conn_info ) == BESL_SUCCESS ) {
         imx_printf( "Enabling TLS\r\n" );
         wiced_supplicant_enable_tls( &supplicant_workspace, &context );
         imx_printf( "Setting Identity\r\n" );
@@ -214,13 +217,13 @@ uint16_t join_ent( char *ssid, eap_type_t eap_type, wiced_security_t auth_type, 
                 *unicode++ = *password++;
                 *unicode++ = '\0';
             }
-
+/*
             mschap_identity.identity = device_identity;
             mschap_identity.identity_length = strlen((char *)device_identity);
 
             mschap_identity.password = (uint8_t*) mschap_password;
             mschap_identity.password_length = 2*(i-1);
-
+*/
             imx_printf( "Setting inner identity\r\n" );
             besl_supplicant_set_inner_identity( &supplicant_workspace, eap_type, &mschap_identity );
 

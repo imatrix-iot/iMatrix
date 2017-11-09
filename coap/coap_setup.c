@@ -44,6 +44,7 @@
 
 
 #include "wiced.h"
+#include "storage.h"
 
 #include "coap_udp_recv.h"
 #include "coap_setup.h"

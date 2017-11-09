@@ -85,6 +85,6 @@ void link_down(void);
 void stop_network(void);
 void set_fixture_dct_name(void);
 void cli_wifi_setup( uint16_t arg );
-
+imx_wifi_mode_t imx_get_wifi_mode(void);
 #endif /* WIFI_H_ */
 

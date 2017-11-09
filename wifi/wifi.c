@@ -573,7 +573,7 @@ void cli_wifi_setup( uint16_t arg )
 	}
 }
 
-bool imx_get_wifi_mode(void)
+imx_wifi_mode_t imx_get_wifi_mode(void)
 {
     return false;
 }

@@ -117,7 +117,7 @@ imx_status_t imx_deinit(void);
 /*
  * System status: Operating Mode Setup / Standalone mode - or normal online mode
  */
-bool imx_get_wifi_mode(void);
+imx_wifi_mode_t imx_get_wifi_mode(void);
 bool imx_network_connected(void);
 char *imx_get_device_serial_number(void);
 /*

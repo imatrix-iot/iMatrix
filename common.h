@@ -138,6 +138,15 @@
  *                 Type Definitions
  ******************************************************/
 /*
+ * iMatrix Wi Fi Mode
+ */
+typedef enum {
+    IMX_WIFI_ACCESS_POINT = 0,
+    IMX_WIFI_STATION,
+    IMX_WIFI_AD_HOC,
+} imx_wifi_mode_t;
+
+/*
  * Tsunami Warning codes
  */
 typedef enum {
@@ -267,6 +276,7 @@ typedef struct {
     char imatrix_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char ota_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char manufacturing_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
+    char imatrix_bind_uri[ IMX_IMATRIX_URI_LENGTH + 1 ];
     char default_ap_ssid[ IMX_SSID_LENGTH + 1];
     char default_ap_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
     char default_st_ssid[ IMX_SSID_LENGTH + 1 ];

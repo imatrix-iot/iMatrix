@@ -131,6 +131,7 @@ wiced_result_t imatrix_load_config(void)
     strncpy( device_config.device_name, imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
     strncpy( device_config.ota_public_url, imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.manufacturing_url, imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
+    strncpy( device_config.imatrix_bind_uri, imatrix_init_config.imatrix_bind_uri, IMX_IMATRIX_URI_LENGTH );
     strncpy( device_config.default_ap_ssid, imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );
     strncpy( device_config.default_ap_wpa, imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
     strncpy( device_config.default_st_ssid, imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );

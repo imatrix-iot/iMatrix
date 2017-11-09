@@ -49,7 +49,6 @@ GLOBAL_DEFINES += PRINT_DEBUGS_FOR_COAP_DEFINES 		#includes coap_def.c coap_conf
                   										# above includes coap_psoc.c coap_sensor_rssi.c coap.c
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_BASIC_MESSAGING 		#includes add_coap_option.c coap_msg_get_store.c
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_HISTORY 				#includes imatrix.c
-GLOBAL_DEFINES += PRINT_DEBUGS_FOR_BUSINESS_HOURS
 
 NAME := iMatix_Library_$(PLATFORM)
 

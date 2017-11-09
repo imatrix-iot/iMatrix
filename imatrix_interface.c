@@ -113,8 +113,8 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
         /*
          * Copy factory entries to device_config
          */
-        printf( "\r\nSTARTING STATUS\r\n");
-        cli_status( 0 );
+//        printf( "\r\nSTARTING STATUS\r\n");
+//        cli_status( 0 );
     }
     system_init();
     /*

@@ -301,6 +301,7 @@ typedef struct control_sensor_block {
     char name[ IMX_CONTROL_SENSOR_NAME_LENGTH ];
     uint32_t id;
     uint32_t sample_rate;
+    uint32_t poll_rate;
     uint16_t sample_batch_size;
     uint16_t percent_change_to_send;            // Bits
     unsigned int enabled                : 1;    // 0    Is this entry used

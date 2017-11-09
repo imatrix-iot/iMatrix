@@ -251,6 +251,7 @@ typedef struct control_sensor_data {
     uint16_t no_samples;
     uint32_t errors;
     wiced_utc_time_ms_t last_sample_time;
+    wiced_time_t last_poll_time;
     data_32_t last_value;
     data_32_t data[ IMATRIX_HISTORY_SIZE ];
 } control_sensor_data_t;

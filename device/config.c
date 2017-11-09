@@ -250,8 +250,8 @@ void imatrix_print_config( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 
-    cli_print( "Running WICED: %s, Name: %s, Manufacturing ID: 0x08lx - %l", WICED_VERSION, device_config.product_name, device_config.manufactuer_id, device_config.manufactuer_id );
-    cli_print( "Serial Number: %s (%08lX%08lX%08lX) - %s\r\n", device_config.device_serial_number,
+    cli_print( "Running WICED: %s, Name: %s, Manufacturing ID: 0x%08lx - ", WICED_VERSION, device_config.product_name, device_config.manufactuer_id, device_config.manufactuer_id );
+    cli_print( "Serial Number: [%s] - (%08lX%08lX%08lX) - %s\r\n", device_config.device_serial_number,
             device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.provisioned == true ? "Provisioned" : "Not provisioned" );
 	cli_print( "Active Configuration: - Magic: 0x%08lx\r\n", device_config.valid_config );
 	cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );

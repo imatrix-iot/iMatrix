@@ -148,7 +148,7 @@ uint16_t http_get_sn_mac_address( void )
     };
 
     if( icb.wifi_up == false ) {
-    	imx_printf( "Wi-Fi Offline, retry when online\r\n" );
+    	cli_print( "Wi-Fi Offline, retry when online\r\n" );
     	return WICED_ERROR;
     }
 	state = GET_MAC_DNS;
@@ -158,9 +158,9 @@ uint16_t http_get_sn_mac_address( void )
 	while( true ) {
 		switch( state ) {
 			case GET_MAC_DNS :
-			    imx_printf( "DNS Lookup for site: %s\r\n", device_config.manufacturing_url );
+			    cli_print( "DNS Lookup for site: %s\r\n", device_config.manufacturing_url );
 			    if( get_site_ip( device_config.manufacturing_url, &ota_loader_config.address ) == true ) {
-                    imx_printf("IP address %lu.%lu.%lu.%lu\r\n",
+                    cli_print("IP address %lu.%lu.%lu.%lu\r\n",
                             ( ota_loader_config.address.ip.v4 >> 24) & 0xFF,
                             ( ota_loader_config.address.ip.v4 >> 16) & 0xFF,
                             ( ota_loader_config.address.ip.v4 >> 8 ) & 0xFF,
@@ -168,14 +168,14 @@ uint16_t http_get_sn_mac_address( void )
                     state = GET_MAC_OPEN_SOCKET;
                     break;
 				} else {
-					imx_printf( "Failed to get IP address, aborting getting SN & MAC Address for %s\r\n", device_config.product_name );
+					cli_print( "Failed to get IP address, aborting getting SN & MAC Address for %s\r\n", device_config.product_name );
 					return false;
 				}
 				break;
 			case GET_MAC_OPEN_SOCKET :
 				result = wiced_tcp_create_socket( &ota_loader_config.socket, WICED_STA_INTERFACE );
 				if( result != WICED_TCPIP_SUCCESS ) {
-					imx_printf( "Failed to create socket on STA Interface, aborting\r\n" );
+					cli_print( "Failed to create socket on STA Interface, aborting\r\n" );
 					return false;
 				}
 				state = GET_MAC_ESTABLISH_CONNECTION;
@@ -185,7 +185,7 @@ uint16_t http_get_sn_mac_address( void )
 				while( retry_count < IMX_MAX_CONNECTION_RETRY_COUNT ) {
 					result = wiced_tcp_connect( &ota_loader_config.socket, &ota_loader_config.address, 80, 1000 );
 					if( result == WICED_TCPIP_SUCCESS ) {
-						imx_printf( "Successfully Connected to: %s on Port: 80\r\n", device_config.manufacturing_url );
+						cli_print( "Successfully Connected to: %s on Port: 80\r\n", device_config.manufacturing_url );
 						/*
 						 * Create the stream
 						 */
@@ -194,12 +194,12 @@ uint16_t http_get_sn_mac_address( void )
 							state = GET_MAC_SEND_REQUEST;
 							break;
 						} else {
-							imx_printf( "Failed to connect to stream\r\n" );
+							cli_print( "Failed to connect to stream\r\n" );
 						}
 					}
 				}
 				if( retry_count >= IMX_MAX_CONNECTION_RETRY_COUNT ) {
-					imx_printf( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", device_config.manufacturing_url );
+					cli_print( "Failed to Connect to: %s on Port: 80, aborting OTA loader\r\n", device_config.manufacturing_url );
 					state = GET_MAC_CLOSE_SOCKET;
 				}
 				break;
@@ -210,7 +210,7 @@ uint16_t http_get_sn_mac_address( void )
 				strcat( local_buffer, " HTTP/1.1\nHost: " );
 				strcat( local_buffer, device_config.manufacturing_url );
 				strcat( local_buffer, "\r\n\r\n" );
-			    imx_printf( "Sending query: %s\r\n", local_buffer );
+			    cli_print( "Sending query: %s\r\n", local_buffer );
 			    result = wiced_tcp_stream_write( &ota_loader_config.tcp_stream, local_buffer , (uint32_t) strlen( local_buffer ) );
 			    if ( result == WICED_TCPIP_SUCCESS ) {
 			    	result =  wiced_tcp_stream_flush( &ota_loader_config.tcp_stream );
@@ -222,21 +222,21 @@ uint16_t http_get_sn_mac_address( void )
 			    	}
 			    }
 			    if( result != WICED_TCPIP_SUCCESS ) {
-			    	imx_printf( "FAILED to send request.\r\n" );
+			    	cli_print( "FAILED to send request.\r\n" );
 			    	state = GET_MAC_CLOSE_SOCKET;
 			    }
 			    break;
 			case GET_MAC_PARSE_HEADER :
 				result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 15000, &buffer_length );
 				if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
-					imx_printf( "\r\nReceived: %lu Bytes\r\n", buffer_length );
+					cli_print( "\r\nReceived: %lu Bytes\r\n", buffer_length );
 					/*
 					uint32_t i;
 					for( i = 0; i < buffer_length; i++ )
 						if( isprint( (uint16_t ) local_buffer[ i ] ) || ( local_buffer[ i ] == '\r' ) || ( local_buffer[ i ] == '\n' ) )
-							imx_printf( "%c", local_buffer[ i ] );
+							cli_print( "%c", local_buffer[ i ] );
 						else
-							imx_printf( "." );
+							cli_print( "." );
 					*/
 					/*
 					 * Look for 200 OK, Content length and two CR/LF - make sure we are getting what we asked for
@@ -255,19 +255,19 @@ uint16_t http_get_sn_mac_address( void )
 						content_start = strstr( local_buffer, "{" );
 						content_end = strstr( local_buffer, "}" ) + 1;
 						if( content_start == (char *) 0 || content_end == (char *) 1 ) {
-							imx_printf( "JSON not found in body\r\n" );
+							cli_print( "JSON not found in body\r\n" );
 							state = GET_MAC_CLOSE_CONNECTION;
 						} else {
 							*content_end = 0x00;	// Null terminate the string
 
-							imx_printf( "JSON: %s\r\n", content_start );
+							cli_print( "JSON: %s\r\n", content_start );
 						    /*
 						     * Process the passed URI Query
 						     */
 						    result = json_read_object( content_start, json_attrs, NULL );
 
 						    if( result ) {
-						        imx_printf( "JSON parsing failed, Result: %u\r\n", result );
+						        cli_print( "JSON parsing failed, Result: %u\r\n", result );
 						        return( false );
 						    }
 						    if( 6 == sscanf( string_mac_address, "%x:%x:%x:%x:%x:%x%c",
@@ -284,9 +284,9 @@ uint16_t http_get_sn_mac_address( void )
 
 						        result = wiced_dct_write( &wifi, DCT_WIFI_CONFIG_SECTION, 0, sizeof(platform_dct_wifi_config_t) );
 
-						        imx_printf( "Setting MAC to: " );
+						        cli_print( "Setting MAC to: " );
 						        print_mac_address( (wiced_mac_t*) &wifi.mac_address );
-						        imx_printf( "\r\n" );
+						        cli_print( "\r\n" );
 
 						        memset(  device_config.device_serial_number, 0x00, IMX_DEVICE_SERIAL_NUMBER_LENGTH );
                                 memset(  device_config.password, 0x00, IMX_PASSWORD_LENGTH );
@@ -295,7 +295,7 @@ uint16_t http_get_sn_mac_address( void )
 
 						        imatrix_save_config();
 						    } else {
-						        imx_printf( "Invalid MAC Address Product Name, ID: %s, 0x%08lx - Call for HELP +1 888 545 1007\r\n", device_config.product_name, device_config.product_id ); /* invalid mac */
+						        cli_print( "Invalid MAC Address Product Name, ID: %s, 0x%08lx - Call for HELP +1 888 545 1007\r\n", device_config.product_name, device_config.product_id ); /* invalid mac */
 						        return false;
 						    }
 
@@ -306,7 +306,7 @@ uint16_t http_get_sn_mac_address( void )
 						    ota_loader_config.good_get_power = true;
 						}
 					} else if ( strstr( local_buffer, HTTP_RESPONSE_NOT_FOUND ) && strstr( local_buffer, CRLFCRLF ) )
-						imx_printf( "MAC URL Not found\r\n" );
+						cli_print( "MAC URL Not found\r\n" );
 				}
 				state = GET_MAC_CLOSE_CONNECTION;
 				break;
@@ -317,11 +317,11 @@ uint16_t http_get_sn_mac_address( void )
 			    wiced_tcp_disconnect( &ota_loader_config.socket );
 			    wiced_tcp_delete_socket( &ota_loader_config.socket );
 			    if( ota_loader_config.good_get_power ) {
-			    	imx_printf("Got the MAC Address.\r\n");
+			    	cli_print("Got the MAC Address.\r\n");
 
 			    	return( true );
 			    } else {
-			    	imx_printf("Get MAC Address failed.\r\n");
+			    	cli_print("Get MAC Address failed.\r\n");
 			    	return( false );
 			    }
 				break;

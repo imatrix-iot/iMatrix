@@ -96,11 +96,11 @@ void cs_reset_defaults(void)
         }
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
-        cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) config_source, no_items );
+//        cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) config_source, no_items );
         for( i = 0; i < no_items; i++ ) {
             memcpy( &cs_block[ i ], &config_source[ i ], sizeof( imx_control_sensor_block_t ) );
-            cli_print( "    Added" );
-            print_cs_block_entry( type, cs_block, i );
+//            cli_print( "    Added" );
+//            print_cs_block_entry( type, cs_block, i );
         }
     }
 }
@@ -140,7 +140,7 @@ void cs_init(void)
         }
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
-        cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) data, no_items );
+//        cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) data, no_items );
         for( i = 0; i < no_items; i++ ) {
             if( cs_block[ i ].set_default == true ) {
                 data[ i ].last_value.uint_32bit = cs_block[ i ].default_value.uint_32bit;

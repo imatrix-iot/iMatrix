@@ -138,7 +138,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	 *
 	 * Sample rate of 0 represents event driven
 	 */
-	if( ( csb[ *active ].enabled == true ) && ( csb[ *active ].sample_rate > 0 ) ) {
+	if( ( csb[ *active ].enabled == true ) && ( csb[ *active ].sample_rate > 0 ) && ( is_later( current_time, csd[ *active ].last_poll_time + csb[ *active ].poll_rate ))) {
 		status = 0;	// Controls may not have an update function as the may just be set remotely
 		if( f[ *active ].update != NULL ) {
 			status = ( f[ *active ].update)( f[ *active ].arg, &sampled_value );
@@ -163,11 +163,12 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 			cli_print( "\r\n" );
 			*/
 	        if( status == IMX_SUCCESS ) {
-	            csd[ *active ].last_value.uint_32bit = sampled_value.uint_32bit;     // Its all just 32 bit data
+	            csd[ *active ].last_poll_time = current_time;                       // Got valid data this time
+	            csd[ *active ].last_value.uint_32bit = sampled_value.uint_32bit;    // Its all just 32 bit data
 	            csb[ *active ].valid = true;      // We have a sample
 	            csd[ *active ].error = status;   // Reset for correction
 	        } else if( status == IMX_NO_DATA )
-	            ;   // Do nothing - keep using existing data
+	            ;   // Do nothing - keep using existing data - waiting for control/sensor to finish acquisition
 	        else {
 	//          print_status( "Error Reading sensor %u\r\n", *active );
 	            csd[ *active ].errors += 1;

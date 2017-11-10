@@ -87,7 +87,7 @@ extern const char *debug_flags_description[];
 /******************************************************
  *               Function Definitions
  ******************************************************/
-bool verify_cmd( void )
+bool imx_verify_cmd( void )
 {
 	char ch;
 

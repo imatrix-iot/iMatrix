@@ -79,6 +79,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
+#define IMX_COMMAND             "imx"   // all commands for iMatrix must be prefaced with imx - all others passed to user code
 #define RX_BUFFER_SIZE			64
 #define COMMAND_LINE_LENGTH		129	// 128 Characters + 1 NULL
 #define SENSOR_TEST_COUNT		1000
@@ -279,19 +280,30 @@ void cli_process( void )
 		case CLI_PROCESS_CMD :
 		    // print_status( "Processing command line: >%s<\r\n", command_line );
 			token = strtok( command_line, " " );
-			if( token != NULL ) {
-				cmd_found = false;// Exit do loop when true.
-				i = 0;// Exit do loop when i == NO_CMDS
-				do {
-					if( strcmp( token, command[ i ].command_string ) == 0x00 ) {
-						cmd_found = true;
-						if( *command[ i ].cli_function != NULL )
-							(*command[ i ].cli_function)( command[ i ].arg );
-					}
-					i++;
-				} while ( ( i < NO_CMDS ) && ( cmd_found == false ) );
-				if( cmd_found == false )
-					cli_print( "Unknown Command: %s\r\n", token );
+			if( strcmp( token, IMX_COMMAND ) == 0x00 ) {
+	            token = strtok( command_line, " " );
+	                if( token != NULL ) {
+	                cmd_found = false;// Exit do loop when true.
+	                i = 0;// Exit do loop when i == NO_CMDS
+	                do {
+	                    if( strcmp( token, command[ i ].command_string ) == 0x00 ) {
+	                        cmd_found = true;
+	                        if( *command[ i ].cli_function != NULL )
+	                            (*command[ i ].cli_function)( command[ i ].arg );
+	                    }
+	                    i++;
+	                } while ( ( i < NO_CMDS ) && ( cmd_found == false ) );
+	                if( cmd_found == false )
+	                    cli_print( "Unknown Command: %s\r\n", token );
+	            }
+			} else {
+			    /*
+			     * See if we pass to host CLI
+			     */
+			    if( device_config.app_cli_handler != NULL )
+			        (device_config.app_cli_handler)( token );
+			    else
+			        cli_print( "Unknown Command: %s\r\n", token );
 			}
 			if( active_device == CONSOLE_OUTPUT )
 			    cli_state = CLI_SETUP_CONSOLE;

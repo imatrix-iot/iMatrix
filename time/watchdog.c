@@ -23,7 +23,7 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .c
+/** @file watchdog.c
  *
  *  Created on: November 9, 2017
  *      Author: greg.phillips
@@ -32,17 +32,16 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "wiced.h"
-
-#include "..\defines.h"
-#include "..\structs.h"
+#include "../cli/interface.h"
 
 
 /******************************************************
  *                      Macros
  ******************************************************/
-
+#define IMX_WATCHDOG_DELAY  20
 /******************************************************
  *                    Constants
  ******************************************************/
@@ -66,12 +65,24 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-
+static  wiced_system_monitor_t watchdog;
 /******************************************************
  *               Function Definitions
  ******************************************************/
 /**
-  * @brief
+  * @brief Initialize the watch dog
   * @param  None
   * @retval : None
   */
+void init_watchdog(void)
+{
+    if ( wiced_register_system_monitor( &watchdog, IMX_WATCHDOG_DELAY ) != WICED_SUCCESS ) {
+        imx_printf( "Watchdog failed to initialize.\r\n");
+    }
+
+}
+
+void imx_kick_watchdog(void)
+{
+    wiced_update_system_monitor( &watchdog, IMX_WATCHDOG_DELAY );
+}

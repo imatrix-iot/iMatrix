@@ -91,6 +91,10 @@ extern imx_imatrix_init_config_t imatrix_init_config;
 imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background )
 {
 
+    /*
+     * Start watchdog
+     */
+
     init_storage();     // Start clean
     /*
      * Set up LEDS as we use these to tell what is going on

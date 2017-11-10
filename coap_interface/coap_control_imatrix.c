@@ -70,7 +70,7 @@
  *                    Constants
  ******************************************************/
 #define CPUID_LENGTH                        26
-#define PRODUCT_ID_SN_TEMPLATE		"{ \"manufacturer-id\" : \"%08lu\", \"product-name\" : \"%s\", \"product-id\" : \"%08lu\", \"serial-number\" : \"%s\", \"cpuid\" : \"0x%08lX%08lX%08lX\", \"capabilities\" : \"%08lu\" }"
+#define PRODUCT_ID_SN_TEMPLATE		"{ \"manufacturer-id\" : \"%08lu\", \"product-name\" : \"%s\", \"product-id\" : \"%08lu\", \"serial-number\" : \"%s\", \"cpuid\" : \"0x%08lX%08lX%08lX\", \"capabilities\" : \"%08lu\", \"api-version-name\" : \"%s\" }"
 #define PRODUCT_ID_SN_BUFFER_LENGTH	( sizeof( PRODUCT_ID_SN_TEMPLATE ) + IMX_PRODUCT_NAME_LENGTH + IMX_PRODUCT_ID_LENGTH + IMX_DEVICE_SERIAL_NUMBER_LENGTH + CPUID_LENGTH + 1 )
 /******************************************************
  *                   Enumerations
@@ -134,7 +134,7 @@ uint16_t coap_get_control_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, ui
     memset( buffer, 0x00, PRODUCT_ID_SN_BUFFER_LENGTH );
 
     sprintf( buffer, PRODUCT_ID_SN_TEMPLATE, device_config.manufactuer_id, device_config.product_name,
-            device_config.product_id, device_config.device_serial_number, device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.product_capabilities );
+            device_config.product_id, device_config.device_serial_number, device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.product_capabilities, IMX_API_VERSION );
     if ( coap_store_response_data( msg, CONTENT, response_type, buffer, JSON_MEDIA_TYPE ) != WICED_SUCCESS ) {
 			PRINTF( "Failed to create response.\r\n" );
 			return COAP_NO_RESPONSE;

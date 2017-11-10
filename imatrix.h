@@ -130,6 +130,8 @@ wiced_result_t imx_save_config( void *config, uint16_t config_size );
  */
 bool imx_get_ch( char *ch );
 void imx_printf( char *format, ... );
+int imx_log_printf( char *format, ... );
+bool imx_verify_cmd(void);
 /*
  * Set & Get Control / Sensor data
  */
@@ -169,9 +171,10 @@ uint16_t imx_sample_rssi(uint16_t arg, void *value );
 uint16_t imx_sample_rfnoise(uint16_t arg, void *value );
 uint16_t imx_sample_wifi_channel(uint16_t arg, void *value );
 /*
- * UTC Time Update
+ * Time & Watchdogs Update
  */
 uint16_t imx_get_utc(uint16_t arg, void *value );
+void imx_kick_watchdog(void);
 /*
  * CoAP Processing defines
  */

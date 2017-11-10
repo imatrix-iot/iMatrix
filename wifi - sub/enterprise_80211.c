@@ -64,12 +64,13 @@
 #include "wiced_utilities.h"
 #include "wiced_supplicant.h"
 
-#include "../storage.h"
+#include "../defines.h"
 #include "../cli/interface.h"
-#include "../device/icb_def.h"
+#include "../device/dcb_def.h"
 #include "../device/cert_util.h"
 
 #include "enterprise_80211.h"
+#include "wifi_utils.h"
 
 
 /******************************************************
@@ -83,7 +84,7 @@
 #define MIN_PASSPHRASE_LEN   (  8 )
 #define A_SHA_DIGEST_LEN     ( 20 )
 #define DOT11_PMK_LEN        ( 32 )
-#define	MSCHAP_PASSWORD_LENGTH	32
+#define	MSCHAP_PASSWORD_LENGTH	64
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -103,15 +104,14 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern iMatrix_Control_Block_t icb;
+extern dcb_t dcb;
 static wiced_tls_session_t tls_session = { 0 };
-static char last_joined_ssid[SSID_NAME_SIZE+1] = ""; /* 32 characters + terminating null */
 char last_started_ssid[SSID_NAME_SIZE+1] = "";       /* 32 characters + terminating null */
 
 /******************************************************
  *               Function Definitions
  ******************************************************/
-static uint16_t wifi_join(char* ssid, uint8_t ssid_length, wiced_security_t auth_type, uint8_t* key, uint16_t key_length, char* ip, char* netmask, char* gateway);
+static int wifi_join(char* ssid, uint8_t ssid_length, wiced_security_t auth_type, uint8_t* key, uint16_t key_length, char* ip, char* netmask, char* gateway );
 static void analyse_failed_join_result( wiced_result_t join_result );
 
 /**
@@ -148,11 +148,12 @@ uint16_t join_ent( char *ssid, eap_type_t eap_type, wiced_security_t auth_type, 
      *
      *						  Debug iwpriv ra0 set Debug=4
      */
-    char eap_identity[] = "device@sierratelecom.net"; // "120002555974"; //
+    // char eap_identity[] = "device@sierratelecom.net"; // "120002555974"; //
+
     wiced_tls_context_t context;
     wiced_tls_identity_t identity;
 
-    imx_printf( "Starting 802.1X Process\r\n" );
+    print_status( "Starting 802.1X Process\r\n" );
     /*
      * Make sure we are pointing to the correct certs
      */
@@ -160,91 +161,99 @@ uint16_t join_ent( char *ssid, eap_type_t eap_type, wiced_security_t auth_type, 
 
     // print_credentials();
     if ( !( ( eap_type == EAP_TYPE_TLS ) || ( eap_type == EAP_TYPE_PEAP ) ) ) {
-        cli_print("Unsupported security type\n" );
+        print_status("Unsupported security type\n" );
         return WICED_ERROR;
     }
 
-    if ( auth_type != WICED_SECURITY_WPA2_AES_ENT ) {
-        imx_printf("Unsupported authentication type\n" );
+    if ( auth_type != WICED_SECURITY_WPA2_MIXED_ENT ) {
+        print_status("Unsupported authentication type: %u\n", auth_type );
         return WICED_ERROR;
     }
 
-	imx_printf( "Setting TLS initialization\r\n" );
+	print_status( "Setting TLS initialization\r\n" );
     if ( eap_type == EAP_TYPE_PEAP ) {
+        printf( "Starting 802.1X PEAP Connection for: %s, Password: %s\r\n", device_identity, device_password );
         wiced_tls_init_identity( &identity, NULL, 0, NULL, 0 );
     } else {
-        wiced_tls_init_identity( &identity, (char *) icb.wifi_8021X_key, (uint32_t) strlen( (char*) icb.wifi_8021X_key ), icb.wifi_8021X_certificate,
-        		(uint32_t)strlen( (char*) icb.wifi_8021X_certificate ) );
+        printf( "Starting 802.1X EAP TLS Connection for: %s\r\n", device_identity );
+        wiced_tls_init_identity( &identity, (char *) dcb.wifi_8021X_key, (uint32_t) strlen( (char*) dcb.wifi_8021X_key ), dcb.wifi_8021X_certificate, (uint32_t)strlen( (char*) dcb.wifi_8021X_certificate ) );
     }
 
-	imx_printf( "Setting TLS context\r\n" );
+	print_status( "Setting TLS context\r\n" );
     wiced_tls_init_context( &context, &identity, NULL );
 
-    if ( tls_session.id_len > 0 ) {
-        memcpy( &context.session, &tls_session, sizeof(wiced_tls_session_t) );
-    } else {
-        memset( &context.session, 0, sizeof(wiced_tls_session_t) );
+    if ( tls_session.id_len > 0 )
+    {
+        context.session = &tls_session;
+        mbedtls_ssl_set_session( &context.context, &tls_session );
+    }
+    else
+    {
+        context.session = &tls_session;
+        memset( &tls_session, 0, sizeof(wiced_tls_session_t) );
+        mbedtls_ssl_set_session( &context.context, &tls_session );
     }
 
-    imx_printf( "Initializing Root CA certificates\r\n" );
-    wiced_tls_init_root_ca_certificates( (char*) icb.root_certificate, (uint32_t)strlen( (char*) icb.root_certificate ) );
+    print_status( "Initializing Root CA certificates\r\n" );
+    wiced_tls_init_root_ca_certificates( (char*) dcb.root_certificate, (uint32_t)strlen( (char*) dcb.root_certificate ) );
 
-    imx_printf( "Initializing Supplicant\r\n" );
-    supplicant_connection_info_t conn_info;
-    conn_info.interface = WWD_STA_INTERFACE;
-    conn_info.eap_type = eap_type;
-    if ( besl_supplicant_init( &supplicant_workspace, &conn_info ) == BESL_SUCCESS ) {
-        imx_printf( "Enabling TLS\r\n" );
+    print_status( "Initializing Supplicant\r\n" );
+    if ( besl_supplicant_init( &supplicant_workspace, eap_type, WWD_STA_INTERFACE ) == BESL_SUCCESS )
+    {
+        print_status( "Enabling TLS\r\n" );
         wiced_supplicant_enable_tls( &supplicant_workspace, &context );
-        imx_printf( "Setting Identity\r\n" );
-        besl_supplicant_set_identity( &supplicant_workspace, eap_identity, strlen( eap_identity ) );
+        print_status( "Setting Identity\r\n" );
+        besl_supplicant_set_identity( &supplicant_workspace, (char *) device_identity, strlen( (char *) device_identity ) );
         if ( eap_type == EAP_TYPE_PEAP ) {
-        	imx_printf( "Setting PEAP MSCHAPV2 identity\r\n" );
+        	print_status( "Setting PEAP MSCHAPV2 identity\r\n" );
             /* Default for now is MSCHAPV2 */
             supplicant_mschapv2_identity_t mschap_identity;
-            char mschap_password[MSCHAP_PASSWORD_LENGTH];
+            char mschap_password[ MSCHAP_PASSWORD_LENGTH ];
 
             /* Convert ASCII to UTF16 */
             int i;
             uint8_t*  password = device_password;
             uint8_t*  unicode  = (uint8_t*) mschap_password;
 
-            if(strlen( (char *) device_password) > MSCHAP_PASSWORD_LENGTH ) {
-            	imx_printf( "Password too long must be less than %u charcters\r\n", MSCHAP_PASSWORD_LENGTH );
+            if(strlen( (char *) device_password) > ( MSCHAP_PASSWORD_LENGTH / 2 ) ) {
+            	print_status( "Password too long must be less than %u charcters\r\n", MSCHAP_PASSWORD_LENGTH / 2 );
             	return WICED_ERROR;
             }
             for ( i = 0; i <= strlen( (char *) device_password); i++ ) {
                 *unicode++ = *password++;
                 *unicode++ = '\0';
             }
-/*
+
             mschap_identity.identity = device_identity;
             mschap_identity.identity_length = strlen((char *)device_identity);
 
             mschap_identity.password = (uint8_t*) mschap_password;
             mschap_identity.password_length = 2*(i-1);
-*/
-            imx_printf( "Setting inner identity\r\n" );
+
+            print_status( "Setting inner identity\r\n" );
             besl_supplicant_set_inner_identity( &supplicant_workspace, eap_type, &mschap_identity );
 
         }
-        imx_printf( "Starting Supplicant\r\n" );
+        print_status( "Starting Supplicant\r\n" );
         if ( besl_supplicant_start( &supplicant_workspace ) == BESL_SUCCESS ) {
-//            imx_printf( "Attempting to get a Enterprise connection to: %s, using EAP Type: %u, Authentication Type: 0x%08lx\r\n", ssid, eap_type, (uint32_t) auth_type );
-            if ( wifi_join( ssid, strlen(ssid), auth_type, NULL, 0, NULL, NULL, NULL ) == true ) {
+            print_status( "Attempting to get a Enterprise connection to: %s, using EAP Type: %u, Authentication Type: 0x%08lx\r\n", ssid, eap_type, (uint32_t) auth_type );
+            int join_result;
+            join_result = wifi_join( ssid, strlen(ssid), auth_type, NULL, 0, NULL, NULL, NULL );
+            if ( join_result == WICED_SUCCESS /* - WAS used ERR_CMD_OK */ ) {
+                print_status( "Supplicant successfully started\r\n" );
                 memcpy( &tls_session, &context.session, sizeof(wiced_tls_session_t) );
-                imx_printf( "Supplicant successfully started\r\n" );
             } else {
+                print_status( "Failed to Join network: %d ", join_result );
+                analyse_failed_join_result( join_result );
             	return WICED_ERROR;
-            	imx_printf( "Failed to Join network\r\n" );
             }
         } else {
-        	imx_printf( "Supplicant failed to started\r\n" );
+        	print_status( "Supplicant failed to started\r\n" );
         	return WICED_ERROR;
         }
 
     } else {
-        cli_print("Unable to initialize supplicant\n" );
+        print_status("Unable to initialize supplicant\n" );
         wiced_tls_deinit_context( &context );
         wiced_tls_deinit_root_ca_certificates();
         wiced_tls_deinit_identity( &identity );
@@ -262,102 +271,16 @@ uint16_t join_ent( char *ssid, eap_type_t eap_type, wiced_security_t auth_type, 
     return WICED_SUCCESS;
 }
 
-static uint16_t wifi_join(char* ssid, uint8_t ssid_length, wiced_security_t auth_type, uint8_t* key, uint16_t key_length, char* ip, char* netmask, char* gateway)
+static int wifi_join(char* ssid, uint8_t ssid_length, wiced_security_t auth_type, uint8_t* key, uint16_t key_length, char* ip, char* netmask, char* gateway )
 {
-    wiced_network_config_t      network_config;
-    wiced_ip_setting_t*         ip_settings = NULL;
-    wiced_ip_setting_t          static_ip_settings;
-    platform_dct_wifi_config_t* dct_wifi_config;
-    wiced_result_t              result;
-
-    imx_printf( "Starting Join Process to: %s, length: %u, with authentication: 0x%08lx\r\n", ssid, (uint16_t) ssid_length, (uint32_t) auth_type );
-    if (ssid_length > SSID_NAME_SIZE)
-    {
-    	cli_print( "SSID too long\r\n" );
-        return false;
-    }
-
-    if (wwd_wifi_is_ready_to_transceive(WWD_STA_INTERFACE) == WWD_SUCCESS)
-    {
-        cli_print("STA already joined; use leave command first\n");
-        return true;
-    }
-
+    /* ensure the operation is ok, then jump into utils */
     if ( wwd_wifi_is_ready_to_transceive( WWD_AP_INTERFACE ) == WWD_SUCCESS )
     {
-        cli_print("AP will be moved to the STA assoc channel" );
-        if ( imx_verify_cmd() == true )
-        {
-            return true;
-        }
+        print_status("AP will be moved to the STA assoc channel");
     }
-    imx_printf( "Updating DCT\r\n" );
-    /* Read config */
-    wiced_dct_read_lock( (void**) &dct_wifi_config, WICED_TRUE, DCT_WIFI_CONFIG_SECTION, 0, sizeof(platform_dct_wifi_config_t) );
+    print_status( "Starting Join Process to: %s, length: %u, with authentication: 0x%08lx\r\n", ssid, (uint16_t) ssid_length, (uint32_t) auth_type );
 
-    /* Modify config */
-    dct_wifi_config->stored_ap_list[0].details.SSID.length = ssid_length;
-    memset( dct_wifi_config->stored_ap_list[0].details.SSID.value, 0, sizeof(dct_wifi_config->stored_ap_list[0].details.SSID.value) );
-    memcpy( (char*)dct_wifi_config->stored_ap_list[0].details.SSID.value, ssid, ssid_length );
-    dct_wifi_config->stored_ap_list[0].details.security = auth_type;
-    if ( ( auth_type & ENTERPRISE_ENABLED ) == 0 )
-    {
-        /* Save credentials for non-enterprise AP */
-        memcpy((char*)dct_wifi_config->stored_ap_list[0].security_key, (char*)key, MAX_PASSPHRASE_LEN);
-        dct_wifi_config->stored_ap_list[0].security_key_length = key_length;
-    }
-
-    /* Write config */
-    wiced_dct_write( (const void*) dct_wifi_config, DCT_WIFI_CONFIG_SECTION, 0, sizeof(platform_dct_wifi_config_t) );
-    imx_printf( "DCT Updated\r\n" );
-    /* Tell the network stack to setup it's interface */
-    if (ip == NULL )
-    {
-        network_config = WICED_USE_EXTERNAL_DHCP_SERVER;
-    }
-    else
-    {
-        network_config = WICED_USE_STATIC_IP;
-        str_to_ip( ip,      &static_ip_settings.ip_address );
-        str_to_ip( netmask, &static_ip_settings.netmask );
-        str_to_ip( gateway, &static_ip_settings.gateway );
-        ip_settings = &static_ip_settings;
-    }
-    imx_printf( "About to bring network up\r\n" );
-    if ( ( result = wiced_network_up( WICED_STA_INTERFACE, network_config, ip_settings ) ) != WICED_SUCCESS )
-    {
-    	imx_printf( "Failed to bring up network: %u\r\n", result );
-        if ( auth_type == WICED_SECURITY_WEP_PSK ) /* Now try shared instead of open authentication */
-        {
-            dct_wifi_config->stored_ap_list[0].details.security = WICED_SECURITY_WEP_SHARED;
-            wiced_dct_write( (const void*) dct_wifi_config, DCT_WIFI_CONFIG_SECTION, 0, sizeof(platform_dct_wifi_config_t) );
-            WPRINT_APP_INFO(("WEP with open authentication failed, trying WEP with shared authentication...\n"));
-
-            if ( wiced_network_up( WICED_STA_INTERFACE, network_config, ip_settings ) != WICED_SUCCESS ) /* Restore old value */
-            {
-                WPRINT_APP_INFO(("Trying shared wep\n"));
-                dct_wifi_config->stored_ap_list[0].details.security = WICED_SECURITY_WEP_PSK;
-                wiced_dct_write( (const void*) dct_wifi_config, DCT_WIFI_CONFIG_SECTION, 0, sizeof(platform_dct_wifi_config_t) );
-            }
-            else
-            {
-                wiced_dct_read_unlock( (void*) dct_wifi_config, WICED_TRUE );
-                return true;
-            }
-        }
-
-        analyse_failed_join_result( result );
-        wiced_dct_read_unlock( (void*) dct_wifi_config, WICED_TRUE );
-
-        return false;
-    }
-    imx_printf( "Network up\r\n" );
-
-    strlcpy( last_joined_ssid, ssid, MIN( sizeof(last_joined_ssid), ssid_length+1 ) );
-
-    wiced_dct_read_unlock( (void*) dct_wifi_config, WICED_TRUE );
-
-    return true;
+    return wifi_utils_join( ssid, ssid_length, auth_type, key, key_length, ip, netmask, gateway );
 }
 
 /*!
@@ -376,35 +299,35 @@ static void analyse_failed_join_result( wiced_result_t join_result )
     switch( join_result )
     {
         case WICED_ERROR:
-            cli_print("General error\n" ); /* Getting a DHCP address may fail if at the edge of a cell and the join may timeout before DHCP has completed. */
+            print_status("General error\n" ); /* Getting a DHCP address may fail if at the edge of a cell and the join may timeout before DHCP has completed. */
             break;
 
         case WWD_NETWORK_NOT_FOUND:
-            cli_print("Failed to find network\n" ); /* Check that he SSID is correct and that the AP is up */
+            print_status("Failed to find network\n" ); /* Check that he SSID is correct and that the AP is up */
             break;
 
         case WWD_NOT_AUTHENTICATED:
-            cli_print("Failed to authenticate\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
+            print_status("Failed to authenticate\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
             break;
 
         case WWD_EAPOL_KEY_PACKET_M1_TIMEOUT:
-            cli_print("Timeout waiting for first EAPOL key frame from AP\n" );
+            print_status("Timeout waiting for first EAPOL key frame from AP\n" );
             break;
 
         case WWD_EAPOL_KEY_PACKET_M3_TIMEOUT:
-            cli_print("Check the passphrase and try again\n" ); /* The M3 timeout will occur if the passphrase is incorrect */
+            print_status("Check the passphrase and try again\n" ); /* The M3 timeout will occur if the passphrase is incorrect */
             break;
 
         case WWD_EAPOL_KEY_PACKET_G1_TIMEOUT:
-            cli_print("Timeout waiting for group key from AP\n" );
+            print_status("Timeout waiting for group key from AP\n" );
             break;
 
         case WWD_INVALID_JOIN_STATUS:
-            cli_print("Some part of the join process did not complete\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
+            print_status("Some part of the join process did not complete\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
             break;
 
         default:
-            cli_print("\n" );
+            print_status("\n" );
             break;
     }
 }

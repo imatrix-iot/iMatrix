@@ -135,6 +135,8 @@ enum cmds {				// Must match commands variable order
  *               Variable Definitions
  ******************************************************/
 static uint16_t cli_state;
+static bool (*host_cli_handler)( char *token ) = NULL;
+
 extern uint16_t active_device;
 extern IOT_Device_Config_t device_config;
 static wiced_uart_config_t uart_config =
@@ -297,13 +299,13 @@ void cli_process( void )
 	                    cli_print( "Unknown Command: %s\r\n", token );
 	            }
 			} else {
+			    printf( "Processing Application Command\r\n" );
 			    /*
 			     * See if we pass to host CLI
 			     */
-			    if( device_config.app_cli_handler != NULL )
-			        (device_config.app_cli_handler)( token );
-			    else
-			        cli_print( "Unknown Command: %s\r\n", token );
+			    if( host_cli_handler != NULL )
+			        if( (host_cli_handler)( token ) == false )
+			            cli_print( "Unknown Application Command: %s\r\n", token );;
 			}
 			if( active_device == CONSOLE_OUTPUT )
 			    cli_state = CLI_SETUP_CONSOLE;
@@ -314,5 +316,13 @@ void cli_process( void )
 			cli_state = CLI_SETUP_CONSOLE;
 			break;
 	}
+}
+
+void imx_set_cli_handler( bool (*cli_handler)( char *token ) )
+{
+    /*
+     * Set the Host App CLI handler
+     */
+    host_cli_handler = cli_handler;
 }
 

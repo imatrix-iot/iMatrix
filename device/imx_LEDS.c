@@ -176,7 +176,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                     if( ( ( lcb[ led ].blinking == true ) || ( lcb[ led ].flashing == true ) ) && ( lcb[ led ].in_pair == false ) ) {
                         wiced_result = wiced_rtos_stop_timer( &lcb[ led ].led_timer_data );
                         if( wiced_result != WICED_SUCCESS )
-                            imx_printf( " Failed to stop LED Timer: %u\r\n", wiced_result );
+                            imx_printf( " Failed to stop LED: %u Timer: %u\r\n", led, wiced_result );
                         lcb[ led ].blinking = false;
                     }
                     lcb[ led ].blinking = false;
@@ -200,7 +200,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                     if( ( lcb[ master_led ].blinking == true ) || ( lcb[ master_led ].flashing == true ) ) {
                         wiced_result = wiced_rtos_stop_timer( &lcb[ master_led ].led_timer_data );
                         if( wiced_result != WICED_SUCCESS )
-                            imx_printf( " Failed to stop LED Timer: %u\r\n", wiced_result );
+                            imx_printf( " Failed to stop LED: %u Timer: %u\r\n", master_led, wiced_result );
                     }
                     lcb[ master_led ].blinking = false;
                     lcb[ master_led ].flashing = false;
@@ -261,7 +261,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                     }
                     wiced_result = wiced_rtos_start_timer( &lcb[ led ].led_timer_data );
                     if( wiced_result != WICED_SUCCESS )
-                        imx_printf( " Failed to start LED Timer: %u\r\n", wiced_result );
+                        imx_printf( " Failed to start LED:%u Timer: %u\r\n", master_led, wiced_result );
                     break;
                 /*
                  * Pair of LEDS
@@ -296,14 +296,14 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                          */
                         lcb[ master_led ].blink_rate = 1000 / (mode - 1 );
                         lcb[ master_led ].blinking = true;
-                        // imx_printf( "Setting Alternate blinking: Master: %u & Slave: %u @%u mSec\r\n", (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_rate );
+                        imx_printf( "Setting Alternate blinking: Master: %u & Slave: %u @%u mSec\r\n", (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_rate );
                         wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) lcb[ master_led ].blink_rate, (timer_handler_t) alt_blink_led, (void *) &led_options[ led ]);
                     }
                     lcb[ master_led ].in_pair = true;
                     lcb[ slave_led ].in_pair = true;
                     wiced_result = wiced_rtos_start_timer( &lcb[ master_led ].led_timer_data );
                     if( wiced_result != WICED_SUCCESS )
-                        imx_printf( " Failed to start LED Timer: %u\r\n", wiced_result );
+                        imx_printf( " Failed to start LED:%u Timer: %u\r\n", master_led, wiced_result );
                     break;
                 default :   // Unknown LED - Ignore
                     imx_printf( "Unknown LED: %u\r\n", led );

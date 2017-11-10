@@ -362,7 +362,6 @@ typedef struct IOT_Device_Config {
     char ota_public_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char manufacturing_url[ IMX_IMATRIX_URL_LENGTH + 1 ];
     char imatrix_bind_uri[ IMX_IMATRIX_URI_LENGTH + 1 ];
-    void (*app_cli_handler)( char *token );
     uint16_t reboots;// Space for a reboot counter if we want it for Known Good Configuration Logic that involves the bootloader.
     uint16_t no_sensors;
     uint16_t no_controls;

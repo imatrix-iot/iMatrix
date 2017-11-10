@@ -305,7 +305,6 @@ typedef struct {
     unsigned int log_wifi_rssi          : 1;
     unsigned int log_wifi_rfnoise       : 1;
     imx_led_functions_t led_functions[ IMX_NO_LEDS ];   // Red, Green, Blue
-    void (*cli_handler)( char *token );
 } imx_imatrix_init_config_t;
 
 typedef struct control_sensor_block {

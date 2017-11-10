@@ -140,7 +140,6 @@ wiced_result_t imatrix_load_config(void)
     strncpy( device_config.ap_wpa, imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
     strncpy( device_config.st_ssid, imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );
     strncpy( device_config.st_wpa, imatrix_init_config.default_st_wpa, IMX_WPA2PSK_LENGTH );
-    device_config.app_cli_handler = imatrix_init_config.cli_handler;
     device_config.default_ap_eap_mode = imatrix_init_config.default_ap_eap_mode;
     device_config.default_st_eap_mode = imatrix_init_config.default_st_eap_mode;
     device_config.default_ap_security_mode = imatrix_init_config.default_ap_security_mode;

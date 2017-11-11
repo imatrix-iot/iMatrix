@@ -161,8 +161,6 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
     wiced_result_t wiced_result;
     imx_led_t master_led, slave_led;
 
-    return;
-
     // imx_printf( "Setting Led: %u, to state: %u\r\n", (uint16_t) led, (uint16_t) mode );
     /*
      * If blinking/flashing - stop it first

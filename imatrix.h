@@ -151,7 +151,7 @@ void load_config_defaults_generic_ccb( uint16_t arg );
 bool imx_set_led( imx_led_t led, imx_led_state_t mode );
 bool imx_get_led_state( imx_led_t led );
 /*
- * Additional support Platform code - ISMART-43340
+ * Additional support Platform code - ISMART-43340/43362
  */
 void imx_init_led_red_ismart( void );
 void imx_init_led_green_ismart( void );
@@ -160,7 +160,7 @@ void imx_update_led_red_status_ismart( bool state );
 void imx_update_led_green_status_ismart( bool state );
 void imx_update_led_blue_status_ismart( bool state );
 void imx_init_temp(uint16_t arg);
-uint16_t imx_sample_temp(uint16_t arg, void *value );
+imx_result_t  imx_sample_temp(uint16_t arg, void *value );
 /*
  * General Wi Fi Status routines
  */
@@ -168,13 +168,13 @@ uint16_t imx_get_wifi_channel_scb(void);
 uint16_t imx_get_wifi_rssi_scb(void);
 uint16_t imx_get_wifi_bssid_scb(void);
 uint16_t imx_get_wifi_rf_noise_scb(void);
-uint16_t imx_sample_rssi(uint16_t arg, void *value );
-uint16_t imx_sample_rfnoise(uint16_t arg, void *value );
-uint16_t imx_sample_wifi_channel(uint16_t arg, void *value );
+imx_result_t imx_sample_rssi(uint16_t arg, void *value );
+imx_result_t imx_sample_rfnoise(uint16_t arg, void *value );
+imx_result_t imx_sample_wifi_channel(uint16_t arg, void *value );
 /*
  * Time & Watchdogs Update
  */
-uint16_t imx_get_utc(uint16_t arg, void *value );
+imx_result_t imx_get_utc(uint16_t arg, void *value );
 void imx_kick_watchdog(void);
 /*
  * CoAP Processing defines

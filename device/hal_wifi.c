@@ -90,7 +90,7 @@ extern IOT_Device_Config_t device_config;
   * @param  None
   * @retval : None
   */
-uint16_t imx_sample_rssi(uint16_t arg, void *value )
+imx_result_t  imx_sample_rssi(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);
@@ -122,7 +122,7 @@ int32_t hal_get_wifi_rssi(void)
   * @param  None
   * @retval : None
   */
-uint16_t imx_sample_rfnoise(uint16_t arg, void *value )
+imx_result_t  imx_sample_rfnoise(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);
@@ -167,7 +167,7 @@ int16_t hal_get_wifi_tx_power(void)
   * @param  None
   * @retval : None
   */
-uint16_t imx_sample_wifi_channel(uint16_t arg, void *value )
+imx_result_t  imx_sample_wifi_channel(uint16_t arg, void *value )
 {
 	int32_t foo;
 	UNUSED_PARAMETER(arg);

@@ -140,7 +140,7 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 //                cli_print( "csd @: 0x%08lx, Value Set to: %lu\r\n", (uint32_t) csd, csd[ entry ].last_value.uint_32bit );
             break;
     }
-    csb[ entry ].valid = true;
+    csd[ entry ].valid = true;
     /*
      * Do we notify the server about this or is this control just sampled?
      */

@@ -96,7 +96,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 {
 	uint16_t i;
 	bool percent_change_detected;
-	control_sensor_data_t *data;
+	control_sensor_data_t *csd;
 	imx_control_sensor_block_t *csb;
 	wiced_time_t current_time;
 	wiced_utc_time_t upload_utc_time;
@@ -107,56 +107,56 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 		if( entry >= device_config.no_controls )    // reporting no valid device
 			return;	// Nothing to do
 		else {
-			data = &cd[ entry ];
-			csb = &device_config.ccb[ entry ];
+			csd = &cd[ 0 ];
+			csb = &device_config.ccb[ 0 ];
 //			imx_printf( "Event Control: %u\r\n", entry );
 		}
 	} else {
 		if( entry >= device_config.no_sensors )
 			return;	// Nothing to do
 		else {
-			data = &sd[ entry ];
-			csb = &device_config.scb[ entry ];
+			csd = &sd[ 0 ];
+			csb = &device_config.scb[ 0 ];
 		}
 	}
-    imx_printf( "Event - Setting %s %u Data @: 0x%08lx\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", entry, (uint32_t) data );
+    imx_printf( "Event - Setting %s %u Data @: 0x%08lx\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", entry, (uint32_t) &csd[ entry ] );
     /*
      * Check for overflow - Save only the last sample values
      */
-    if( data->no_samples >= ( HISTORY_SIZE - 2 ) ) {
+    if( csd[ entry ].no_samples >= ( HISTORY_SIZE - 2 ) ) {
         imx_printf( "History Full - dropping last sample\r\n" );
-        memmove( &data->data[ 0 ], &data->data[ 2 ], ( HISTORY_SIZE - 2 ) * SAMPLE_LENGTH );
-        data->no_samples -= 2;
+        memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( HISTORY_SIZE - 2 ) * SAMPLE_LENGTH );
+        csd[ entry ].no_samples -= 2;
     }
 	/*
 	 * Event Driven saves Time Stamp & Value pair
 	 */
     wiced_time_get_utc_time( &upload_utc_time );
-    memcpy( &data->data[ data->no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
-    data->no_samples += 1;
+    memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
+    csd[ entry ].no_samples += 1;
     /*
      * Add Data
      */
-    if( csb->data_type == IMX_VARIABLE_LENGTH ) {
+    if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH ) {
         return;     // do not process at this
 
         var_data_entry_t *var_data_ptr;
         var_data_ptr = (var_data_entry_t *) value;
         imx_printf( "Adding variable length data %u Bytes\r\n", var_data_ptr->header.length );
-        if( ( data->no_samples == 1 ) && ( data->last_value.var_data != NULL ) ){
+        if( ( csd[ entry ].no_samples == 1 ) && ( csd[ entry ].last_value.var_data != NULL ) ){
             /*
              * Free the last value as it has been kept as a current value, old data has been sent to iMatrix
              */
-                add_var_free_pool( data->last_value.var_data );
+                add_var_free_pool( csd[ entry ].last_value.var_data );
         }
     }
 
     /*
      * All Data is really just 32 bit - value or point to variable length
      */
-    memcpy( &data->data[ data->no_samples ].uint_32bit, value, SAMPLE_LENGTH );
-    memcpy( &data->last_value, value, SAMPLE_LENGTH );
-    csb->valid = true;  // We have a sample
+    memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, SAMPLE_LENGTH );
+    memcpy( &csd[ entry ].last_value, value, SAMPLE_LENGTH );
+    csd[ entry ].valid = true;  // We have a sample
 
     /*
     if( type == CONTROLS )
@@ -164,16 +164,16 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     else
         imx_printf( "Sampled Sensor: %u, result: %u", entry, status );
     imx_printf( ", Value: " );
-    switch( csb->data_type ) {
+    switch( csb[ entry ].data_type ) {
         case DI_INT32 :
-            imx_printf( "%ld", data->data[ data->no_samples ].int_32bit );
+            imx_printf( "%ld", csd[ entry ].data[ csd[ entry ].no_samples ].int_32bit );
             break;
         case AI_FLOAT :
-            imx_printf( "%f", data->data[ data->no_samples ].float_32bit );
+            imx_printf( "%f", csd[ entry ].data[ csd[ entry ].no_samples ].float_32bit );
             break;
         case DI_UINT32 :
         default :
-            imx_printf( "%lu", data->data[ data->no_samples ].uint_32bit );
+            imx_printf( "%lu", csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit );
             break;
     }
     imx_printf( "\r\n" );
@@ -181,7 +181,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     /*
      * Check if the data is in warning levels for the sensor
      */
-    data->warning = IMX_INFORMATIONAL;  // Assume for now
+    csd[ entry ].warning = IMX_INFORMATIONAL;  // Assume for now
     /*
      * Each time thru the loop will check for the next most severe level and set the highest by the end
      */
@@ -189,43 +189,43 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
         /*
          * Do we check if below current level - Note Variable length data is ignored
          */
-        if( ( csb->use_warning_level_low & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
-            switch( csb->data_type ) {
+        if( ( csb[ entry ].use_warning_level_low & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
+            switch( csb[ entry ].data_type ) {
                 case IMX_INT32 :
-                    if( data->data[ data->no_samples ].int_32bit < csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
-                        data->warning = i;  // Now set to this level
+                    if( csd[ entry ].data[ csd[ entry ].no_samples ].int_32bit < csb[ entry ].warning_level_low[ i - IMX_WATCH ].int_32bit )
+                        csd[ entry ].warning = i;  // Now set to this level
                     break;
                 case IMX_FLOAT :
-                    if( data->data[ data->no_samples ].float_32bit < csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
-                        data->warning = i;  // Now set to this level
+                    if( csd[ entry ].data[ csd[ entry ].no_samples ].float_32bit < csb[ entry ].warning_level_low[ i - IMX_WATCH ].float_32bit )
+                        csd[ entry ].warning = i;  // Now set to this level
                     break;
                 case IMX_VARIABLE_LENGTH :
                     break;
                 case IMX_UINT32 :
                 default :
-                    if( data->data[ data->no_samples ].uint_32bit < csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
-                        data->warning = i;  // Now set to this level
+                    if( csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit < csb[ entry ].warning_level_low[ i - IMX_WATCH ].uint_32bit )
+                        csd[ entry ].warning = i;  // Now set to this level
                     break;
             }
         /*
          * Do we check if above current level - Note Variable length data is ignored
          */
-        if( ( csb->use_warning_level_high & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
-            switch( csb->data_type ) {
+        if( ( csb[ entry ].use_warning_level_high & ( 0x1 << ( i - IMX_WATCH ) ) ) != 0 )
+            switch( csb[ entry ].data_type ) {
                 case IMX_INT32 :
-                    if( data->data[ data->no_samples ].int_32bit > csb->warning_level_low[ i - IMX_WATCH ].int_32bit )
-                        data->warning = i;  // Now set to this level
+                    if( csd[ entry ].data[ csd[ entry ].no_samples ].int_32bit > csb[ entry ].warning_level_low[ i - IMX_WATCH ].int_32bit )
+                        csd[ entry ].warning = i;  // Now set to this level
                     break;
                 case IMX_FLOAT :
-                    if( data->data[ data->no_samples ].float_32bit > csb->warning_level_low[ i - IMX_WATCH ].float_32bit )
-                        data->warning = i;  // Now set to this level
+                    if( csd[ entry ].data[ csd[ entry ].no_samples ].float_32bit > csb[ entry ].warning_level_low[ i - IMX_WATCH ].float_32bit )
+                        csd[ entry ].warning = i;  // Now set to this level
                     break;
                 case IMX_VARIABLE_LENGTH :
                     break;
                 case IMX_UINT32 :
                 default :
-                    if( data->data[ data->no_samples ].uint_32bit > csb->warning_level_low[ i - IMX_WATCH ].uint_32bit )
-                        data->warning = i;  // Now set to this level
+                    if( csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit > csb[ entry ].warning_level_low[ i - IMX_WATCH ].uint_32bit )
+                        csd[ entry ].warning = i;  // Now set to this level
                     break;
             }
     }
@@ -233,21 +233,21 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
      * Do we check percent change  - Note Variable length data is ignored
      */
     percent_change_detected = false;
-    if( csb->send_on_percent_change == true ) {
-        switch( csb->data_type ) {
+    if( csb[ entry ].send_on_percent_change == true ) {
+        switch( csb[ entry ].data_type ) {
             case IMX_INT32 :
-                if( check_int_percent( data->data[ data->no_samples ].int_32bit, data->last_value.int_32bit, csb->percent_change_to_send ) )
+                if( check_int_percent( csd[ entry ].data[ csd[ entry ].no_samples ].int_32bit, csd[ entry ].last_value.int_32bit, csb[ entry ].percent_change_to_send ) )
                     percent_change_detected = true;
                 break;
             case IMX_FLOAT :
-                if( check_float_percent( data->data[ data->no_samples ].float_32bit, data->last_value.float_32bit, csb->percent_change_to_send ) )
+                if( check_float_percent( csd[ entry ].data[ csd[ entry ].no_samples ].float_32bit, csd[ entry ].last_value.float_32bit, csb[ entry ].percent_change_to_send ) )
                     percent_change_detected = true;
                 break;
             case IMX_VARIABLE_LENGTH :
                 break;
             case IMX_UINT32 :
             default :
-                if( check_uint_percent( data->data[ data->no_samples ].uint_32bit, data->last_value.uint_32bit, csb->percent_change_to_send ) )
+                if( check_uint_percent( csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, csd[ entry ].last_value.uint_32bit, csb[ entry ].percent_change_to_send ) )
                     percent_change_detected = true;
                 break;
         }
@@ -256,40 +256,40 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     /*
      * Done processing this item - its in the history and saved as current value
      */
-    data->no_samples += 1;
+    csd[ entry ].no_samples += 1;
 
-    data->last_sample_time = current_time;
+    csd[ entry ].last_sample_time = current_time;
 
     imx_printf( "Event added\r\n" );
     /*
      * See if the batch is ready to go now
      */
-    if( ( data->warning != data->last_warning ) ||
-        ( ( data->no_samples / 2 ) >= device_config.scb[ entry ].sample_batch_size ) ||
-        ( data->update_now == true ) ||
+    if( ( csd[ entry ].warning != csd[ entry ].last_warning ) ||
+        ( ( csd[ entry ].no_samples / 2 ) >= device_config.scb[ entry ].sample_batch_size ) ||
+        ( csd[ entry ].update_now == true ) ||
         ( percent_change_detected == true ) ) {
 
         imx_printf( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
-                entry, type == IMX_CONTROLS ? device_config.ccb[ entry ].id : device_config.scb[ entry ].id, data->no_samples, csb->sample_batch_size, data->update_now ? "true" : "false",
-                data->warning, data->last_warning, percent_change_detected ? "true" : "false" );
+                entry, type == IMX_CONTROLS ? device_config.ccb[ entry ].id : device_config.scb[ entry ].id, csd[ entry ].no_samples, csb[ entry ].sample_batch_size, csd[ entry ].update_now ? "true" : "false",
+                csd[ entry ].warning, csd[ entry ].last_warning, percent_change_detected ? "true" : "false" );
 
-        data->update_now = false;
-        data->last_warning = data->warning;
-        data->send_batch = true;    // Send this now
+        csd[ entry ].update_now = false;
+        csd[ entry ].last_warning = csd[ entry ].warning;
+        csd[ entry ].send_batch = true;    // Send this now
     }
     /*
      * see if change in error or all we are getting is errors. - Only send once per batch
      */
-    if( ( data->error != data->last_error ) ||
-        ( is_later( current_time, data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) ) == true ) ) {
-    //              imx_printf( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", data->error, data->last_error, data->last_sample_time, ( data->last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) - (uint32_t) current_time )  );
-        data->last_sample_time = current_time;
-        data->last_error = data->error;
-        data->send_on_error = true;
+    if( ( csd[ entry ].error != csd[ entry ].last_error ) ||
+        ( is_later( current_time, csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) ) == true ) ) {
+    //              imx_printf( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ entry ].error, csd[ entry ].last_error, csd[ entry ].last_sample_time, ( csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) - (uint32_t) current_time )  );
+        csd[ entry ].last_sample_time = current_time;
+        csd[ entry ].last_error = csd[ entry ].error;
+        csd[ entry ].send_on_error = true;
     }
 
-    imx_printf( "Event Added Data History now contains: %u Samples\r\n", data->no_samples );
-    for( i = 0; i < (data->no_samples ); i+= 2 )
-        imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, data->data[ i ], data->data[ i + 1] );
+    imx_printf( "Event Added Data History now contains: %u Samples\r\n", csd[ entry ].no_samples );
+    for( i = 0; i < (csd[ entry ].no_samples ); i+= 2 )
+        imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ], csd[ entry ].data[ i + 1] );
 }
 

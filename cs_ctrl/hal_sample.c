@@ -165,7 +165,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	        if( status == IMX_SUCCESS ) {
 	            csd[ *active ].last_poll_time = current_time;                       // Got valid data this time
 	            csd[ *active ].last_value.uint_32bit = sampled_value.uint_32bit;    // Its all just 32 bit data
-	            csb[ *active ].valid = true;      // We have a sample
+	            csd[ *active ].valid = true;      // We have a sample
 	            csd[ *active ].error = status;   // Reset for correction
 	        } else if( status == IMX_NO_DATA )
 	            ;   // Do nothing - keep using existing data - waiting for control/sensor to finish acquisition
@@ -270,7 +270,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
          * is this sample a change of >= Change percentage level - if enabled
          *
          */
-        if( ( ( csb[ *active ].send_imatrix == true ) && ( csb[ *active ].valid == true ) ) &&
+        if( ( ( csb[ *active ].send_imatrix == true ) && ( csd[ *active ].valid == true ) ) &&
             ( ( is_later( current_time, csd[ *active ].last_sample_time + (wiced_time_t) ( csb[ *active ].sample_rate ) ) == true ) ||
             ( csd[ *active ].warning != csd[ *active ].last_warning ) ||
             ( percent_change_detected == true ) ) ) {

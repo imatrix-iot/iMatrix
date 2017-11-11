@@ -181,7 +181,7 @@ void imx_init_temp(uint16_t arg)
   * @param  None
   * @retval : None
   */
-uint16_t imx_sample_temp(uint16_t arg, void *value )
+imx_result_t  imx_sample_temp(uint16_t arg, void *value )
 {
     float foo;
     int temp;

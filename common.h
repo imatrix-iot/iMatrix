@@ -179,7 +179,7 @@ typedef enum {
     IMX_MUST_SUPPLY_CONTROL,
     IMX_MAXIMUM_SENSORS_EXCEEDED,
     IMX_MUST_SUPPLY_SAMPLE,
-} imx_errors_t;
+} imx_result_t;
 
 /*
  * Define data types for Controls & Sensors
@@ -316,14 +316,13 @@ typedef struct control_sensor_block {
     uint16_t percent_change_to_send;            // Bits
     unsigned int enabled                : 1;    // 0    Is this entry used
     unsigned int read_only              : 1;    // 1    Read only Sensor (Internal - Can not change with AT command)
-    unsigned int valid                  : 1;    // 2    Has data be read yet
-    unsigned int send_on_percent_change : 1;    // 3    Do you send update if this changes by a percentage
-    unsigned int data_type              : 2;    // 4-5  Standard data types, Int Uint Float and Variable length
-    unsigned int use_warning_level_low  : 3;    // 6-7  What warning levels for low levels do we notify on
-    unsigned int use_warning_level_high : 3;    // 8-9  What warning levels for high levels do we notify on
-    unsigned int set_default            : 1;    // 10   Does the system set the default value
-    unsigned int send_imatrix           : 1;    // 11   Does the system send this entry to iMatrix
-    unsigned int reserved               : 20;   // 12-31
+    unsigned int send_on_percent_change : 1;    // 2    Do you send update if this changes by a percentage
+    unsigned int data_type              : 2;    // 3-4  Standard data types, Int Uint Float and Variable length
+    unsigned int use_warning_level_low  : 3;    // 5-6  What warning levels for low levels do we notify on
+    unsigned int use_warning_level_high : 3;    // 7-8  What warning levels for high levels do we notify on
+    unsigned int set_default            : 1;    // 9    Does the system set the default value
+    unsigned int send_imatrix           : 1;    // 10   Does the system send this entry to iMatrix
+    unsigned int reserved               : 21;   // 11-31
     data_32_t default_value;
     data_32_t warning_level_low[ WARNING_LEVELS ];
     data_32_t warning_level_high[ WARNING_LEVELS ];
@@ -332,7 +331,7 @@ typedef struct control_sensor_block {
 typedef struct functions {
     void (*load_config_defaults)(uint16_t arg);
     void (*init)(uint16_t arg);
-    uint16_t (*update)(uint16_t arg, void *value );
+    imx_result_t (*update)(uint16_t arg, void *value );
     uint16_t arg;
 } imx_functions_t;
 

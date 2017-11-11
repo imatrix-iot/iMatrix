@@ -33,7 +33,7 @@
  *
  *  When setting a setting flashing led the high bit in the 16bits is set - 0x1000
  *
- *  When setting a setting Dual flashing LEDs the high bit in the 16bits is set - 0x1000
+ *  When setting a setting for Dual flashing LEDs, set the high bit in the 16bits to - 0x1000
  *      The two LEDs are defined as Master and Slave. The Master will be on for 500mS and the Slave will be ON for the slave flash count
  *      The mode value is separated into two sections
  *      0xF00 - Right shifted 8 bits is the number of seconds for the cycle
@@ -161,6 +161,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
     wiced_result_t wiced_result;
     imx_led_t master_led, slave_led;
 
+    return;
 
     // imx_printf( "Setting Led: %u, to state: %u\r\n", (uint16_t) led, (uint16_t) mode );
     /*

@@ -244,9 +244,10 @@ void imatrix_upload(wiced_time_t current_time)
                                  * Only need one
                                  */
                                 if( csd[ i ].send_batch == true ) {
-    /*                              imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
+    ///*
+                                    imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
                                             type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].no_samples, csd[ i ].send_batch == true ? "true" : "false" );
-    */
+    //*/
                                 } else {
                                     imx_printf( "Found %s: %u with error\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i );
                                 }

@@ -257,7 +257,7 @@ void imatrix_print_config( uint16_t arg )
 	cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
 	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
-	cli_print( "Building ID: %lu, Level ID: %lu, Indoor Thing: %s, X: %lu, Y: %lu", device_config.building_id, device_config.level_id, device_config.indoor_device == true ? "True" : "False",
+	cli_print( "Building ID: %lu, Level ID: %lu, Indoor Thing: %s, X: %lu, Y: %lu\r\n", device_config.building_id, device_config.level_id, device_config.indoor_device == true ? "True" : "False",
 	        device_config.indoor_x, device_config.indoor_y );
     cli_print( "Default AP SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
     cli_print( "Default ST SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_st_ssid, device_config.default_st_wpa, device_config.default_st_security_mode );
@@ -269,8 +269,7 @@ void imatrix_print_config( uint16_t arg )
 
     cli_print( "iMatrix URL: %s, iMatrix batch check time: %lumS\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time );
 	cli_print( "Manufacturing URL: %s, Bind URI: %s, OTA URL: %s\r\n", device_config.manufacturing_url, device_config.imatrix_bind_uri, device_config.ota_public_url );
-	cli_print( "AT Variable Entry Timeout %u mS", device_config.AT_variable_data_timeout );
-    cli_print( "Bind URI: %s\r\n", device_config.manufacturing_url );
+	cli_print( "AT Variable Entry Timeout %u mS, AT Verbose mode: %u\r\n", device_config.AT_variable_data_timeout, device_config.AT_verbose );
 	cli_print( "Controls Configuration:\r\n" );
 	print_common_config( IMX_CONTROLS, &device_config.ccb[ 0 ] );
 	cli_print( "Sensors Configuration:\r\n" );

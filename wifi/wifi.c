@@ -130,7 +130,14 @@ uint16_t wifi_init(void)
 
 	icb.wifi_up = false;
 
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH_MASK | IMX_LED_BLINK_5 | IMX_LED_FLASH_1 );
+	/*
+	 * Start with all LEDs off
+	 */
+    imx_set_led( IMX_LED_RED, IMX_LED_OFF );
+    imx_set_led( IMX_LED_GREEN, IMX_LED_OFF );
+    imx_set_led( IMX_LED_BLUE, IMX_LED_OFF );
+
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_BLINK_5 | IMX_LED_FLASH_1 );
 	imx_printf( "Initializing Wi Fi\r\n" );
     /*
      * Kill the network - Code for test purposes only
@@ -170,7 +177,7 @@ uint16_t wifi_init(void)
         imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
 
 	    /*
-	     * Set the RED Link to blink 1 per second to indicate Provisioning mode
+	     * Set the RED Link to blink 1 per second to indicate Set up mode
 	     */
         imx_set_led( IMX_LED_RED, IMX_LED_BLINK_1 );
 
@@ -211,7 +218,7 @@ uint16_t wifi_init(void)
 	    /*
 	     * Update LED flash to show progress
 	     */
-	    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH_MASK | IMX_LED_BLINK_5 | IMX_LED_FLASH_2 );
+	    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_BLINK_5 | IMX_LED_FLASH_2 );
 
 	    /*
 	     * Network Is up
@@ -235,7 +242,7 @@ uint16_t wifi_init(void)
     /*
      * Update LED flash to show progress
      */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH_MASK | IMX_LED_FLASH_5 );
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_FLASH_5 );
 	/*
 	 * Always set up the UDP Server
 	 */

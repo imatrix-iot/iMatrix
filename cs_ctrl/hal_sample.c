@@ -132,7 +132,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	}
 
 	SET_CSB_VARS_F( type );
-//    wiced_rtos_delay_milliseconds( 100 ); // Used for debug to slow things down
+    wiced_rtos_delay_milliseconds( 100 ); // Used for debug to slow things down
 	/*
 	 * Check Control / Sensor, update this sensor stored data if it changes warning level or sample rate is due
 	 *
@@ -142,7 +142,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 		status = 0;	// Controls may not have an update function as the may just be set remotely
 		if( f[ *active ].update != NULL ) {
 			status = ( f[ *active ].update)( f[ *active ].arg, &sampled_value );
-			/*
+//			/*
 			if( type == IMX_CONTROLS )
 			    cli_print( "Sampled Control: %u, result: %u", *active, status );
 			else
@@ -161,7 +161,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 					break;
 			}
 			cli_print( "\r\n" );
-			*/
+//			*/
 	        if( status == IMX_SUCCESS ) {
 	            csd[ *active ].last_poll_time = current_time;                       // Got valid data this time
 	            csd[ *active ].last_value.uint_32bit = sampled_value.uint_32bit;    // Its all just 32 bit data
@@ -276,9 +276,9 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
             ( percent_change_detected == true ) ) ) {
 
             csd[ *active ].data[ csd[ *active ].no_samples ].uint_32bit = csd[ *active ].last_value.uint_32bit; // Save this entry its all just 32 bit data
-/*
+///*
             imx_printf( "Saving %s value for sensor(%u): %s, Saved entries: %u\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", *active, csb[ *active ].name, ( csd[ *active ].no_samples + 1 ) );
-*/
+//*/
             /*
              * Check for overflow - Save only the last sample values
              */
@@ -295,11 +295,11 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
                 ( csd[ *active ].no_samples >= ( HISTORY_SIZE - 1  ) ) || // We can't get any more in to this record
                 ( csd[ *active ].update_now == true ) ||
                 ( percent_change_detected == true ) ) {
-/*
+///*
                 cli_print( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
                         *active, csb[ *active ].id, csd[ *active ].no_samples, csb[ *active ].sample_batch_size, csd[ *active ].update_now ? "true" : "false",
                         csd[ *active ].warning, csd[ *active ].last_warning, percent_change_detected ? "true" : "false" );
-*/
+//*/
                 csd[ *active ].update_now = false;
                 csd[ *active ].last_warning = csd[ *active ].warning;
                 csd[ *active ].send_batch = true;    // Send this now

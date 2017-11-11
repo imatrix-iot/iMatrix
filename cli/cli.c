@@ -225,7 +225,7 @@ void cli_process( void )
 			memset( terminal_command_line, 0x00, COMMAND_LINE_LENGTH );
 			terminal_cmd_index = 0;
             active_device = CONSOLE_OUTPUT;     // This is so when general status print out are made with no cli activity they will go to the console
-			if( device_config.AT_verbose == IMX_AT_VERBOSE_STANDARD_STATUS ) {
+			if( ( device_config.at_command_mode == false ) || ( imx_cli_mode == false ) ) {
 			    if( imx_cli_mode == false )
 			        cli_print( "app" );
 			    cli_print( ">" );

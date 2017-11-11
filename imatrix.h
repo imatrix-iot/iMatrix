@@ -126,12 +126,13 @@ char *imx_get_device_serial_number(void);
 wiced_result_t imx_get_config_current_address( void *config_address );
 wiced_result_t imx_save_config( void *config, uint16_t config_size );
 /*
- * Console I/O
+ * CLI - Console I/O
  */
 bool imx_get_ch( char *ch );
 void imx_printf( char *format, ... );
 int imx_log_printf( char *format, ... );
 bool imx_verify_cmd(void);
+void imx_set_cli_handler( bool (*cli_handler)( char *token ) );
 /*
  * Set & Get Control / Sensor data
  */

@@ -104,6 +104,9 @@ void cli_status( uint16_t arg )
 	wiced_iso8601_time_t iso8601_time;
 	wiced_utc_time_t utc_time;
 
+    cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
+    cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
+    cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
 	wiced_time_get_utc_time( &utc_time );
 	wiced_time_get_iso8601_time( &iso8601_time );
@@ -195,7 +198,7 @@ void cli_status( uint16_t arg )
 
         for( i = 0; i < no_items; i++ ) {
             if( cs_block[ i ].enabled == true ) {
-                cli_print( "  No: %u, %32s, ID: 0x%08lx, ", i, cs_block[ i ].name, cs_block[ i ].id );
+                cli_print( "  No: %2u, %32s, ID: 0x%08lx, ", i, cs_block[ i ].name, cs_block[ i ].id );
                 if( cs_block[ i ].valid == true ) {
                     cli_print( "Current setting: " );
                     switch( cs_block[ i ].data_type ) {

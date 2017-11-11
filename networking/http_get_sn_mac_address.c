@@ -62,7 +62,8 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define MAC_LENGTH	20
+#define MAC_LENGTH	        15
+#define IMX_WAIT_FOR_SN     20000
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -216,6 +217,7 @@ uint16_t http_get_sn_mac_address( void )
 			    	result =  wiced_tcp_stream_flush( &ota_loader_config.tcp_stream );
 			    	if( result == WICED_TCPIP_SUCCESS ) {
 			    		wiced_time_get_utc_time( &ota_loader_config.last_recv_packet_utc_time );
+			    		cli_print( "Waiting for iMatrix Server response..." );
 			    		ota_loader_config.data_retry_count = 0;
 			    		state = GET_MAC_PARSE_HEADER;
 			    		break;
@@ -227,7 +229,7 @@ uint16_t http_get_sn_mac_address( void )
 			    }
 			    break;
 			case GET_MAC_PARSE_HEADER :
-				result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, 15000, &buffer_length );
+				result = wiced_tcp_stream_read_with_count( &ota_loader_config.tcp_stream, local_buffer, BUFFER_LENGTH, IMX_WAIT_FOR_SN, &buffer_length );
 				if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
 					cli_print( "\r\nReceived: %lu Bytes\r\n", buffer_length );
 					/*
@@ -307,7 +309,8 @@ uint16_t http_get_sn_mac_address( void )
 						}
 					} else if ( strstr( local_buffer, HTTP_RESPONSE_NOT_FOUND ) && strstr( local_buffer, CRLFCRLF ) )
 						cli_print( "MAC URL Not found\r\n" );
-				}
+				} else
+				    cli_print( "Failed to get data from host, Error code: %u\r\n", result );
 				state = GET_MAC_CLOSE_CONNECTION;
 				break;
 			case GET_MAC_CLOSE_CONNECTION :
@@ -321,7 +324,7 @@ uint16_t http_get_sn_mac_address( void )
 
 			    	return( true );
 			    } else {
-			    	cli_print("Get MAC Address failed.\r\n");
+			    	cli_print("Get Serial Number & MAC Address failed.\r\n");
 			    	return( false );
 			    }
 				break;

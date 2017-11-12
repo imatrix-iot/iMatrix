@@ -401,6 +401,7 @@ typedef struct IOT_Device_Config {
     unsigned int log_wifi_AP                : 1;    // Log Wi Fi Events and levels
     unsigned int log_wifi_rssi              : 1;
     unsigned int log_wifi_rfnoise           : 1;
+    unsigned int send_logs_to_imatrix       : 1;    // Send log messages to iMatrix
     unsigned int at_command_mode            : 1;    // Determines CLI output styles
     unsigned int application_loaded         : 1;    // Has the application already loaded
     unsigned int api_loaded                 : 1;    // Has API loaded values - use to overide defaults

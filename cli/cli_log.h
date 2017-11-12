@@ -23,18 +23,18 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .h
+/** @file cli_log.h
  *
  *  Created on: November 12, 2017
  *      Author: greg.phillips
  *
  */
 
-#ifndef _H_
-#define _H_
+#ifndef CLI_LOG_H_
+#define CLI_LOG_H_
 
 /*
- *	Defines for iMatrix
+ *	Defines for iMatrix CLI Logging
  *
  */
 
@@ -62,4 +62,4 @@
  *               Function Definitions
  ******************************************************/
 
-#endif /* _H_ */
+#endif /* CLI_LOG_H_ */

@@ -132,9 +132,6 @@ bool system_init(void)
 		return false;
 	}
 
-    imx_printf( "Commencing Setup procedure: " );
-
-
 #ifdef USE_CCMRAM
     imx_printf( " *** Using CCMRAM ***\r\n" );
 #else
@@ -211,7 +208,7 @@ bool system_init(void)
 
     // imx_printf( "Configuring Smart Arduino\r\n" );
     // configure_arduino();
-    imx_printf( "Initializing Locaton System\r\n" );
+    imx_printf( "Initializing Location System\r\n" );
 
     init_location_system();
 

@@ -133,11 +133,9 @@ uint16_t wifi_init(void)
 	/*
 	 * Start with all LEDs off
 	 */
-    imx_set_led( IMX_LED_RED, IMX_LED_OFF );
-    imx_set_led( IMX_LED_GREEN, IMX_LED_OFF );
-    imx_set_led( IMX_LED_BLUE, IMX_LED_OFF );
+    imx_set_led( 0, IMX_LED_ALL_OFF );
 
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_BLINK_5 | IMX_LED_FLASH_1 );
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_2 );
 	imx_printf( "Initializing Wi Fi\r\n" );
     /*
      * Kill the network - Code for test purposes only
@@ -174,7 +172,7 @@ uint16_t wifi_init(void)
         /*
          * Network setup done
          */
-        imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
+        imx_set_led( 0, IMX_LED_ALL_OFF );
 
 	    /*
 	     * Set the RED Link to blink 1 per second to indicate Set up mode

@@ -100,7 +100,8 @@ typedef struct {
 	uint32_t AT_commands_processed;
 	uint32_t AT_command_errors;
 	uint32_t spi_errors;
-	uint32_t building_id;
+    uint32_t wifi_failed_connect_count;
+    uint32_t wifi_success_connect_count;
 	uint32_t indoor_x, indoor_y, indoor_level;
 	float longitude, latitude, elevation;
 	ip_stats_t ip_stats[ NO_PROTOCOL_STATS ];

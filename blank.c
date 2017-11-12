@@ -25,7 +25,7 @@
 
 /** @file .c
  *
- *  Created on: November 9, 2017
+ *  Created on: November 11, 2017
  *      Author: greg.phillips
  *
  */
@@ -34,10 +34,6 @@
 #include <stdio.h>
 
 #include "wiced.h"
-
-#include "..\defines.h"
-#include "..\structs.h"
-
 
 /******************************************************
  *                      Macros

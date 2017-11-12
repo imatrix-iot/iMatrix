@@ -185,7 +185,23 @@ void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *cs
 
 static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry )
 {
-    cli_print( " No. %2u, %32s, ID: 0x%08lx, %s, ", entry, csb[  entry ].name, csb[ entry ].id, csb[ entry ].enabled == true ? " Enabled" : "Disabled" );
+    cli_print( " No. %2u, %32s, ID: 0x%08lx, ", entry, csb[  entry ].name, csb[ entry ].id );
+    switch( csb[ entry ].data_type ) {
+        case IMX_UINT32 :
+            cli_print( "32bit UINT " );
+            break;
+        case IMX_INT32 :
+            cli_print( "32bit INT  " );
+            break;
+        case IMX_FLOAT :
+            cli_print( "32bit Float" );
+            break;
+        case IMX_VARIABLE_LENGTH :
+            cli_print( "Variable  " );
+            break;
+    }
+
+    cli_print( ", %s-", csb[ entry ].enabled == true ? " Enabled" : "Disabled" );
     cli_print( "%s, ", ( csb[ entry ].read_only == true ) ? " Read Only" : "Read/Write" );
     cli_print( "Initialize: " );
     if( csb[ entry ].set_default == false )
@@ -218,7 +234,7 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
     }
     cli_print( ", Batch size: %2u", csb[ entry ].sample_batch_size );
 
-    cli_print( ", Monitoring Levels low enabled:" );
+    cli_print( ", Monitoring Levels, Low enabled:" );
     if( csb[ entry ].use_warning_level_low == 0 )
         cli_print( " None" );
     else {
@@ -239,7 +255,7 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
                 break;
         }
     }
-    cli_print( ", Monitoring Levels high enabled:" );
+    cli_print( ", High enabled:" );
     if( csb[ entry ].use_warning_level_high == 0 )
         cli_print( " None" );
     else {

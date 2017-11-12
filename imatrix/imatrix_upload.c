@@ -877,7 +877,7 @@ void imatrix_status( uint16_t arg)
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 
                 SET_CSB_VARS( type );
-    	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
+    	        cli_print( "%u %s: Current Status @: %lu mS (mS Timer)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
     	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 

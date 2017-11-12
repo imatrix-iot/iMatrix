@@ -108,11 +108,11 @@ void cli_set_led( uint16_t arg)
     if( token ) {
         if( strcmp( token, "test" ) == 0 ) {
             /*
-             * Do a sequence of tests for to show LED functionality
+             * Start off
              */
-            imx_set_led( IMX_LED_RED, IMX_LED_OFF );
-            imx_set_led( IMX_LED_GREEN, IMX_LED_OFF );
-            imx_set_led( IMX_LED_BLUE, IMX_LED_OFF );
+            imx_printf( "Starting LED Test\r\n" );
+            imx_set_led( 0, IMX_LED_ALL_OFF );
+            wiced_rtos_delay_milliseconds( 500 );
 
             for( i = 0; i < IMX_NO_LEDS; i++ ) {
                 imx_printf( "Setting %s to ON..", led_names[ i ] );
@@ -150,6 +150,19 @@ void cli_set_led( uint16_t arg)
                 imx_set_led( i, IMX_LED_OFF );
                 imx_printf( "OFF\r\n" );
             }
+            return;
+        } else if( strcmp( token, "wifi" ) == 0 ) {
+            imx_printf( "Wi Fi LED Test Start\r\n" );
+            imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_2 );
+            wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+            imx_printf( "Wi Fi LED Test Step 2\r\n" );
+            imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_FLASH_4 | IMX_LED_BLINK_2 );
+            wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+            imx_printf( "Wi Fi LED Test Done\r\n" );
+            imx_set_led( 0, IMX_LED_ALL_OFF );      // Turn them all off
+
+        } else if( strcmp( token, "off" ) == 0 ) {
+            imx_set_led( 0, IMX_LED_ALL_OFF );      // Turn them all off
             return;
         } else if( strncmp( token, "0x", 2 ) == 0 )
             led = (imx_led_t) strtoul( &token[ 2 ], &foo, 16 );

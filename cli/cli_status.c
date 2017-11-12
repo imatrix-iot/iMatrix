@@ -104,14 +104,15 @@ void cli_status( uint16_t arg )
 	wiced_iso8601_time_t iso8601_time;
 	wiced_utc_time_t utc_time;
 
+    wiced_time_get_utc_time( &utc_time );
+    wiced_time_get_iso8601_time( &iso8601_time );
+    cli_print( "System UTC time is: %lu -> %.26s Current Status:\r\n", utc_time, (char*)&iso8601_time );
+
     cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
     cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
     cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
-	wiced_time_get_utc_time( &utc_time );
-	wiced_time_get_iso8601_time( &iso8601_time );
-	cli_print( "System UTC time is: %lu -> %.26s Current Status:\r\n", utc_time, (char*)&iso8601_time );
-
+    cli_print( "Wi Fi Details: Successful Connections: %lu, Failed Attempts: %lu ", icb.wifi_success_connect_count, icb.wifi_failed_connect_count );
 	cli_print( "Device is: " );
 	if( icb.wifi_up == true ) {
 		cli_print( "Online, " );

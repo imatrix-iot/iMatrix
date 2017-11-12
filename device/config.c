@@ -254,7 +254,7 @@ void imatrix_print_config( uint16_t arg )
     cli_print( "Running WICED: %s, Name: %s, Manufacturing ID: 0x%08lx - ", WICED_VERSION, device_config.product_name, device_config.manufactuer_id, device_config.manufactuer_id );
 	cli_print( "Active Configuration: - Magic: 0x%08lx\r\n", device_config.valid_config );
 	cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
-	cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
+	cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: [%]s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
 	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
 	cli_print( "Building ID: %lu, Level ID: %lu, Indoor Thing: %s, X: %lu, Y: %lu\r\n", device_config.building_id, device_config.level_id, device_config.indoor_device == true ? "True" : "False",

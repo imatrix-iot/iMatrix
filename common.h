@@ -161,7 +161,6 @@ typedef enum {
  */
 typedef enum {
     IMX_SUCCESS = 0,
-    IMX_NO_DATA,
     IMX_INVALID_ENTRY,
     IMX_CONTROL_DISABLED,
     IMX_SENSOR_DISABLED,
@@ -179,6 +178,12 @@ typedef enum {
     IMX_MUST_SUPPLY_CONTROL,
     IMX_MAXIMUM_SENSORS_EXCEEDED,
     IMX_MUST_SUPPLY_SAMPLE,
+    /*
+     * Following are Result/Error Conditions for Sensor Sampling
+     */
+    IMX_NO_DATA,
+    IMX_ON_BOARD_TEMP_ERROR,
+    IMX_INTERNAL_ADC_ERROR,
 } imx_result_t;
 
 /*
@@ -198,7 +203,8 @@ typedef enum {
 } imx_AT_versbose_mode_t;
 
 typedef enum {
-    IMX_LED_OFF = 0,
+    IMX_LED_ALL_OFF,
+    IMX_LED_OFF,
     IMX_LED_ON,
     IMX_LED_BLINK_1,
     IMX_LED_BLINK_2,

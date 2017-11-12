@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -29,20 +23,20 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file
+/** @file watch_dog.h
  *
- *  imx_wifi.c
- *
- *  Define API Wi Fi Interface routines
+ *  Created on: November 11, 2017
+ *      Author: greg.phillips
  *
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef WATCHDOG_H_
+#define WATCHDOG_H_
 
-#include "../storage.h"
-#include "../device/icb_def.h"
-#include "../imatrix/logging.h"
+/*
+ *	Defines for watchdog system
+ *
+ */
 
 /******************************************************
  *                      Macros
@@ -63,49 +57,10 @@
 /******************************************************
  *                    Structures
  ******************************************************/
-extern IOT_Device_Config_t device_config;
-extern iMatrix_Control_Block_t icb;
-/******************************************************
- *               Function Declarations
- ******************************************************/
-
-/******************************************************
- *               Variable Definitions
- ******************************************************/
-
 
 /******************************************************
  *               Function Definitions
  ******************************************************/
-/**
-  * @brief  return if the device is in AP / Setup mode
-  * @param  None
-  * @retval : state
-  */
-
-bool imx_setup_mode(void)
-{
-    return device_config.AP_setup_mode;
-}
-/**
-  * @brief  return if the device is in ST mode and Wi Fi is up
-  * @param  None
-  * @retval : state
-  */
-bool imx_network_connected(void)
-{
-    return ( ( device_config.AP_setup_mode == false) && ( icb.wifi_up == true ) );
-}
-
-void _imx_log_failed_wifi_connect(void)
-{
-
-    log_iMatrix( "Wi Fi Failed to connect" );
-    icb.wifi_failed_connect_count += 1;
-
-}
-void _imx_log_successful_wifi_connect(void)
-{
-    log_iMatrix( "Wi Fi Connected" );
-    icb.wifi_success_connect_count += 1;
-}
+void init_watchdog(void);
+void imx_kick_watchdog(void);
+#endif /* WATCHDOG_H_ */

@@ -85,8 +85,9 @@ void imx_init_led_red_ismart(uint16_t arg)
 {
     UNUSED_PARAMETER(arg);
 
-    wiced_gpio_init( ON_BOARD_LED_RED, OUTPUT_PUSH_PULL );  // GPIO 3 - Red Led
+    wiced_gpio_init( ON_BOARD_LED_RED, OUTPUT_PUSH_PULL );
     imx_update_led_red_status_ismart( false );
+    imx_printf( "Initialized Red LED using GPIO: %u\r\n", ON_BOARD_LED_RED );
 }
 /**
   * @brief init_led_red
@@ -97,8 +98,9 @@ void imx_init_led_green_ismart(uint16_t arg)
 {
     UNUSED_PARAMETER(arg);
 
-    wiced_gpio_init( ON_BOARD_LED_GREEN, OUTPUT_PUSH_PULL );  // GPIO 4 - Green Led
+    wiced_gpio_init( ON_BOARD_LED_GREEN, OUTPUT_PUSH_PULL );
     imx_update_led_green_status_ismart( false );
+    imx_printf( "Initialized Green LED using GPIO: %u\r\n", ON_BOARD_LED_GREEN );
 }
 /**
   * @brief init_led_red
@@ -174,7 +176,7 @@ void imx_init_temp(uint16_t arg)
     if( result != WICED_SUCCESS )
         imx_printf( "Unable to set up Analog 0 input\r\n" );
     else
-        imx_printf( "Set up Analog 0 input\r\n" );
+        imx_printf( "Set up Analog 0 input for On board Temperature\r\n" );
 }
 /**
   * @brief sample the temperature
@@ -192,7 +194,7 @@ imx_result_t  imx_sample_temp(uint16_t arg, void *value )
     result = thermistor_take_sample(WICED_ADC_1, &foo );
     if( result != WICED_SUCCESS ) {
         imx_printf( "Failed to read thermistor\r\n" );
-        return IMX_GENERAL_FAILURE;
+        return IMX_ON_BOARD_TEMP_ERROR;
     }
     //imx_printf( "Temperature: %3.2fC\r\n", foo );
     /*

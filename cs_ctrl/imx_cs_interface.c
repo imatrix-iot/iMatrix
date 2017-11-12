@@ -81,27 +81,51 @@ extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
 /*
  * Set & Get Control / Sensor data
  */
-imx_status_t imx_set_sensor( uint16_t sensor_entry, void *value )
+imx_status_t imx_set_sensor( uint16_t entry, void *value )
 {
-    if( sensor_entry > device_config.no_sensors )
+    if( entry > device_config.no_sensors )
         return IMX_INVALID_ENTRY;
-    if( device_config.scb[ sensor_entry ].enabled == false )
+    if( device_config.scb[ entry ].enabled == false )
         return IMX_CONTROL_DISABLED;
-    if( device_config.scb[ sensor_entry ].sample_rate == 0 )
-        hal_event( IMX_SENSORS, sensor_entry, value );
+    if( device_config.scb[ entry ].sample_rate == 0 )
+        hal_event( IMX_SENSORS, entry, value );
     else
-        memcpy( &sd[ sensor_entry ].last_value, value, SAMPLE_LENGTH );
+        memcpy( &sd[ entry ].last_value, value, SAMPLE_LENGTH );
     return IMX_SUCCESS;
 }
-imx_status_t imx_get_sensor( uint16_t sensor_entry, void *value )
+imx_status_t imx_get_sensor( uint16_t entry, void *value )
 {
+    if( entry > device_config.no_sensors )
+        return IMX_INVALID_ENTRY;
+    if( device_config.scb[ entry ].enabled == false )
+        return IMX_SENSOR_DISABLED;
+    if( sd[ entry ].valid == true ) {
+        memcpy( value, &sd[ entry ].last_value, SAMPLE_LENGTH );
+        return IMX_SUCCESS;
+    } else
+        return IMX_NO_DATA;
+}
+imx_status_t imx_set_control( uint16_t entry, void *value )
+{
+    if( entry > device_config.no_controls )
+        return IMX_INVALID_ENTRY;
+    if( device_config.ccb[ entry ].enabled == false )
+        return IMX_CONTROL_DISABLED;
+    if( device_config.ccb[ entry ].sample_rate == 0 )
+        hal_event( IMX_CONTROLS, entry, value );
+    else
+        memcpy( &cd[ entry ].last_value, value, SAMPLE_LENGTH );
     return IMX_SUCCESS;
 }
-imx_status_t imx_set_control( uint16_t sensor_entry, void *value )
+imx_status_t imx_get_control( uint16_t entry, void *value )
 {
-    return IMX_SUCCESS;
-}
-imx_status_t imx_get_control( uint16_t control_entry, void *value )
-{
-    return IMX_SUCCESS;
+    if( entry > device_config.no_sensors )
+        return IMX_INVALID_ENTRY;
+    if( device_config.ccb[ entry ].enabled == false )
+        return IMX_CONTROL_DISABLED;
+    if( cd[ entry ].valid == true ) {
+        memcpy( value, &cd[ entry ].last_value, SAMPLE_LENGTH );
+        return IMX_SUCCESS;
+    } else
+        return IMX_NO_DATA;
 }

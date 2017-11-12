@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -29,20 +23,21 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file
+/** @file .c
  *
- *  imx_wifi.c
- *
- *  Define API Wi Fi Interface routines
+ *  Created on: November 11, 2017
+ *      Author: greg.phillips
  *
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdbool.h>
 
+#include "wiced.h"
 #include "../storage.h"
-#include "../device/icb_def.h"
-#include "../imatrix/logging.h"
+#include "../cli/interface.h"
+#include "../device/var_data.h"
 
 /******************************************************
  *                      Macros
@@ -63,8 +58,7 @@
 /******************************************************
  *                    Structures
  ******************************************************/
-extern IOT_Device_Config_t device_config;
-extern iMatrix_Control_Block_t icb;
+
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -73,39 +67,39 @@ extern iMatrix_Control_Block_t icb;
  *               Variable Definitions
  ******************************************************/
 
-
 /******************************************************
  *               Function Definitions
  ******************************************************/
 /**
-  * @brief  return if the device is in AP / Setup mode
-  * @param  None
-  * @retval : state
+  * @brief  Log a message on and iMatrix Event
+  * @param  String
+  * @retval : None
   */
-
-bool imx_setup_mode(void)
+void log_iMatrix( char *msg )
 {
-    return device_config.AP_setup_mode;
+    uint16_t log_msg_length;
+    var_data_entry_t *var_data_ptr;
+    /*
+     * Get the index for the logging entry if enabled
+     */
+    /*
+     * Get a variable length packet to store our message in
+     */
+
+    log_msg_length = strlen( msg );
+    var_data_ptr = get_var_data( log_msg_length );
+    if( var_data_ptr != NULL ) {
+        /*
+         * Add message
+         */
+        strcpy( (char *) var_data_ptr->data, msg );
+        var_data_ptr->header.length = strlen( msg );
+        /*
+         * Add to queue to send
+         */
+        imx_printf( "Adding log Message: %s\r\n", msg );
+        // Need to do this for now just free
+        add_var_free_pool( var_data_ptr );
+
 }
-/**
-  * @brief  return if the device is in ST mode and Wi Fi is up
-  * @param  None
-  * @retval : state
-  */
-bool imx_network_connected(void)
-{
-    return ( ( device_config.AP_setup_mode == false) && ( icb.wifi_up == true ) );
-}
-
-void _imx_log_failed_wifi_connect(void)
-{
-
-    log_iMatrix( "Wi Fi Failed to connect" );
-    icb.wifi_failed_connect_count += 1;
-
-}
-void _imx_log_successful_wifi_connect(void)
-{
-    log_iMatrix( "Wi Fi Connected" );
-    icb.wifi_success_connect_count += 1;
 }

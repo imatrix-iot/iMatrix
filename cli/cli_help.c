@@ -84,8 +84,8 @@ void cli_help( uint16_t no_cmds)
 {
 	uint16_t i;
 
-	cli_print( (char *) "CLI Commands and syntax\r\n" );
+	cli_print( "CLI Commands and syntax\r\nNote: Use 'app' to enter Application CLI mode and 'exit' to return to normal iMatrix CLI processing\r\n" );
 
 	for( i = 0; i < no_cmds; i++ )
-		cli_print( (char *) "%s - %s\r\n", command[ i ].command_string, command[ i ].help_string );
+		cli_print( "%s - %s\r\n", command[ i ].command_string, command[ i ].help_string );
 }

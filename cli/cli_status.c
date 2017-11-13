@@ -104,11 +104,15 @@ void cli_status( uint16_t arg )
 	wiced_iso8601_time_t iso8601_time;
 	wiced_utc_time_t utc_time;
 
-	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
-	wiced_time_get_utc_time( &utc_time );
-	wiced_time_get_iso8601_time( &iso8601_time );
-	cli_print( "System UTC time is: %lu -> %.26s Current Status:\r\n", utc_time, (char*)&iso8601_time );
+    wiced_time_get_utc_time( &utc_time );
+    wiced_time_get_iso8601_time( &iso8601_time );
+    cli_print( "System UTC time is: %lu -> %.26s Current Status:\r\n", utc_time, (char*)&iso8601_time );
 
+    cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
+    cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
+    cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
+	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
+    cli_print( "Wi Fi Details: Successful Connections: %lu, Failed Attempts: %lu ", icb.wifi_success_connect_count, icb.wifi_failed_connect_count );
 	cli_print( "Device is: " );
 	if( icb.wifi_up == true ) {
 		cli_print( "Online, " );
@@ -179,26 +183,26 @@ void cli_status( uint16_t arg )
 	 */
 	peripheral_type_t type;
 	control_sensor_data_t *csd;
-	imx_control_sensor_block_t *cs_block;
+	imx_control_sensor_block_t *csb;
 	uint16_t no_items;
 
 	for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 	    if( type == IMX_CONTROLS ) {
-	        cs_block = &device_config.ccb[ 0 ];
+	        csb = &device_config.ccb[ 0 ];
 	        csd = &cd[ 0 ];
 	    } else {
-	        cs_block = &device_config.scb[ 0 ];
+	        csb = &device_config.scb[ 0 ];
             csd = &sd[ 0 ];
 	    }
         cli_print( "%u %s: Current Status @: %lu mSec\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors, ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
         for( i = 0; i < no_items; i++ ) {
-            if( cs_block[ i ].enabled == true ) {
-                cli_print( "  No: %u, %32s, ID: 0x%08lx, ", i, cs_block[ i ].name, cs_block[ i ].id );
-                if( cs_block[ i ].valid == true ) {
+            if( csb[ i ].enabled == true ) {
+                cli_print( "  No: %2u, %32s, ID: 0x%08lx, ", i, csb[ i ].name, csb[ i ].id );
+                if( csd[ i ].valid == true ) {
                     cli_print( "Current setting: " );
-                    switch( cs_block[ i ].data_type ) {
+                    switch( csb[ i ].data_type ) {
                         case IMX_UINT32 :
                             cli_print( "0x%08lx - %lu", csd[ i ].last_value.uint_32bit, csd[ i ].last_value.uint_32bit );
                             break;
@@ -213,7 +217,7 @@ void cli_status( uint16_t arg )
                             break;
                     }
                     cli_print( ", " );
-                    switch( cs_block[ i ].data_type ) {
+                    switch( csb[ i ].data_type ) {
                         case IMX_UINT32 :
                             cli_print( "32 Bit Unsigned" );
                             break;
@@ -225,13 +229,13 @@ void cli_status( uint16_t arg )
                             break;
                     }
                     cli_print( ", Errors: %lu, ", cd[ i ].errors );
-                    if( cs_block[ i ].sample_rate == 0 )
+                    if( csb[ i ].sample_rate == 0 )
                         cli_print( "Event Driven" );
                     else {
-                        if( cs_block[ i ].sample_rate >= 1000 )
-                            cli_print( "Sample Every: %4.1f Sec", ( (float) cs_block[ i ].sample_rate ) / 1000.0 );
+                        if( csb[ i ].sample_rate >= 1000 )
+                            cli_print( "Sample Every: %4.1f Sec", ( (float) csb[ i ].sample_rate ) / 1000.0 );
                         else
-                            cli_print( "Sample Every: %5u mSec", cs_block[ i ].sample_rate );
+                            cli_print( "Sample Every: %5u mSec", csb[ i ].sample_rate );
                     }
                 } else
                     cli_print( "No Data Recorded");

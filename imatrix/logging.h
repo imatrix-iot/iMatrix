@@ -23,18 +23,18 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .h
+/** @file logging.h
  *
- *  Created on: November 12, 2017
+ *  Created on: November 11, 2017
  *      Author: greg.phillips
  *
  */
 
-#ifndef _H_
-#define _H_
+#ifndef LOGGING_H_
+#define LOGGING_H_
 
 /*
- *	Defines for iMatrix
+ *	Defines for iMatrix Logging
  *
  */
 
@@ -61,5 +61,6 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
+void log_iMatrix( char *msg );
 
-#endif /* _H_ */
+#endif /* LOGGING_H_ */

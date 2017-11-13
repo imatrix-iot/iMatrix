@@ -65,6 +65,7 @@
 #include "cli_debug.h"
 #include "cli_help.h"
 #include "cli_dump.h"
+#include "cli_log.h"
 #include "cli_reboot.h"
 #include "cli_status.h"
 #include "cli_set_serial.h"
@@ -79,7 +80,12 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define IMX_COMMAND             "imx"   // all commands for iMatrix must be prefaced with imx - all others passed to user code
+/*
+ * The CLI will process commands differently depending on the AT command mode setting
+ */
+#define IMX_APP_COMMAND         "app"   // Use the app command to enter application cli mode - all commands passed to app cli handler
+#define IMX_EXIT_APP_COMMAND    "exit"  // exit to normal command processing mode
+
 #define RX_BUFFER_SIZE			64
 #define COMMAND_LINE_LENGTH		129	// 128 Characters + 1 NULL
 #define SENSOR_TEST_COUNT		1000
@@ -110,6 +116,7 @@ enum cmds {				// Must match commands variable order
 	CLI_IMATRIX,        // Status of iMatrix Subsystem
     CLI_PRINT_LUT,      // print the LUT
 	CLI_LED,			// Set the LED and Mode
+    CLI_LOG,            // Enable/Disable Log
 	CLI_DUMP_MEMORY,	// dump internal memory
 	CLI_MFG_TEST,       // Do a manufacturing test / function
     CLI_REBOOT,         // reboot
@@ -135,6 +142,7 @@ enum cmds {				// Must match commands variable order
  *               Variable Definitions
  ******************************************************/
 static uint16_t cli_state;
+static bool imx_cli_mode, verbose_state;
 static bool (*host_cli_handler)( char *token ) = NULL;
 
 extern uint16_t active_device;
@@ -168,6 +176,7 @@ cli_commands_t command[ NO_CMDS ] = {
 		{ "imx", &imatrix_status, 0, "Display status of iMatrix Client System" },
 		{ "l", &print_lut, 0, "Print the LUT" },
 		{ "led", &cli_set_led, 0, "Set led state <led led_no | state <on|off|blink_rate per second>" },
+		{ "log", &cli_log, 0, "log <on|off> Enable/Disable Logging to iMatrix" },
 		{ "m", &cli_dump, DUMP_MEMORY, "m [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of SRAM data" },
 		{ "mfg", mfg_test, 0, "mfg <test/function number>" },
 		{ "reboot", &cli_reboot, 0, "reboot the device" },	// reboot the device
@@ -200,6 +209,7 @@ void cli_init(void)
 	active_device = CONSOLE_OUTPUT;
     cli_print( "Command Line Processor\r\n" );
 	cli_state = CLI_SETUP_CONSOLE;
+	imx_cli_mode = true;
 }
 
 /**
@@ -218,14 +228,19 @@ void cli_process( void )
 			memset( terminal_command_line, 0x00, COMMAND_LINE_LENGTH );
 			terminal_cmd_index = 0;
             active_device = CONSOLE_OUTPUT;     // This is so when general status print out are made with no cli activity they will go to the console
-			if( device_config.AT_verbose == IMX_AT_VERBOSE_STANDARD_STATUS )
+			if( ( device_config.at_command_mode == false ) || ( imx_cli_mode == false ) ) {
+			    if( imx_cli_mode == false )
+			        cli_print( "app" );
 			    cli_print( ">" );
+			}
 			cli_state = CLI_GET_CMD;
 			break;
         case CLI_SETUP_TELNET :
             memset( telnet_command_line, 0x00, COMMAND_LINE_LENGTH );
             telnet_cmd_index = 0;
             active_device = TELNET_OUTPUT;     // This is so when general status print out are made with no cli activity they will go to the console
+            if( imx_cli_mode == false )
+                cli_print( "app" );
             cli_print( ">" );
             cli_state = CLI_GET_CMD;
             break;
@@ -280,33 +295,43 @@ void cli_process( void )
 			}
 			break;
 		case CLI_PROCESS_CMD :
-		    // print_status( "Processing command line: >%s<\r\n", command_line );
 			token = strtok( command_line, " " );
-			if( strcmp( token, IMX_COMMAND ) == 0x00 ) {
-	            token = strtok( command_line, " " );
-	                if( token != NULL ) {
-	                cmd_found = false;// Exit do loop when true.
-	                i = 0;// Exit do loop when i == NO_CMDS
-	                do {
-	                    if( strcmp( token, command[ i ].command_string ) == 0x00 ) {
-	                        cmd_found = true;
-	                        if( *command[ i ].cli_function != NULL )
-	                            (*command[ i ].cli_function)( command[ i ].arg );
-	                    }
-	                    i++;
-	                } while ( ( i < NO_CMDS ) && ( cmd_found == false ) );
-	                if( cmd_found == false )
-	                    cli_print( "Unknown Command: %s\r\n", token );
+			if( imx_cli_mode == true ) {
+	            if( strcmp( token, IMX_APP_COMMAND ) == 0x00 ) {
+	                imx_cli_mode = false;
+	                verbose_state = device_config.AT_verbose;   // Save state
+	                device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD_STATUS;
+                    cmd_found = true;
+	            } else {
+                    cmd_found = false;// Exit do loop when true.
+                    if( token != NULL ) {
+                        i = 0;// Exit do loop when i == NO_CMDS
+                        do {
+                            if( strcmp( token, command[ i ].command_string ) == 0x00 ) {
+                                cmd_found = true;
+                                if( *command[ i ].cli_function != NULL )
+                                    (*command[ i ].cli_function)( command[ i ].arg );
+                            }
+                            i++;
+                        } while ( ( i < NO_CMDS ) && ( cmd_found == false ) );
+                    }
 	            }
 			} else {
-			    printf( "Processing Application Command\r\n" );
-			    /*
-			     * See if we pass to host CLI
-			     */
-			    if( host_cli_handler != NULL )
-			        if( (host_cli_handler)( token ) == false )
-			            cli_print( "Unknown Application Command: %s\r\n", token );;
+                if( strcmp( token, IMX_EXIT_APP_COMMAND ) == 0x00 ) {
+                    imx_cli_mode = true;
+                    device_config.AT_verbose = verbose_state;
+                    cmd_found = true;
+                } else {
+                    cmd_found = false;// Exit do loop when true.
+                    /*
+                     * See if we pass to host CLI
+                     */
+                    if( host_cli_handler != NULL )
+                        cmd_found = (host_cli_handler)( token );
+                }
 			}
+            if( ( cmd_found == false ) && ( token != NULL ) )
+                cli_print( "Unknown Command: %s\r\n", token );
 			if( active_device == CONSOLE_OUTPUT )
 			    cli_state = CLI_SETUP_CONSOLE;
 			else

@@ -129,6 +129,46 @@
 
 #define WARNING_LEVELS                  ( 3 )
 #define IMX_NO_LEDS                     ( 3 )
+/*
+ * LED Settings
+ */
+#define IMX_LED_BLINK_1_1               0x0001  // Time in 100 mS intervals
+#define IMX_LED_BLINK_1_2               0x0002
+#define IMX_LED_BLINK_1_3               0x0003
+#define IMX_LED_BLINK_1_4               0x0004
+#define IMX_LED_BLINK_1_5               0x0005
+#define IMX_LED_BLINK_1_6               0x0006
+#define IMX_LED_BLINK_1_7               0x0007
+#define IMX_LED_BLINK_1_8               0x0008
+#define IMX_LED_BLINK_1_9               0x0009
+#define IMX_LED_BLINK_1_10              0x000A
+#define IMX_LED_BLINK_1_MASK            0x000F  // Time in 100 mS intervals
+#define IMX_LED_BLINK_2_1               0x0010
+#define IMX_LED_BLINK_2_2               0x0020
+#define IMX_LED_BLINK_2_3               0x0030
+#define IMX_LED_BLINK_2_4               0x0040
+#define IMX_LED_BLINK_2_5               0x0050
+#define IMX_LED_BLINK_2_6               0x0060
+#define IMX_LED_BLINK_2_7               0x0070
+#define IMX_LED_BLINK_2_8               0x0080
+#define IMX_LED_BLINK_2_9               0x0090
+#define IMX_LED_BLINK_2_10              0x00A0
+#define IMX_LED_BLINK_2_MASK            0x00F0
+#define IMX_LED_FLASH_1                 0x0100  // Time in 1 Sec intervals
+#define IMX_LED_FLASH_2                 0x0200
+#define IMX_LED_FLASH_3                 0x0300
+#define IMX_LED_FLASH_4                 0x0400
+#define IMX_LED_FLASH_5                 0x0500
+#define IMX_LED_FLASH_6                 0x0600
+#define IMX_LED_FLASH_7                 0x0700
+#define IMX_LED_FLASH_8                 0x0800
+#define IMX_LED_FLASH_9                 0x0900
+#define IMX_LED_FLASH_10                0x0A00
+#define IMX_LED_FLASH_MASK              0x0F00
+#define IMX_LED_BLINK_1                 0x1000  // Master Blinking LED
+#define IMX_LED_BLINK_2                 0x2000  // Slave Blinking LED
+#define IMX_LED_FLASH                   0x4000  // Indicate this is a flash, this is a 1 Second event For Dual LEDs First LED ON for BLINK 1 second is on for BLINK 2 - off for remainder of 1 Second
+#define IMX_LED_ALTERNATE               0x8000  // Alternate Blinking / Flashing
 
 /******************************************************
  *                   Enumerations
@@ -161,7 +201,6 @@ typedef enum {
  */
 typedef enum {
     IMX_SUCCESS = 0,
-    IMX_NO_DATA,
     IMX_INVALID_ENTRY,
     IMX_CONTROL_DISABLED,
     IMX_SENSOR_DISABLED,
@@ -179,7 +218,13 @@ typedef enum {
     IMX_MUST_SUPPLY_CONTROL,
     IMX_MAXIMUM_SENSORS_EXCEEDED,
     IMX_MUST_SUPPLY_SAMPLE,
-} imx_errors_t;
+    /*
+     * Following are Result/Error Conditions for Sensor Sampling
+     */
+    IMX_NO_DATA,
+    IMX_ON_BOARD_TEMP_ERROR,
+    IMX_INTERNAL_ADC_ERROR,
+} imx_result_t;
 
 /*
  * Define data types for Controls & Sensors
@@ -198,31 +243,11 @@ typedef enum {
 } imx_AT_versbose_mode_t;
 
 typedef enum {
-    IMX_LED_OFF = 0,
+    IMX_LED_ALL_OFF,
+    IMX_LED_OFF,
     IMX_LED_ON,
-    IMX_LED_BLINK_1,
-    IMX_LED_BLINK_2,
-    IMX_LED_BLINK_3,
-    IMX_LED_BLINK_4,
-    IMX_LED_BLINK_5,
-    IMX_LED_BLINK_6,
-    IMX_LED_BLINK_7,
-    IMX_LED_BLINK_8,
-    IMX_LED_BLINK_9,
-    IMX_LED_BLINK_10,
-    IMX_LED_BLINK_MASK = 0x0FF,
-    IMX_LED_FLASH_1 = 0x100,
-    IMX_LED_FLASH_2 = 0x200,
-    IMX_LED_FLASH_3 = 0x300,
-    IMX_LED_FLASH_4 = 0x400,
-    IMX_LED_FLASH_5 = 0x500,
-    IMX_LED_FLASH_6 = 0x600,
-    IMX_LED_FLASH_7 = 0x700,
-    IMX_LED_FLASH_8 = 0x800,
-    IMX_LED_FLASH_9 = 0x900,
-    IMX_LED_FLASH_10 = 0xA00,
-    IMX_LED_FLASH_MASK = 0xF00,
-    IMX_LED_FLASH = 0x1000,  // Indicate this is a flash not a blink on / off - Blink rate then represents duty cycle in 1 second
+    IMX_LED_OTHER,
+    IMX_LED_INIT,
 } imx_led_state_t;
 
 typedef enum {
@@ -236,7 +261,6 @@ typedef enum {
     IMX_LED_BLUE_RED,
     IMX_LED_BLUE_GREEN,
     IMX_NO_LED_COMBINATIONS,
-    IMX_LED_INIT = 0xFF,
 } imx_led_t;
 
 typedef uint32_t imx_status_t;
@@ -316,14 +340,13 @@ typedef struct control_sensor_block {
     uint16_t percent_change_to_send;            // Bits
     unsigned int enabled                : 1;    // 0    Is this entry used
     unsigned int read_only              : 1;    // 1    Read only Sensor (Internal - Can not change with AT command)
-    unsigned int valid                  : 1;    // 2    Has data be read yet
-    unsigned int send_on_percent_change : 1;    // 3    Do you send update if this changes by a percentage
-    unsigned int data_type              : 2;    // 4-5  Standard data types, Int Uint Float and Variable length
-    unsigned int use_warning_level_low  : 3;    // 6-7  What warning levels for low levels do we notify on
-    unsigned int use_warning_level_high : 3;    // 8-9  What warning levels for high levels do we notify on
-    unsigned int set_default            : 1;    // 10   Does the system set the default value
-    unsigned int send_imatrix           : 1;    // 11   Does the system send this entry to iMatrix
-    unsigned int reserved               : 20;   // 12-31
+    unsigned int send_on_percent_change : 1;    // 2    Do you send update if this changes by a percentage
+    unsigned int data_type              : 2;    // 3-4  Standard data types, Int Uint Float and Variable length
+    unsigned int use_warning_level_low  : 3;    // 5-6  What warning levels for low levels do we notify on
+    unsigned int use_warning_level_high : 3;    // 7-8  What warning levels for high levels do we notify on
+    unsigned int set_default            : 1;    // 9    Does the system set the default value
+    unsigned int send_imatrix           : 1;    // 10   Does the system send this entry to iMatrix
+    unsigned int reserved               : 21;   // 11-31
     data_32_t default_value;
     data_32_t warning_level_low[ WARNING_LEVELS ];
     data_32_t warning_level_high[ WARNING_LEVELS ];
@@ -332,7 +355,7 @@ typedef struct control_sensor_block {
 typedef struct functions {
     void (*load_config_defaults)(uint16_t arg);
     void (*init)(uint16_t arg);
-    uint16_t (*update)(uint16_t arg, void *value );
+    imx_result_t (*update)(uint16_t arg, void *value );
     uint16_t arg;
 } imx_functions_t;
 

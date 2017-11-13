@@ -23,18 +23,18 @@
  * so agrees to indemnify Sierra against all liability.
  */
 
-/** @file .h
+/** @file watch_dog.h
  *
- *  Created on: November 12, 2017
+ *  Created on: November 11, 2017
  *      Author: greg.phillips
  *
  */
 
-#ifndef _H_
-#define _H_
+#ifndef WATCHDOG_H_
+#define WATCHDOG_H_
 
 /*
- *	Defines for iMatrix
+ *	Defines for watchdog system
  *
  */
 
@@ -61,5 +61,6 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-
-#endif /* _H_ */
+void init_watchdog(void);
+void imx_kick_watchdog(void);
+#endif /* WATCHDOG_H_ */

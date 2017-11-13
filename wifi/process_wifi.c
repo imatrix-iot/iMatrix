@@ -109,11 +109,6 @@ void process_wifi(wiced_time_t current_time )
 		case MAIN_WIFI_SETUP :
 		default :
 // - Add support for watchdog later					wiced_update_system_monitor( &watchdog, MAXIMUM_TIME_TILL_WATCHDOG_BITES_PER_THREAD );
-		    imx_printf( "Trying to Init Wi Fi\r\n" );
-		    /*
-		     * Show LEDS during Wi Fi intialization
-		     */
-
 			if ( wifi_init() == true ) {
 				wifi_was_connected = true;
 				/*

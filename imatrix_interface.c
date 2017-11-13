@@ -38,6 +38,7 @@
 #include "imatrix_interface.h"
 #include "cli/cli.h"
 #include "cli/cli_status.h"
+#include "cli/telnetd.h"
 #include "cs_ctrl/hal_sample.h"
 #include "coap/coap_receive.h"
 #include "coap/coap_transmit.h"
@@ -55,6 +56,7 @@
  *                    Constants
  ******************************************************/
 //#define TEST_STANDALONE
+#define MIN_LED_DISPLAY_TIME        2000
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -91,19 +93,12 @@ extern imx_imatrix_init_config_t imatrix_init_config;
 imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background )
 {
 
+    printf( "Commencing iMatrix Initialization Sequence\r\n" );
     /*
      * Start watchdog
      */
 
     init_storage();     // Start clean
-    /*
-     * Set up LEDS as we use these to tell what is going on
-     */
-    imx_init_led_functions( init_config->led_functions );
-    /*
-     * During Setup alternate GREEN/RED quickly
-     */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_BLINK_5 );
     /*
      * Save user defined product information to local storage
      */
@@ -111,8 +106,20 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
     /*
      * Load current config or factory default if none stored
      */
-
     imatrix_load_config();
+    /*
+     * Set up LEDS as we use these to tell what is going on
+     */
+    imx_init_led_functions( init_config->led_functions );
+    /*
+     * During Setup alternate GREEN/RED quickly
+     */
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_BLINK_2 | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_5 );
+    /*
+     * Let the user see this
+     */
+    wiced_rtos_delay_milliseconds( MIN_LED_DISPLAY_TIME );
+
     if( ( device_config.application_loaded == false ) || ( override_config == true ) ) {
         /*
          * Copy factory entries to device_config
@@ -133,7 +140,7 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
     /*
      * Done Setup Turn LEDS OFF
      */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
+    imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
 
     return IMX_SUCCESS;
 }
@@ -191,7 +198,11 @@ imx_status_t imx_process(void)
 
     wiced_time_get_time( &current_time );
 
+    /*
+     * Process CLI & Telnet Clients
+     */
     cli_process();
+    telnetd();
     /*
      * Process controls Controls are set by direct action from logic or from CoAP POST
      */

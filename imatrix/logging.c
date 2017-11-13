@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -28,26 +22,23 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
-/** @file cli_set_ssid.c
+
+/** @file .c
  *
- *
+ *  Created on: November 11, 2017
+ *      Author: greg.phillips
  *
  */
 
-
 #include <stdint.h>
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "wiced.h"
-
 #include "../storage.h"
 #include "../cli/interface.h"
-#include "../device/config.h"
-#include "../device/icb_def.h"
-#include "../device/imx_leds.h"
-#include "../wifi/wifi.h"
+#include "../device/var_data.h"
 
-#include "cli_set_ssid.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -67,8 +58,7 @@
 /******************************************************
  *                    Structures
  ******************************************************/
-extern IOT_Device_Config_t device_config;
-extern iMatrix_Control_Block_t icb;
+
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -76,53 +66,42 @@ extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Variable Definitions
  ******************************************************/
+extern IOT_Device_Config_t device_config;
 
 /******************************************************
  *               Function Definitions
  ******************************************************/
 /**
-  * @brief Set the SSID and drop Wi Fi so unit will come back in ST mode
-  * @param  None
+  * @brief  Log a message on and iMatrix Event
+  * @param  String
   * @retval : None
   */
-void cli_set_ssid( uint16_t arg)
+void log_iMatrix( char *msg )
 {
-	UNUSED_PARAMETER(arg);
-	char *token, buffer1[ IMX_SSID_LENGTH + 1 ], buffer2[ IMX_WPA2PSK_LENGTH ];
+    uint16_t log_msg_length;
+    var_data_entry_t *var_data_ptr;
+    /*
+     * Get the index for the logging entry if enabled
+     */
+    /*
+     * Get a variable length packet to store our message in
+     */
 
-	/*
-	 * Add ability to set type of security
-	 */
-	token = strtok(NULL, " " );
-	if( token ) {
-		if( strlen( token ) <= IMX_SSID_LENGTH ) {
-			strcpy( buffer1, token );
-		} else {
-			cli_print( "SSID name too long\r\n" );
-			return;
-		}
-		token = strtok(NULL, " " );
-		if( token ) {
-			if( strlen( token ) <= IMX_WPA2PSK_LENGTH ) {
-				strcpy( buffer2, token );
-			} else {
-				cli_print( "Pass phrase too long\r\n" );
-				return;
-			}
-			strcpy( device_config.st_ssid, buffer1 );
-			strcpy( device_config.st_wpa, buffer2 );
-			set_wifi_ap_ssid( buffer1, buffer2, device_config.st_security_mode );
-			icb.wifi_up = false;
-			if( device_config.AP_setup_mode == true ) { // We were in set up mode - turn off the blinking led
-			    imx_set_led( IMX_LED_RED, IMX_LED_ALL_OFF, 0 );           // Set RED Led to off
-			    device_config.AP_setup_mode = false;
-			}
-			imatrix_save_config();
-			cli_print( "SSID changing\r\n" );
-		} else {
-			cli_print( "Pass phrase Required\r\n" );
-		}
-	} else
-		cli_print( "SSID Required\r\n" );
-
+    if( device_config.send_logs_to_imatrix == true ) {
+        log_msg_length = strlen( msg );
+        var_data_ptr = get_var_data( log_msg_length );
+        if( var_data_ptr != NULL ) {
+            /*
+             * Add message
+             */
+            strcpy( (char *) var_data_ptr->data, msg );
+            var_data_ptr->header.length = strlen( msg );
+            /*
+             * Add to queue to send
+             */
+            imx_printf( "Adding log Message: %s\r\n", msg );
+            // Need to do this for now just free
+            add_var_free_pool( var_data_ptr );
+        }
+    }
 }

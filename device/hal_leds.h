@@ -47,6 +47,5 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-bool set_host_led( imx_led_t led, imx_led_state_t value );
 void cli_set_led( uint16_t arg);
 #endif /* HAL_LEDS__H_ */

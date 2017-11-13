@@ -42,6 +42,8 @@
 
 #include "../storage.h"
 #include "../device/icb_def.h"
+#include "../imatrix/logging.h"
+
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -93,4 +95,17 @@ bool imx_setup_mode(void)
 bool imx_network_connected(void)
 {
     return ( ( device_config.AP_setup_mode == false) && ( icb.wifi_up == true ) );
+}
+
+void _imx_log_failed_wifi_connect(void)
+{
+
+    log_iMatrix( "Wi Fi Failed to connect" );
+    icb.wifi_failed_connect_count += 1;
+
+}
+void _imx_log_successful_wifi_connect(void)
+{
+    log_iMatrix( "Wi Fi Connected" );
+    icb.wifi_success_connect_count += 1;
 }

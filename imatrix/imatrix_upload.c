@@ -244,9 +244,10 @@ void imatrix_upload(wiced_time_t current_time)
                                  * Only need one
                                  */
                                 if( csd[ i ].send_batch == true ) {
-    /*                              imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
+    ///*
+                                    imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
                                             type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].no_samples, csd[ i ].send_batch == true ? "true" : "false" );
-    */
+    //*/
                                 } else {
                                     imx_printf( "Found %s: %u with error\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i );
                                 }
@@ -290,7 +291,7 @@ void imatrix_upload(wiced_time_t current_time)
     	    /*
     	     * There is something to do here. First build the packet
     	     */
-    	    imx_set_led( IMX_LED_GREEN, IMX_LED_ON );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
+    	    imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
 /*
  *
     	    imx_printf( "Sending History to iMatrix Server: %03u.%03u.%03u.%03u ",
@@ -694,7 +695,7 @@ void imatrix_upload(wiced_time_t current_time)
 	        imatrix.state = IMATRIX_UPLOAD_COMPLETE;
     		break;
     	case IMATRIX_UPLOAD_COMPLETE :
-    	    imx_set_led( IMX_LED_GREEN, IMX_LED_OFF );         // Set GREEN LED off - Packet sent
+    	    imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );         // Set GREEN LED off - Packet sent
     	    imatrix.state = IMATRIX_INIT;
     	    break;
     	default:
@@ -876,7 +877,7 @@ void imatrix_status( uint16_t arg)
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 
                 SET_CSB_VARS( type );
-    	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
+    	        cli_print( "%u %s: Current Status @: %lu mS (mS Timer)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
     	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 

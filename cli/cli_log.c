@@ -28,26 +28,24 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
-/** @file cli_set_ssid.c
+/** @file
  *
- *
+ * cli_log.c
  *
  */
 
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "wiced.h"
-
 #include "../storage.h"
-#include "../cli/interface.h"
-#include "../device/config.h"
-#include "../device/icb_def.h"
-#include "../device/imx_leds.h"
-#include "../wifi/wifi.h"
+#include "spi_flash.h"
 
-#include "cli_set_ssid.h"
+#include "interface.h"
+#include "../device/config.h"
+#include "cli_log.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -67,62 +65,40 @@
 /******************************************************
  *                    Structures
  ******************************************************/
-extern IOT_Device_Config_t device_config;
-extern iMatrix_Control_Block_t icb;
-/******************************************************
- *               Function Declarations
- ******************************************************/
 
 /******************************************************
  *               Variable Definitions
  ******************************************************/
+extern IOT_Device_Config_t device_config;
 
 /******************************************************
  *               Function Definitions
  ******************************************************/
 /**
-  * @brief Set the SSID and drop Wi Fi so unit will come back in ST mode
+  * @brief
   * @param  None
   * @retval : None
   */
-void cli_set_ssid( uint16_t arg)
+void cli_log(uint16_t mode)
 {
-	UNUSED_PARAMETER(arg);
-	char *token, buffer1[ IMX_SSID_LENGTH + 1 ], buffer2[ IMX_WPA2PSK_LENGTH ];
-
+	bool update_config;
+	char *token;
 	/*
-	 * Add ability to set type of security
+	 *	command format log <on|off>
 	 */
-	token = strtok(NULL, " " );
+	update_config = false;
+	token = strtok(NULL, " " );	// Get start if any
 	if( token ) {
-		if( strlen( token ) <= IMX_SSID_LENGTH ) {
-			strcpy( buffer1, token );
-		} else {
-			cli_print( "SSID name too long\r\n" );
-			return;
-		}
-		token = strtok(NULL, " " );
-		if( token ) {
-			if( strlen( token ) <= IMX_WPA2PSK_LENGTH ) {
-				strcpy( buffer2, token );
-			} else {
-				cli_print( "Pass phrase too long\r\n" );
-				return;
-			}
-			strcpy( device_config.st_ssid, buffer1 );
-			strcpy( device_config.st_wpa, buffer2 );
-			set_wifi_ap_ssid( buffer1, buffer2, device_config.st_security_mode );
-			icb.wifi_up = false;
-			if( device_config.AP_setup_mode == true ) { // We were in set up mode - turn off the blinking led
-			    imx_set_led( IMX_LED_RED, IMX_LED_ALL_OFF, 0 );           // Set RED Led to off
-			    device_config.AP_setup_mode = false;
-			}
-			imatrix_save_config();
-			cli_print( "SSID changing\r\n" );
-		} else {
-			cli_print( "Pass phrase Required\r\n" );
-		}
+		if( strcmp( token, "on" ) == 0 ) {
+			device_config.send_logs_to_imatrix = true;
+			update_config = true;
+		} else if( strcmp( token, "on" ) == 0 ) {
+		    device_config.send_logs_to_imatrix = false;
+		    update_config = true;
+		} else
+		    imx_printf( "Invalid option, log <on|off>\r\n" );
 	} else
-		cli_print( "SSID Required\r\n" );
-
+	    imx_printf( "iMatrix logging: %s\r\n", device_config.send_logs_to_imatrix == true ? "Enabled" : "Disabled" );
+	if( update_config == true )
+	    imatrix_save_config();
 }

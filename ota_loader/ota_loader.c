@@ -289,7 +289,7 @@ uint16_t ota_loader(void)
 	                 * Print the buffer out
 	                 */
 	                imx_printf( "." );
-	                set_host_led( IMX_LED_RED, IMX_LED_BLINK_1 );
+	                imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_1 );
 	                fflush(stdout);
 	                if ( 0 != protected_sflash_sector_erase( &sflash_handle, ota_loader_config.erase_count, ota_loader_config.allowed_sflash_area ) ) {
 	                    imx_printf( "Failed to erase serial flash prior to writing new image @: 0x%08lx. Update canceled.\r\n", ota_loader_config.erase_count );
@@ -337,8 +337,8 @@ uint16_t ota_loader(void)
 			imx_printf( "Attempting to load OTA image: %s, from: %s\r\n", ota_loader_config.uri, ota_loader_config.site );
 			imx_printf( "Doing DNS lookup...\r\n" );
 			retry_count = 0;
-            set_host_led( IMX_LED_GREEN, IMX_LED_ON );
-            set_host_led( IMX_LED_RED, IMX_LED_OFF );
+            imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );
+            imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );
 			if( get_site_ip( ota_loader_config.site, &ota_loader_config.address ) ) {
 			    ota_loader_config.ota_loader_state = OTA_LOADER_OPEN_SOCKET;
 			    return false;
@@ -507,7 +507,7 @@ uint16_t ota_loader(void)
 					}
 					wiced_time_get_utc_time( &ota_loader_config.last_recv_packet_utc_time );
 					ota_loader_config.packet_count = 1;
-                    set_host_led( IMX_LED_RED, IMX_LED_BLINK_4 );
+                    imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_4 );
 					ota_loader_config.ota_loader_state = OTA_LOADER_RECEIVE_STREAM;
 					return false;
 				} else {
@@ -578,7 +578,7 @@ uint16_t ota_loader(void)
 						return false;
 					}
 					ota_loader_config.packet_count = 1;
-                    set_host_led( IMX_LED_RED, IMX_LED_BLINK_4 );
+                    imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_4 );
 					ota_loader_config.ota_loader_state = OTA_LOADER_RECEIVE_STREAM;
 					return false;
 				}
@@ -672,7 +672,7 @@ uint16_t ota_loader(void)
 				ota_loader_config.crc_content_offset = ota_loader_config.content_offset;// - ota_loader_config.content_received;
 				ota_loader_config.crc_content_end = ota_loader_config.content_offset + ota_loader_config.content_received;
 				imx_printf( "Calculating SFLASH Checksum\r\n" );
-				set_host_led( IMX_LED_RED, IMX_LED_BLINK_8 );
+				imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_8 );
 				ota_loader_config.ota_loader_state = OTA_CALC_CRC;
 			} else {
 				ota_loader_config.good_load = true;
@@ -764,8 +764,8 @@ uint16_t ota_loader(void)
 						/*
 						 * Go to idle mode with GREEN LED on
 						 */
-			            set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
-			            set_host_led( IMX_LED_RED, IMX_LED_ON );
+			            imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
+			            imx_set_led( IMX_LED_RED, IMX_LED_ON, 0 );
 						imx_printf( "OTA loader completed loading SFLASH, in IDLE mode\r\n" );
 						ota_loader_config.checksum32 = IGNORE_CHECKSUM32;
 						ota_loader_config.ota_loader_state = OTA_LOADER_SFLASH_COMPLETE;
@@ -777,7 +777,7 @@ uint16_t ota_loader(void)
 			ota_loader_config.ota_loader_state = OTA_PRE_LOADER_IDLE;
             break;
 		case OTA_PRE_LOADER_IDLE :
-            set_host_led( IMX_LED_RED, IMX_LED_OFF );
+            imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );
 			imx_printf( "OTA loader completed, returning to IDLE\r\n" );
 			ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 			if ( ota_loader_config.image_no == FULL_IMAGE ) {// After returning to normal mode, upload details to imatrix.
@@ -786,8 +786,8 @@ uint16_t ota_loader(void)
 			}
 			break;
 		case OTA_LOADER_SFLASH_COMPLETE :
-            set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
-            set_host_led( IMX_LED_RED, IMX_LED_OFF );
+            imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
+            imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );
 			ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
 			break;
 		case OTA_LOADER_IDLE :
@@ -810,7 +810,7 @@ void ota_loader_deinit(void)
 	    wiced_tcp_disconnect( &ota_loader_config.socket );
 	    wiced_tcp_delete_socket( &ota_loader_config.socket );
 	    ota_loader_config.socket_assigned = false;
-        set_host_led( IMX_LED_RED, IMX_LED_OFF );
+        imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );
 		imx_printf( "OTA loader terminated, returning to IDLE\r\n" );
 	}
 	ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;

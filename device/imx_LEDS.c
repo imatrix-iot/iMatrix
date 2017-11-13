@@ -31,15 +31,25 @@
  *  This is a general routine to manage LEDs on the iMatrix platform.
  *  This code is called from the actual platform, this is determined by the function defined in the iMatrix Configuration block.
  *
- *  When setting a setting flashing led the high bit in the 16bits is set - 0x1000
+ *  The Mode for blinking and flashing is stored in the top nibble of the word - only one be is expected to be set and if multiple bits are set then the first set is the priority
  *
- *  When setting a setting Dual flashing LEDs the high bit in the 16bits is set - 0x1000
- *      The two LEDs are defined as Master and Slave. The Master will be on for 500mS and the Slave will be ON for the slave flash count
- *      The mode value is separated into two sections
- *      0xF00 - Right shifted 8 bits is the number of seconds for the cycle
- *      0x00F - is the duration of the slave flash in counts of 100 mS
+ *  IMX_LED_BLINK_1                 0x1000  // Single Blinking action on or more LEDs
+ *  IMX_LED_BLINK_2                 0x2000  // Dual Alternating Blinking
+ *  IMX_LED_FLASH                   0x4000  // Indicate this is a flash, this is a 1 Second event For Dual LEDs First LED ON for BLINK 1 second is on for BLINK 2 - off for remainder of 1 Second
  *
- *  When LEDs are paired in a blinking / flashing operation. The first LED in the name sequence is used for timer data storage
+ *  When setting for Blinking / Flashing LEDs
+ *      The two LEDs are defined as Master and Slave.
+ *
+ *  When setting for Flashing (This is a 1 Second repeating event) the Master will be on for BLINK_2 count and the Slave will be ON for the BLINK 2 count
+ *  the LEDS will be OFF for the remainder of the 1 Second
+ *
+ *  The Blink / Flash rates are stored in two sections
+ *      Blink/Flash 1 0x00F - is the duration in counts of 100 mS
+ *      BLink/Flash 1 0xF00 - Right shifted 8 bits is the duration in counts of 100 mS
+ *
+ * imx_printf( "Setting Alternate blinking: Master: %u & Slave: %u @%u mSec\r\n", (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_rate );
+ *
+ *  When LEDs are paired in a blinking / flashing operation. The first LED in the name sequence (master) is used for interrupt timer data storage
  */
 
 #include <stdint.h>
@@ -108,9 +118,10 @@ led_control_block_t lcb[ IMX_NO_LEDS ] = {
                 .led_no = IMX_LED_RED,
                 .init_led = void_led_function,
                 .update_led_status = void_led_update_function,
-                .blink_rate = 0,
+                .blink_1_count = 0,
+                .blink_2_count = 0,
                 .count  = 0,
-                .flash_duration = 0,
+                .flash_count = 0,
                 .led_timer_data = { 0 },
                 .in_pair = false,
                 .blinking = false,
@@ -121,9 +132,10 @@ led_control_block_t lcb[ IMX_NO_LEDS ] = {
                 .led_no = IMX_LED_GREEN,
                 .init_led = void_led_function,
                 .update_led_status = void_led_update_function,
-                .blink_rate = 0,
+                .blink_1_count = 0,
+                .blink_2_count = 0,
                 .count  = 0,
-                .flash_duration = 0,
+                .flash_count = 0,
                 .led_timer_data = { 0 },
                 .in_pair = false,
                 .blinking = false,
@@ -134,9 +146,10 @@ led_control_block_t lcb[ IMX_NO_LEDS ] = {
                 .led_no = IMX_LED_BLUE,
                 .init_led = void_led_function,
                 .update_led_status = void_led_update_function,
-                .blink_rate = 0,
+                .blink_1_count = 0,
+                .blink_2_count = 0,
                 .count  = 0,
-                .flash_duration = 0,
+                .flash_count = 0,
                 .led_timer_data = { 0 },
                 .in_pair = false,
                 .blinking = false,
@@ -144,8 +157,6 @@ led_control_block_t lcb[ IMX_NO_LEDS ] = {
                 .state = false,
         },
 };
-
-static imx_led_t master_slave[ 2 ];
 
 /******************************************************
  *               Function Definitions
@@ -155,35 +166,59 @@ static imx_led_t master_slave[ 2 ];
   * @param  LED, Status
   * @retval : None
   */
-bool imx_set_led( imx_led_t led, imx_led_state_t mode )
+bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
 {
+    bool start_timer;
     uint16_t i;
     wiced_result_t wiced_result;
     imx_led_t master_led, slave_led;
 
-
-    // imx_printf( "Setting Led: %u, to state: %u\r\n", (uint16_t) led, (uint16_t) mode );
+    imx_printf( "Setting Led: %u, to state: %u, Mode: 0x%04x\r\n", (uint16_t) led, (uint16_t) state, mode_details );
     /*
      * If blinking/flashing - stop it first
      */
+    master_led = IMX_LED_RED;   // Just to prevent warnings
+    slave_led = IMX_LED_GREEN;
+    start_timer = false;
 
-    switch( mode ) {
+    switch( state ) {
+        case IMX_LED_ALL_OFF :
+            for( i = 0; i < IMX_NO_LEDS; i++ ) {
+                /*
+                 * If this is doing a timer function - disable
+                 */
+                if( ( lcb[ i ].blinking == true ) || ( lcb[ i ].flashing == true ) ) {
+                    wiced_result = wiced_rtos_stop_timer( &lcb[ i ].led_timer_data );
+                    if( wiced_result != WICED_SUCCESS )
+                        imx_printf( " Failed to stop LED: %u Timer: %u\r\n", led, wiced_result );
+                }
+                lcb[ i ].blinking = false;
+                lcb[ i ].flashing = false;
+                lcb[ i ].state = false;
+                lcb[ i ].in_pair = false;
+                lcb[ i ].count = 0;
+                lcb[ i ].update_led_status( false );
+            }
+            break;
         case IMX_LED_OFF :
             switch( led ) {
                 case IMX_LED_RED :
                 case IMX_LED_GREEN :
                 case IMX_LED_BLUE :
-                    if( ( ( lcb[ led ].blinking == true ) || ( lcb[ led ].flashing == true ) ) && ( lcb[ led ].in_pair == false ) ) {
+                    /*
+                     * If this is doing a timer function - disable
+                     */
+                    if( ( lcb[ led ].blinking == true ) || ( lcb[ led ].flashing == true ) ) {
                         wiced_result = wiced_rtos_stop_timer( &lcb[ led ].led_timer_data );
                         if( wiced_result != WICED_SUCCESS )
                             imx_printf( " Failed to stop LED: %u Timer: %u\r\n", led, wiced_result );
-                        lcb[ led ].blinking = false;
                     }
                     lcb[ led ].blinking = false;
                     lcb[ led ].flashing = false;
+                    lcb[ led ].in_pair = false;
                     lcb[ led ].state = false;
                     lcb[ led ].count = 0;
-                    lcb[ led ].update_led_status( IMX_LED_OFF );
+                    lcb[ led ].update_led_status( false );
                     break;
                 case IMX_LED_RED_GREEN :
                 case IMX_LED_RED_BLUE :
@@ -194,8 +229,6 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                     /*
                      * Select the master and slave LEDS - master will be used for timer controls - set known defaults.
                      */
-                    master_led = IMX_LED_RED;
-                    slave_led = IMX_LED_GREEN;
                     select_leds( led, &master_led, &slave_led );
                     if( ( lcb[ master_led ].blinking == true ) || ( lcb[ master_led ].flashing == true ) ) {
                         wiced_result = wiced_rtos_stop_timer( &lcb[ master_led ].led_timer_data );
@@ -212,27 +245,61 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                     lcb[ slave_led ].state = false;
                     lcb[ slave_led ].count = 0;
                     lcb[ slave_led ].in_pair = false;
-                    lcb[ master_led ].update_led_status( IMX_LED_OFF );
-                    lcb[ slave_led ].update_led_status( IMX_LED_OFF );
+                    lcb[ master_led ].update_led_status( false );
+                    lcb[ slave_led ].update_led_status( false );
                     break;
                 default :   // Unknown LED - Ignore
                     return false;
                     break;
             }
             break;
-        case IMX_LED_ON :
+        case IMX_LED_ON :   // Single or a pair
             switch( led ) {
                 case IMX_LED_RED :
                 case IMX_LED_GREEN :
                 case IMX_LED_BLUE :
+                    /*
+                     * If this is doing a timer function - disable
+                     */
+                    if( ( lcb[ led ].blinking == true ) || ( lcb[ led ].flashing == true ) ) {
+                        wiced_result = wiced_rtos_stop_timer( &lcb[ led ].led_timer_data );
+                        if( wiced_result != WICED_SUCCESS )
+                            imx_printf( " Failed to stop LED: %u Timer: %u\r\n", led, wiced_result );
+                    }
+                    lcb[ led ].state = true;
                     lcb[ led ].update_led_status( true );
+                    break;
+                /*
+                 * Pair of LEDS
+                 */
+                case IMX_LED_RED_GREEN :
+                case IMX_LED_RED_BLUE :
+                case IMX_LED_GREEN_RED :
+                case IMX_LED_GREEN_BLUE :
+                case IMX_LED_BLUE_RED :
+                case IMX_LED_BLUE_GREEN :
+                        /*
+                         * Select the master and slave LEDS - master will be used for timer controls
+                         */
+                    select_leds( led, &master_led, &slave_led );
+                    /*
+                     * If this is doing a timer function - disable
+                     */
+                    if( ( lcb[ master_led ].blinking == true ) || ( lcb[ master_led ].flashing == true ) ) {
+                        wiced_result = wiced_rtos_stop_timer( &lcb[ master_led ].led_timer_data );
+                        if( wiced_result != WICED_SUCCESS )
+                            imx_printf( " Failed to stop LED: %u Timer: %u\r\n", master_led, wiced_result );
+                    }
+                    lcb[ master_led ].update_led_status( true );
+                    lcb[ slave_led ].update_led_status( true );
                     break;
                 default :   // Unknown LED - Ignore
                     return false;
                     break;
             }
             break;
-        default :   // Blinking / Flashing Pair
+        case IMX_LED_OTHER :
+        default :   // Blinking / Flashing
             switch( led ) {
                 /*
                  * Single LEDS
@@ -240,28 +307,52 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                 case IMX_LED_RED :
                 case IMX_LED_GREEN :
                 case IMX_LED_BLUE :
+                    /*
+                     * If this is doing a timer function - disable
+                     */
+                    if( ( lcb[ led ].blinking == true ) || ( lcb[ led ].flashing == true ) ) {
+                        wiced_result = wiced_rtos_stop_timer( &lcb[ led ].led_timer_data );
+                        if( wiced_result != WICED_SUCCESS )
+                            imx_printf( " Failed to stop LED: %u Timer: %u\r\n", led, wiced_result );
+                    }
                     lcb[ led ].state = false;
                     lcb[ led ].count = 0;
-                    if( ( mode & IMX_LED_FLASH ) == IMX_LED_FLASH ) {
+                    lcb[ led ].in_pair = false;
+                    if( ( mode_details & IMX_LED_BLINK_1 ) == IMX_LED_BLINK_1 ) {
                         /*
-                         * Set up to flash
+                         * Set up to Blink
                          */
-                        lcb[ led ].flash_duration = ( (mode  & IMX_LED_BLINK_MASK ) - 1 );
-                        lcb[ led ].blink_rate = 10 * ( ( mode & IMX_LED_FLASH_MASK ) >> 8 );
-                        lcb[ led ].flashing = true;
-
-                        wiced_rtos_init_timer( &lcb[ led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) flash_led, (void *) &led_options[ led ] );
-                    } else {
-                        /*
-                         * Set up blink with a duty cycle of 50%
-                         */
-                        lcb[ led ].blink_rate = 1000 / (mode - 1 );
+                        lcb[ led ].blink_1_count = ( mode_details & IMX_LED_BLINK_1_MASK );
+                        lcb[ led ].blink_2_count = 0;
+                        lcb[ led ].flashing = false;
                         lcb[ led ].blinking = true;
-                        wiced_rtos_init_timer( &lcb[ led ].led_timer_data, (uint32_t) lcb[ led ].blink_rate, (timer_handler_t) blink_led, (void *) &led_options[ led ] );
+                        /*
+                         * Initialize Timer setup
+                         */
+                        wiced_rtos_init_timer( &lcb[ led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) blink_led, (void *) &led_options[ led ] );
+                        start_timer = true;
+                    } else if( ( mode_details & IMX_LED_BLINK_2 ) == IMX_LED_BLINK_2 ) {
+                        /*
+                         * Ignore this as single led called with dual LED Blinking
+                         */
+
+                    } else if( ( mode_details & IMX_LED_FLASH ) == IMX_LED_FLASH ) {
+                        /*
+                         * Set up to Flash
+                         */
+                        lcb[ led ].blink_1_count = ( mode_details & IMX_LED_BLINK_1_MASK );
+                        lcb[ led ].blink_2_count = 0;
+                        lcb[ led ].flash_count = 10 * ( ( mode_details & IMX_LED_FLASH_MASK ) >> 8 );
+                        lcb[ led ].flashing = true;
+                        lcb[ led ].blinking = false;
+                        wiced_rtos_init_timer( &lcb[ led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) flash_led, (void *) &led_options[ led ] );
+                        start_timer = true;
                     }
-                    wiced_result = wiced_rtos_start_timer( &lcb[ led ].led_timer_data );
-                    if( wiced_result != WICED_SUCCESS )
-                        imx_printf( " Failed to start LED:%u Timer: %u\r\n", master_led, wiced_result );
+                    if( start_timer == true ) {
+                        wiced_result = wiced_rtos_start_timer( &lcb[ led ].led_timer_data );
+                        if( wiced_result != WICED_SUCCESS )
+                            imx_printf( " Failed to start LED:%u Timer: %u\r\n", master_led, wiced_result );
+                    }
                     break;
                 /*
                  * Pair of LEDS
@@ -273,37 +364,81 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
                 case IMX_LED_BLUE_RED :
                 case IMX_LED_BLUE_GREEN :
                     /*
-                     * Select the master and slave LEDS - master will be used for timer controls - set known defaults.
+                     * Select the master and slave LEDS - master will be used for timer controls
                      */
-                    master_led = IMX_LED_RED;
-                    slave_led = IMX_LED_GREEN;
                     select_leds( led, &master_led, &slave_led );
-                    master_slave[ MASTER_LED ] = master_led;
-                    master_slave[ SLAVE_LED ] = slave_led;
+                    /*
+                     * If this is doing a timer function - disable
+                     */
+                    if( ( lcb[ master_led ].blinking == true ) || ( lcb[ master_led ].flashing == true ) ) {
+                        wiced_result = wiced_rtos_stop_timer( &lcb[ master_led ].led_timer_data );
+                        if( wiced_result != WICED_SUCCESS )
+                            imx_printf( " Failed to stop LED: %u Timer: %u\r\n", master_led, wiced_result );
+                    }
                     lcb[ master_led ].state = false;
                     lcb[ master_led ].count = 0;
-                    if( ( mode & IMX_LED_FLASH ) == IMX_LED_FLASH ) {
-                        /*
-                         * Set up to flash
-                         */
-                        lcb[ master_led ].flash_duration = ( (mode  & IMX_LED_BLINK_MASK ) - 1 );
-                        lcb[ master_led ].blink_rate = 1000 * ( ( mode & IMX_LED_FLASH_MASK ) >> 8 );
-                        lcb[ master_led ].flashing = true;
-                        wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) alt_flash_led, (void *) &led_options[ led ] );
-                    } else {
-                        /*
-                         * Set up to Blink two LEDs alternating. Blink with a duty cycle of 50% each
-                         */
-                        lcb[ master_led ].blink_rate = 1000 / (mode - 1 );
-                        lcb[ master_led ].blinking = true;
-                        imx_printf( "Setting Alternate blinking: Master: %u & Slave: %u @%u mSec\r\n", (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_rate );
-                        wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) lcb[ master_led ].blink_rate, (timer_handler_t) alt_blink_led, (void *) &led_options[ led ]);
-                    }
+                    lcb[ slave_led ].state = false;
+                    lcb[ master_led ].count = 0;
                     lcb[ master_led ].in_pair = true;
-                    lcb[ slave_led ].in_pair = true;
-                    wiced_result = wiced_rtos_start_timer( &lcb[ master_led ].led_timer_data );
-                    if( wiced_result != WICED_SUCCESS )
-                        imx_printf( " Failed to start LED:%u Timer: %u\r\n", master_led, wiced_result );
+                    lcb[ master_led ].pair = slave_led;
+                    if( ( mode_details & IMX_LED_BLINK_1 ) == IMX_LED_BLINK_1 ) {
+                        /*
+                         * Set up to Blink as a pair
+                         */
+                        lcb[ master_led ].blink_1_count = ( mode_details & IMX_LED_BLINK_1_MASK );
+                        lcb[ master_led ].blink_2_count = 0;
+                        lcb[ master_led ].flashing = false;
+                        lcb[ master_led ].blinking = true;
+                        lcb[ master_led ].in_pair = true;
+                        lcb[ master_led ].pair = slave_led;
+                        /*
+                         * Initialize Timer setup
+                         */
+                        wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) blink_led, (void *) &led_options[ master_led ] );
+                        start_timer = true;
+                    } else if( ( mode_details & IMX_LED_BLINK_2 ) == IMX_LED_BLINK_2 ) {
+                        /*
+                         * Set up to Blink two LEDs independently
+                         */
+                        lcb[ master_led ].blink_1_count = ( mode_details & IMX_LED_BLINK_1_MASK );
+                        lcb[ master_led ].blink_2_count = ( ( mode_details & IMX_LED_BLINK_2_MASK ) >> 4 );
+                        lcb[ master_led ].state = false;
+                        lcb[ slave_led ].state = false;
+                        lcb[ master_led ].flashing = false;
+                        lcb[ master_led ].blinking = true;
+                        lcb[ master_led ].in_pair = true;
+                        lcb[ master_led ].pair = slave_led;
+                        lcb[ master_led ].count = 0;
+                        /*
+                         * Initialize Timer setup
+                         */
+                        imx_printf( "Setting Alternate blinking: Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n", (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_1_count, lcb[ master_led ].blink_2_count );
+                        wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) alt_blink_led, (void *) &led_options[ master_led ] );
+                        start_timer = true;
+                    } else if( ( mode_details & IMX_LED_FLASH ) == IMX_LED_FLASH ) {
+                        lcb[ master_led ].blink_1_count = ( mode_details & IMX_LED_BLINK_1_MASK );
+                        lcb[ master_led ].blink_2_count = ( ( mode_details & IMX_LED_BLINK_2_MASK ) >> 4 );       // Only unused for alternate mode
+                        lcb[ master_led ].flash_count = 10 * ( ( mode_details & IMX_LED_FLASH_MASK ) >> 8 );
+                        lcb[ master_led ].state = false;
+                        lcb[ slave_led ].state = false;
+                        lcb[ master_led ].flashing = true;
+                        lcb[ master_led ].blinking = false;
+                        lcb[ master_led ].in_pair = true;
+                        lcb[ master_led ].pair = slave_led;
+                        lcb[ master_led ].count = 0;
+                        /*
+                         * Initialize Timer setup
+                         */
+                        imx_printf( "Setting Alternate flash( %uSec): Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n",
+                                lcb[ master_led ].flash_count, (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_1_count, lcb[ master_led ].blink_2_count );
+                        wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) alt_flash_led, (void *) &led_options[ master_led ] );
+                        start_timer = true;
+                    }
+                    if( start_timer == true ) {
+                        wiced_result = wiced_rtos_start_timer( &lcb[ master_led ].led_timer_data );
+                        if( wiced_result != WICED_SUCCESS )
+                            imx_printf( " Failed to start LED:%u Timer: %u\r\n", master_led, wiced_result );
+                    }
                     break;
                 default :   // Unknown LED - Ignore
                     imx_printf( "Unknown LED: %u\r\n", led );
@@ -315,6 +450,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t mode )
             /*
              * Start Off
              */
+            imx_printf( "Initializing Product LEDs\r\n" );
             for( i = 0; i < IMX_NO_LEDS; i++ )
                 if( lcb[ i ].init_led != NULL )
                     (*lcb[ i ].init_led)();
@@ -352,7 +488,7 @@ void imx_init_led_functions( imx_led_functions_t *led_functions )
         if( led_functions[ i ].set_led != NULL )
             lcb[ i ].update_led_status = led_functions[ i ].set_led;
     }
-    imx_set_led( 0, IMX_LED_INIT );
+    imx_set_led( 0, IMX_LED_INIT, 0 );
 }
 
 /**
@@ -396,33 +532,54 @@ static timer_handler_t blink_led( void *arg )
 
     lcb[ led ].state = !lcb[ led ].state;
     (*lcb[ led ].update_led_status)( lcb[ led ].state );
-
+    if( lcb[ led ].in_pair == true ) {
+        lcb[ lcb[ led ].pair ].state = !lcb[ lcb[ led ].pair ].state;
+        (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+    }
     return WICED_SUCCESS;
 }
 /**
   * @brief blink LED
-  * @param  None
+  * @param  master LED
   * @retval : None
   */
 static timer_handler_t alt_blink_led( void *arg )
 {
+    bool update;
     imx_led_t led;
 
     memcpy( &led, arg, sizeof( imx_led_t ) );
 
-    if( ( led != IMX_LED_RED_GREEN ) && ( led != IMX_LED_RED_BLUE ) && ( led != IMX_LED_GREEN_RED ) &&
-        ( led != IMX_LED_GREEN_BLUE ) && ( led != IMX_LED_BLUE_RED ) && ( led != IMX_LED_BLUE_GREEN ) )
+    if( ( led != IMX_LED_RED ) && ( led != IMX_LED_GREEN ) && ( led != IMX_LED_BLUE ) )
         return WICED_SUCCESS;   // Ignore this
 
-    if( lcb[ master_slave[ MASTER_LED ] ].state == true ) {
-        lcb[ master_slave[ MASTER_LED ] ].state = false;
-        lcb[ master_slave[ SLAVE_LED ] ].state = true;
+    update = false;
+    if( lcb[ led ].count < lcb[ led ].blink_1_count) {       // Master On Period
+        lcb[ led  ].count += 1;
+        if( lcb[ led ].state == false ) {
+            lcb[ led ].state = true;
+            lcb[ lcb[ led ].pair ].state = false;
+            update = true;
+        }
+    } else if( lcb[ led ].count < ( lcb[ led ].blink_1_count + lcb[ led ].blink_2_count ) ) {     // Slave On Period
+        lcb[ led ].count += 1;
+        if( lcb[ led ].state == true ) {
+            lcb[ led ].state = false;
+            if( lcb[ led ].in_pair == true ) {          // Should be :)
+                lcb[ lcb[ led ].pair ].state = true;
+            }
+            update = true;
+        }
     } else {
-        lcb[ master_slave[ MASTER_LED ] ].state = true;
-        lcb[ master_slave[ SLAVE_LED ] ].state = false;
+        lcb[ led ].count = 0;    // Start again
     }
-    (*lcb[master_slave[ MASTER_LED ] ].update_led_status)( lcb[ master_slave[ MASTER_LED ] ].state );
-    (*lcb[master_slave[ SLAVE_LED ] ].update_led_status)( lcb[ master_slave[ SLAVE_LED ] ].state );
+
+    if( update == true ) {
+        (*lcb[ led ].update_led_status)( lcb[ led ].state );
+        if( lcb[ led ].in_pair == true ) {          // Should be
+            (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+        }
+    }
 
     return WICED_SUCCESS;
 }
@@ -442,29 +599,44 @@ static timer_handler_t flash_led( void *arg )
         return WICED_SUCCESS;   // Ignore this
 
     update = false;
-    if( lcb[ led ].count < lcb[ led ].flash_duration ) {
+    if( lcb[ led ].count < lcb[ led ].blink_1_count ) {
+        lcb[ led ].count += 1;
         if( lcb[ led ].state == false ) {
             lcb[ led ].state = true;
+            if( lcb[ led ].in_pair == true ) {
+                lcb[ lcb[ led ].pair ].state = true;
+            }
             update = true;
         }
-    } else {
-        if( lcb[ led ].state == true ) {
-            lcb[ led ].state = false;
-            update = true;
+    } else if( lcb[ led ].count < lcb[ led ].flash_count ){
+        lcb[ led ].count += 1;
+        if( lcb[ led ].in_pair == true ) {
+            if( lcb[ lcb[ led ].pair ].state == true ) {
+                lcb[ lcb[ led ].pair ].state = false;       // turn off pair
+                lcb[ led ].state = false;
+                update = true;
+            }
+        } else {
+            if( lcb[ led ].state == true ) {
+                lcb[ led ].state = false;
+                update = true;
+            }
         }
+    } else {    // End of flash - start again
+        lcb[ led ].count = 0;
     }
     if( update == true ) {
         (*lcb[ led ].update_led_status)( lcb[ led ].state );
+        if( lcb[ led ].in_pair == true ) {
+            (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+        }
     }
-    lcb[ led ].count += 1;
-    if( lcb[ led ].count >= lcb[ led ].blink_rate )
-        lcb[ led ].count = 0;
 
     return WICED_SUCCESS;
 }
 
 /**
-  * @brief flash LED
+  * @brief Alternately flash LED
   * @param  None
   * @retval : None
   */
@@ -475,38 +647,49 @@ static timer_handler_t alt_flash_led( void *arg )
 
     memcpy( &led, arg, sizeof( imx_led_t ) );
 
-    if( ( led != IMX_LED_RED_GREEN ) && ( led != IMX_LED_RED_BLUE ) && ( led != IMX_LED_GREEN_RED ) &&
-        ( led != IMX_LED_GREEN_BLUE ) && ( led != IMX_LED_BLUE_RED ) && ( led != IMX_LED_BLUE_GREEN ) )
+    if( ( led != IMX_LED_RED ) && ( led != IMX_LED_GREEN ) && ( led != IMX_LED_BLUE ) )
         return WICED_SUCCESS;   // Ignore this
 
     update = false;
-    if( lcb[ master_slave[ MASTER_LED ] ].count < LED_TIMER_500MS ) {       // Master On Period
-        if( lcb[ master_slave[ MASTER_LED ] ].state == false ) {
-            lcb[ master_slave[ MASTER_LED ] ].state = true;
-            lcb[ master_slave[ SLAVE_LED ] ].state = false;
+    if( lcb[ led ].count < lcb[ led ].blink_1_count ) {
+        lcb[ led ].count += 1;
+        if( lcb[ led ].state == false ) {                    // Start with Master on
+            lcb[ led ].state = true;
+            if( lcb[ led ].in_pair == true ) {
+                lcb[ lcb[ led ].pair ].state = false;
+            }
             update = true;
         }
-    } else if( lcb[ master_slave[ MASTER_LED ] ].count < ( LED_TIMER_500MS ) + lcb[ master_slave[ MASTER_LED ] ].flash_duration ) {     // Slave On Period
-        if( lcb[ master_slave[ MASTER_LED ] ].state == true ) {
-            lcb[ master_slave[ MASTER_LED ] ].state = false;
-            lcb[ master_slave[ SLAVE_LED ] ].state = true;
+    } else if( lcb[ led ].count < (lcb[ led ].blink_1_count + lcb[ led ].blink_2_count ) ) {
+        lcb[ led ].count += 1;
+        if( lcb[ led ].state == true ) {                    // Turn master off and pair on
+            lcb[ led ].state = false;
+            if( lcb[ led ].in_pair == true ) {
+                lcb[ lcb[ led ].pair ].state = true;
+            }
             update = true;
         }
-    } else {
-        if( lcb[ master_slave[ SLAVE_LED ] ].state == true ) {          // Off till end of duration
-            lcb[ master_slave[ MASTER_LED ] ].state = false;
-            lcb[ master_slave[ SLAVE_LED ] ].state = false;
+    } else if( lcb[ led ].count < lcb[ led ].flash_count ){
+        lcb[ led ].count += 1;
+        if( lcb[ led ].in_pair == true ) {
+            if( lcb[ lcb[ led ].pair ].state == true ) {
+                lcb[ led ].state = false;                   // Master off, pair off
+                lcb[ lcb[ led ].pair ].state = false;
+                update = true;
+            }
+        } else {
+            lcb[ led ].state = false;                       // Should not get here as we should be in a pair - but just turn Master off
             update = true;
         }
+    } else {    // End of flash - start again
+        lcb[ led ].count = 0;
     }
-
     if( update == true ) {
-        (*lcb[ master_slave[ MASTER_LED ] ].update_led_status)( lcb[ master_slave[ MASTER_LED ] ].state );
-        (*lcb[ master_slave[ SLAVE_LED ] ].update_led_status)( lcb[ master_slave[ SLAVE_LED ] ].state );
+        (*lcb[ led ].update_led_status)( lcb[ led ].state );
+        if( lcb[ led ].in_pair == true ) {
+            (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+        }
     }
-    lcb[ master_slave[ MASTER_LED ] ].count += 1;
-    if( lcb[ master_slave[ MASTER_LED ] ].count >= lcb[ MASTER_LED ].blink_rate )
-        lcb[ master_slave[ MASTER_LED ] ].count = 0;
 
     return WICED_SUCCESS;
 }
@@ -524,10 +707,10 @@ void print_led_status( void )
 
     for( i = 0; i < IMX_NO_LEDS; i++ ) {
         cli_print( "Led Status: %s: ", led_names[ i ] );
-        if( lcb[i ].blinking == true )
-            cli_print( "Blinking every %umS", lcb[ i ].blink_rate );
+        if( lcb[ i ].blinking == true )
+            cli_print( "Blink Count 1 %u %umS, Count 2 %u %umS", lcb[ i ].blink_1_count * 10, lcb[ i ].blink_2_count * 10 );
         else if( lcb[i ].flashing == true )
-            cli_print( "Flashing ON %umS", ( lcb[ i ].blink_rate & IMX_LED_BLINK_MASK ) );
+            cli_print( "Flashing duration %u Sec", ( lcb[ i ].flash_count / 10 ) );
         else if( lcb[ i ].state == true )
             cli_print( "On" );
         else

@@ -126,12 +126,13 @@ char *imx_get_device_serial_number(void);
 wiced_result_t imx_get_config_current_address( void *config_address );
 wiced_result_t imx_save_config( void *config, uint16_t config_size );
 /*
- * Console I/O
+ * CLI - Console I/O
  */
 bool imx_get_ch( char *ch );
 void imx_printf( char *format, ... );
 int imx_log_printf( char *format, ... );
 bool imx_verify_cmd(void);
+void imx_set_cli_handler( bool (*cli_handler)( char *token ) );
 /*
  * Set & Get Control / Sensor data
  */
@@ -147,10 +148,10 @@ void load_config_defaults_generic_ccb( uint16_t arg );
 /*
  * LED Control functions
  */
-bool imx_set_led( imx_led_t led, imx_led_state_t mode );
+bool imx_set_led( imx_led_t led, imx_led_state_t mode, uint16_t mode_details );
 bool imx_get_led_state( imx_led_t led );
 /*
- * Additional support Platform code - ISMART-43340
+ * Additional support Platform code - ISMART-43340/43362
  */
 void imx_init_led_red_ismart( void );
 void imx_init_led_green_ismart( void );
@@ -159,7 +160,7 @@ void imx_update_led_red_status_ismart( bool state );
 void imx_update_led_green_status_ismart( bool state );
 void imx_update_led_blue_status_ismart( bool state );
 void imx_init_temp(uint16_t arg);
-uint16_t imx_sample_temp(uint16_t arg, void *value );
+imx_result_t  imx_sample_temp(uint16_t arg, void *value );
 /*
  * General Wi Fi Status routines
  */
@@ -167,13 +168,13 @@ uint16_t imx_get_wifi_channel_scb(void);
 uint16_t imx_get_wifi_rssi_scb(void);
 uint16_t imx_get_wifi_bssid_scb(void);
 uint16_t imx_get_wifi_rf_noise_scb(void);
-uint16_t imx_sample_rssi(uint16_t arg, void *value );
-uint16_t imx_sample_rfnoise(uint16_t arg, void *value );
-uint16_t imx_sample_wifi_channel(uint16_t arg, void *value );
+imx_result_t imx_sample_rssi(uint16_t arg, void *value );
+imx_result_t imx_sample_rfnoise(uint16_t arg, void *value );
+imx_result_t imx_sample_wifi_channel(uint16_t arg, void *value );
 /*
  * Time & Watchdogs Update
  */
-uint16_t imx_get_utc(uint16_t arg, void *value );
+imx_result_t imx_get_utc(uint16_t arg, void *value );
 void imx_kick_watchdog(void);
 /*
  * CoAP Processing defines

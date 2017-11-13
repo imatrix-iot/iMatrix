@@ -61,7 +61,7 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-static void print_cs_block_entry( peripheral_type_t type, imx_control_sensor_block_t *cs_block, uint16_t entry );
+static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry );
 /******************************************************
  *               Variable Definitions
  ******************************************************/
@@ -83,24 +83,24 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 void cs_reset_defaults(void)
 {
     peripheral_type_t type;
-    imx_control_sensor_block_t *cs_block, *config_source;
+    imx_control_sensor_block_t *csb, *config_source;
     uint16_t no_items, i;
 
     for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
         if( type == IMX_CONTROLS ) {
-            cs_block = &device_config.ccb[ 0 ];
+            csb = &device_config.ccb[ 0 ];
             config_source = &imx_controls_defaults[ 0 ];
         } else {
-            cs_block = &device_config.scb[ 0 ];
+            csb = &device_config.scb[ 0 ];
             config_source = &imx_sensors_defaults[ 0 ];
         }
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
 //        cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) config_source, no_items );
         for( i = 0; i < no_items; i++ ) {
-            memcpy( &cs_block[ i ], &config_source[ i ], sizeof( imx_control_sensor_block_t ) );
+            memcpy( &csb[ i ], &config_source[ i ], sizeof( imx_control_sensor_block_t ) );
 //            cli_print( "    Added" );
-//            print_cs_block_entry( type, cs_block, i );
+//            print_csb_entry( type, csb, i );
         }
     }
 }
@@ -112,8 +112,8 @@ void cs_reset_defaults(void)
 void cs_init(void)
 {
     peripheral_type_t type;
-    control_sensor_data_t *data;
-    imx_control_sensor_block_t *cs_block;
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;
     imx_functions_t *f;
     uint16_t no_items, i;
     wiced_time_t current_time;
@@ -130,27 +130,27 @@ void cs_init(void)
 
     for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
         if( type == IMX_CONTROLS ) {
-            data = &cd[ 0 ];
-            cs_block = &device_config.ccb[ 0 ];
+            csd = &cd[ 0 ];
+            csb = &device_config.ccb[ 0 ];
             f = &imx_control_functions[ 0 ];
         } else {
-            data = &sd[ 0 ];
-            cs_block = &device_config.scb[ 0 ];
+            csd = &sd[ 0 ];
+            csb = &device_config.scb[ 0 ];
             f = &imx_sensor_functions[ 0 ];
         }
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
-//        cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) data, no_items );
+//        cli_print( "Setting up %s Data @: 0x%08lx - Adding %u entries\r\n", ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", (uint32_t ) csd, no_items );
         for( i = 0; i < no_items; i++ ) {
-            if( cs_block[ i ].set_default == true ) {
-                data[ i ].last_value.uint_32bit = cs_block[ i ].default_value.uint_32bit;
-                cs_block[ i ].valid = true;
-                data[ i ].last_sample_time = current_time + ( i * 1000 );
+            if( csb[ i ].set_default == true ) {
+                csd[ i ].last_value.uint_32bit = csb[ i ].default_value.uint_32bit;
+                csd[ i ].valid = true;
+                csd[ i ].last_sample_time = current_time + ( i * 1000 );
             } else
-                cs_block[ i ].valid = false;    // Not valid until set for the first time
+                csd[ i ].valid = false;    // Not valid until set for the first time
             if( f[ i ].init != NULL ) {
                 (f[ i ].init)( f[ i ].arg );    // Initialize control
-                data[ i ].last_sample_time = current_time + ( i * 1000 );
+                csd[ i ].last_sample_time = current_time + ( i * 1000 );
             }
         }
     }
@@ -171,35 +171,51 @@ void load_config_defaults_generic_ccb( uint16_t arg )
   * @param  None
   * @retval : None
   */
-void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *cs_block )
+void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *csb )
 {
     uint16_t i, no_items;
 
 
     no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
     for( i = 0; i < no_items; i++ ) {
-        print_cs_block_entry( type, cs_block, i );
+        print_csb_entry( type, csb, i );
     }
 
 }
 
-static void print_cs_block_entry( peripheral_type_t type, imx_control_sensor_block_t *cs_block, uint16_t entry )
+static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry )
 {
-    cli_print( " No. %2u, %32s, ID: 0x%08lx, %s, ", entry, cs_block[  entry ].name, cs_block[ entry ].id, cs_block[ entry ].enabled == true ? " Enabled" : "Disabled" );
-    cli_print( "%s, ", ( cs_block[ entry ].read_only == true ) ? " Read Only" : "Read/Write" );
+    cli_print( " No. %2u, %32s, ID: 0x%08lx, ", entry, csb[  entry ].name, csb[ entry ].id );
+    switch( csb[ entry ].data_type ) {
+        case IMX_UINT32 :
+            cli_print( "32bit UINT " );
+            break;
+        case IMX_INT32 :
+            cli_print( "32bit INT  " );
+            break;
+        case IMX_FLOAT :
+            cli_print( "32bit Float" );
+            break;
+        case IMX_VARIABLE_LENGTH :
+            cli_print( "Variable  " );
+            break;
+    }
+
+    cli_print( ", %s-", csb[ entry ].enabled == true ? " Enabled" : "Disabled" );
+    cli_print( "%s, ", ( csb[ entry ].read_only == true ) ? " Read Only" : "Read/Write" );
     cli_print( "Initialize: " );
-    if( cs_block[ entry ].set_default == false )
-        cli_print( "None    " );
+    if( csb[ entry ].set_default == false )
+        cli_print( "None  " );
     else {
-        switch( cs_block[ entry ].data_type ) {
+        switch( csb[ entry ].data_type ) {
             case IMX_UINT32 :
-                cli_print( "%8lu", cs_block[ entry ].default_value.uint_32bit );
+                cli_print( "%6lu", csb[ entry ].default_value.uint_32bit );
                 break;
             case IMX_INT32 :
-                cli_print( "%8ld", cs_block[ entry ].default_value.int_32bit );
+                cli_print( "%6ld", csb[ entry ].default_value.int_32bit );
                 break;
             case IMX_FLOAT :
-                cli_print( "%8.2f", cs_block[ entry ].default_value.float_32bit );
+                cli_print( "%6.2f", csb[ entry ].default_value.float_32bit );
                 break;
             case IMX_VARIABLE_LENGTH :
                 cli_print( "Variable" );
@@ -208,79 +224,79 @@ static void print_cs_block_entry( peripheral_type_t type, imx_control_sensor_blo
     }
     cli_print( ", " );
 
-    if( cs_block[ entry ].sample_rate == 0 )
+    if( csb[ entry ].sample_rate == 0 )
         cli_print( "          Event Driven" );
     else {
-        if( cs_block[ entry ].sample_rate >= 1000 )
-            cli_print( "Sample Every: %4.1f Sec", ( (float) cs_block[ entry ].sample_rate ) / 1000.0 );
+        if( csb[ entry ].sample_rate >= 1000 )
+            cli_print( "Sample Every: %3.1f Sec", ( (float) csb[ entry ].sample_rate ) / 1000.0 );
         else
-            cli_print( "Sample Every: %5u mSec", cs_block[ entry ].sample_rate );
+            cli_print( "Sample Every: %3u mSec", csb[ entry ].sample_rate );
     }
-    cli_print( ", Batch size: %2u", cs_block[ entry ].sample_batch_size );
+    cli_print( ", Batch size: %2u", csb[ entry ].sample_batch_size );
 
-    cli_print( ", Monitoring Levels low enabled:" );
-    if( cs_block[ entry ].use_warning_level_low == 0 )
+    cli_print( ", Monitoring Levels, Low enabled:" );
+    if( csb[ entry ].use_warning_level_low == 0 )
         cli_print( " None" );
     else {
         cli_print( "%s%s%s",
-                ( ( cs_block[ entry ].use_warning_level_high & USE_WARNING_LEVEL_1 ) != 0 ) ? " Watch" : " ",
-                ( ( cs_block[ entry ].use_warning_level_high & USE_WARNING_LEVEL_2 ) != 0 ) ? " Advisory" : " ",
-                ( ( cs_block[ entry ].use_warning_level_high & USE_WARNING_LEVEL_3 ) != 0 ) ? " Warning" : " " );
+                ( ( csb[ entry ].use_warning_level_high & USE_WARNING_LEVEL_1 ) != 0 ) ? " Watch" : " ",
+                ( ( csb[ entry ].use_warning_level_high & USE_WARNING_LEVEL_2 ) != 0 ) ? " Advisory" : " ",
+                ( ( csb[ entry ].use_warning_level_high & USE_WARNING_LEVEL_3 ) != 0 ) ? " Warning" : " " );
         cli_print( ", High Level Settings: Watch_level: ");
-        switch( cs_block[ entry ].data_type ) {
+        switch( csb[ entry ].data_type ) {
             case IMX_UINT32 :
-                cli_print( "%lu", cs_block[ entry ].warning_level_high[ 0 ].uint_32bit );
+                cli_print( "%lu", csb[ entry ].warning_level_high[ 0 ].uint_32bit );
                 break;
             case IMX_INT32 :
-                cli_print( "%ld", cs_block[ entry ].warning_level_high[ 0 ].int_32bit );
+                cli_print( "%ld", csb[ entry ].warning_level_high[ 0 ].int_32bit );
                 break;
             case IMX_FLOAT :
-                cli_print( "%f", cs_block[ entry ].warning_level_high[ 0 ].float_32bit );
+                cli_print( "%f", csb[ entry ].warning_level_high[ 0 ].float_32bit );
                 break;
         }
     }
-    cli_print( ", Monitoring Levels high enabled:" );
-    if( cs_block[ entry ].use_warning_level_high == 0 )
+    cli_print( ", High enabled:" );
+    if( csb[ entry ].use_warning_level_high == 0 )
         cli_print( " None" );
     else {
         cli_print( "%s%s%s",
-                ( ( cs_block[ entry ].use_warning_level_high & USE_WARNING_LEVEL_1 ) != 0 ) ? " Watch" : " ",
-                ( ( cs_block[ entry ].use_warning_level_high & USE_WARNING_LEVEL_2 ) != 0 ) ? " Advisory" : " ",
-                ( ( cs_block[ entry ].use_warning_level_high & USE_WARNING_LEVEL_3 ) != 0 ) ? " Warning" : " " );
+                ( ( csb[ entry ].use_warning_level_high & USE_WARNING_LEVEL_1 ) != 0 ) ? " Watch" : " ",
+                ( ( csb[ entry ].use_warning_level_high & USE_WARNING_LEVEL_2 ) != 0 ) ? " Advisory" : " ",
+                ( ( csb[ entry ].use_warning_level_high & USE_WARNING_LEVEL_3 ) != 0 ) ? " Warning" : " " );
         cli_print( " Low Level Settings: Watch: ");
-        switch( cs_block[ entry ].data_type ) {
+        switch( csb[ entry ].data_type ) {
             case IMX_UINT32 :
-                cli_print( "%lu", cs_block[ entry ].warning_level_low[ 0 ].uint_32bit );
+                cli_print( "%lu", csb[ entry ].warning_level_low[ 0 ].uint_32bit );
                 break;
             case IMX_INT32 :
-                cli_print( "%ld", cs_block[ entry ].warning_level_low[ 0 ].int_32bit );
+                cli_print( "%ld", csb[ entry ].warning_level_low[ 0 ].int_32bit );
                 break;
             case IMX_FLOAT :
-                cli_print( "%f", cs_block[ entry ].warning_level_low[ 0 ].float_32bit );
+                cli_print( "%f", csb[ entry ].warning_level_low[ 0 ].float_32bit );
                 break;
         }
         cli_print( ", Advisory: ");
-        switch( cs_block[ entry ].data_type ) {
+        switch( csb[ entry ].data_type ) {
             case IMX_UINT32 :
-                cli_print( "%lu", cs_block[ entry ].warning_level_low[ 1 ].uint_32bit );
+                cli_print( "%lu", csb[ entry ].warning_level_low[ 1 ].uint_32bit );
                 break;
             case IMX_INT32 :
-                cli_print( "%ld", cs_block[ entry ].warning_level_low[ 1 ].int_32bit );
+                cli_print( "%ld", csb[ entry ].warning_level_low[ 1 ].int_32bit );
                 break;
             case IMX_FLOAT :
-                cli_print( "%f", cs_block[ entry ].warning_level_low[ 1 ].float_32bit );
+                cli_print( "%f", csb[ entry ].warning_level_low[ 1 ].float_32bit );
                 break;
         }
         cli_print( ", Warning: ");
-        switch( cs_block[ entry ].data_type ) {
+        switch( csb[ entry ].data_type ) {
             case IMX_UINT32 :
-                cli_print( "%lu", cs_block[ entry ].warning_level_low[ 2 ].uint_32bit );
+                cli_print( "%lu", csb[ entry ].warning_level_low[ 2 ].uint_32bit );
                 break;
             case IMX_INT32 :
-                cli_print( "%ld", cs_block[ entry ].warning_level_low[ 2 ].int_32bit );
+                cli_print( "%ld", csb[ entry ].warning_level_low[ 2 ].int_32bit );
                 break;
             case IMX_FLOAT :
-                cli_print( "%f", cs_block[ entry ].warning_level_low[ 2 ].float_32bit );
+                cli_print( "%f", csb[ entry ].warning_level_low[ 2 ].float_32bit );
                 break;
         }
     }

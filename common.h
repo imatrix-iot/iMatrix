@@ -129,6 +129,46 @@
 
 #define WARNING_LEVELS                  ( 3 )
 #define IMX_NO_LEDS                     ( 3 )
+/*
+ * LED Settings
+ */
+#define IMX_LED_BLINK_1_1               0x0001  // Time in 100 mS intervals
+#define IMX_LED_BLINK_1_2               0x0002
+#define IMX_LED_BLINK_1_3               0x0003
+#define IMX_LED_BLINK_1_4               0x0004
+#define IMX_LED_BLINK_1_5               0x0005
+#define IMX_LED_BLINK_1_6               0x0006
+#define IMX_LED_BLINK_1_7               0x0007
+#define IMX_LED_BLINK_1_8               0x0008
+#define IMX_LED_BLINK_1_9               0x0009
+#define IMX_LED_BLINK_1_10              0x000A
+#define IMX_LED_BLINK_1_MASK            0x000F  // Time in 100 mS intervals
+#define IMX_LED_BLINK_2_1               0x0010
+#define IMX_LED_BLINK_2_2               0x0020
+#define IMX_LED_BLINK_2_3               0x0030
+#define IMX_LED_BLINK_2_4               0x0040
+#define IMX_LED_BLINK_2_5               0x0050
+#define IMX_LED_BLINK_2_6               0x0060
+#define IMX_LED_BLINK_2_7               0x0070
+#define IMX_LED_BLINK_2_8               0x0080
+#define IMX_LED_BLINK_2_9               0x0090
+#define IMX_LED_BLINK_2_10              0x00A0
+#define IMX_LED_BLINK_2_MASK            0x00F0
+#define IMX_LED_FLASH_1                 0x0100  // Time in 1 Sec intervals
+#define IMX_LED_FLASH_2                 0x0200
+#define IMX_LED_FLASH_3                 0x0300
+#define IMX_LED_FLASH_4                 0x0400
+#define IMX_LED_FLASH_5                 0x0500
+#define IMX_LED_FLASH_6                 0x0600
+#define IMX_LED_FLASH_7                 0x0700
+#define IMX_LED_FLASH_8                 0x0800
+#define IMX_LED_FLASH_9                 0x0900
+#define IMX_LED_FLASH_10                0x0A00
+#define IMX_LED_FLASH_MASK              0x0F00
+#define IMX_LED_BLINK_1                 0x1000  // Master Blinking LED
+#define IMX_LED_BLINK_2                 0x2000  // Slave Blinking LED
+#define IMX_LED_FLASH                   0x4000  // Indicate this is a flash, this is a 1 Second event For Dual LEDs First LED ON for BLINK 1 second is on for BLINK 2 - off for remainder of 1 Second
+#define IMX_LED_ALTERNATE               0x8000  // Alternate Blinking / Flashing
 
 /******************************************************
  *                   Enumerations
@@ -206,29 +246,8 @@ typedef enum {
     IMX_LED_ALL_OFF,
     IMX_LED_OFF,
     IMX_LED_ON,
-    IMX_LED_BLINK_1,
-    IMX_LED_BLINK_2,
-    IMX_LED_BLINK_3,
-    IMX_LED_BLINK_4,
-    IMX_LED_BLINK_5,
-    IMX_LED_BLINK_6,
-    IMX_LED_BLINK_7,
-    IMX_LED_BLINK_8,
-    IMX_LED_BLINK_9,
-    IMX_LED_BLINK_10,
-    IMX_LED_BLINK_MASK = 0x0FF,
-    IMX_LED_FLASH_1 = 0x100,
-    IMX_LED_FLASH_2 = 0x200,
-    IMX_LED_FLASH_3 = 0x300,
-    IMX_LED_FLASH_4 = 0x400,
-    IMX_LED_FLASH_5 = 0x500,
-    IMX_LED_FLASH_6 = 0x600,
-    IMX_LED_FLASH_7 = 0x700,
-    IMX_LED_FLASH_8 = 0x800,
-    IMX_LED_FLASH_9 = 0x900,
-    IMX_LED_FLASH_10 = 0xA00,
-    IMX_LED_FLASH_MASK = 0xF00,
-    IMX_LED_FLASH = 0x1000,  // Indicate this is a flash not a blink on / off - Blink rate then represents duty cycle in 1 second
+    IMX_LED_OTHER,
+    IMX_LED_INIT,
 } imx_led_state_t;
 
 typedef enum {
@@ -242,7 +261,6 @@ typedef enum {
     IMX_LED_BLUE_RED,
     IMX_LED_BLUE_GREEN,
     IMX_NO_LED_COMBINATIONS,
-    IMX_LED_INIT = 0xFF,
 } imx_led_t;
 
 typedef uint32_t imx_status_t;

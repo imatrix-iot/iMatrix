@@ -66,6 +66,7 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
+extern IOT_Device_Config_t device_config;
 
 /******************************************************
  *               Function Definitions
@@ -86,20 +87,21 @@ void log_iMatrix( char *msg )
      * Get a variable length packet to store our message in
      */
 
-    log_msg_length = strlen( msg );
-    var_data_ptr = get_var_data( log_msg_length );
-    if( var_data_ptr != NULL ) {
-        /*
-         * Add message
-         */
-        strcpy( (char *) var_data_ptr->data, msg );
-        var_data_ptr->header.length = strlen( msg );
-        /*
-         * Add to queue to send
-         */
-        imx_printf( "Adding log Message: %s\r\n", msg );
-        // Need to do this for now just free
-        add_var_free_pool( var_data_ptr );
-
-}
+    if( device_config.send_logs_to_imatrix == true ) {
+        log_msg_length = strlen( msg );
+        var_data_ptr = get_var_data( log_msg_length );
+        if( var_data_ptr != NULL ) {
+            /*
+             * Add message
+             */
+            strcpy( (char *) var_data_ptr->data, msg );
+            var_data_ptr->header.length = strlen( msg );
+            /*
+             * Add to queue to send
+             */
+            imx_printf( "Adding log Message: %s\r\n", msg );
+            // Need to do this for now just free
+            add_var_free_pool( var_data_ptr );
+        }
+    }
 }

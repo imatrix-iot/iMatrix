@@ -148,7 +148,7 @@ void load_config_defaults_generic_ccb( uint16_t arg );
 /*
  * LED Control functions
  */
-bool imx_set_led( imx_led_t led, imx_led_state_t mode );
+bool imx_set_led( imx_led_t led, imx_led_state_t mode, uint16_t mode_details );
 bool imx_get_led_state( imx_led_t led );
 /*
  * Additional support Platform code - ISMART-43340/43362

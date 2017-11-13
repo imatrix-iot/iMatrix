@@ -30,7 +30,7 @@
  */
 /** @file
  *
- * cli_dump.c
+ * cli_log.c
  *
  */
 
@@ -40,10 +40,12 @@
 #include <ctype.h>
 
 #include "wiced.h"
+#include "../storage.h"
 #include "spi_flash.h"
 
 #include "interface.h"
-#include "cli_dump.h"
+#include "../device/config.h"
+#include "cli_log.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -51,8 +53,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define CHAR_PER_LINE			32
-#define MAX_BUFFER_SIZE			2048
+
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -68,7 +69,8 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern sflash_handle_t sflash_handle;
+extern IOT_Device_Config_t device_config;
+
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -77,80 +79,26 @@ extern sflash_handle_t sflash_handle;
   * @param  None
   * @retval : None
   */
-void cli_dump(uint16_t mode)
+void cli_log(uint16_t mode)
 {
-	uint8_t	*buffer;
-	char *token, *foo;
-	uint32_t dump_start, dump_length;
+	bool update_config;
+	char *token;
 	/*
-	 *	command format d [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of data
+	 *	command format log <on|off>
 	 */
+	update_config = false;
 	token = strtok(NULL, " " );	// Get start if any
 	if( token ) {
-		if( strncmp( token, "0x", 2 ) == 0 )
-			dump_start = strtoul( &token[ 2 ], &foo, 16 );
-		else
-			dump_start = strtoul( token, &foo, 10 );
-	}
-	else
-		dump_start = 0x00;
-	token = strtok(NULL, " " );	// Get length
-	if( token ) {
-		if( strncmp( token, "0x", 2 ) == 0 )
-			dump_length = strtoul( &token[ 2 ], &foo, 16 );
-		else
-			dump_length = strtoul( token, &foo, 10 );
-	} else
-		dump_length = MAX_BUFFER_SIZE;
-	if( dump_length > MAX_BUFFER_SIZE )
-		dump_length = MAX_BUFFER_SIZE;
-
-	if( mode == DUMP_MEMORY ) {
-		cli_print( "Dump of Internal Memory from: 0x%08x\r\n", dump_start );
-		buffer = (uint8_t *) dump_start;
-		hex_dump( buffer, dump_start, dump_length );
-	} else {
-		cli_print( "Dump of External Serial Flash Memory from: 0x%08x\r\n", dump_start );
-		buffer = malloc( MAX_BUFFER_SIZE );
-		if( buffer != 0 ) {
-
-			dump_length = MAX_BUFFER_SIZE;
-			sflash_read( &sflash_handle, dump_start, (void*) buffer, dump_length );
-			/*
-			 * Print the buffer out
-			 */
-			cli_print( "SFLASH Dump: 0x%08lx for %u Bytes\r\n", dump_start, dump_length );
-			hex_dump( buffer, dump_start, dump_length );
+		if( strcmp( token, "on" ) == 0 ) {
+			device_config.send_logs_to_imatrix = true;
+			update_config = true;
+		} else if( strcmp( token, "on" ) == 0 ) {
+		    device_config.send_logs_to_imatrix = false;
+		    update_config = true;
 		} else
-			cli_print( "Could not allocate space for buffer\r\n" );
-		free( buffer );
-	}
-
-
-}
-
-void hex_dump( uint8_t *buffer, uint32_t dump_start, uint32_t dump_length )
-{
-	uint32_t i, j;
-
-	i = 0;
-	while( i < dump_length ) {
-		/*
-		 * Print 32 Bytes per line
-		 */
-		cli_print( "%08lX  ", dump_start + (uint32_t) i );
-		for( j = 0; ( ( i + j ) < dump_length ) && ( j < CHAR_PER_LINE ); j++ ) {
-			cli_print( "%02X ", buffer[ i + j ] );
-			if( ( j == 7 ) || ( j == 15 ) || (j == 23 ) )	// Make it easier to read
-				cli_print( " " );
-		}
-		for( j = 0; ( i + j ) < ( dump_length ) && ( j < CHAR_PER_LINE ); j++ )
-			if( isprint( (uint16_t) buffer[ i + j ] ) && ( (uint16_t) buffer[ i + j ] != 0x0a ) && ((uint16_t) buffer[ i + j ] != 0x0d ) )
-				cli_print( "%c", buffer[ i + j ] );
-			else
-				cli_print( "." );
-		i += CHAR_PER_LINE;
-		cli_print( "\r\n" );
-
-	}
+		    imx_printf( "Invalid option, log <on|off>\r\n" );
+	} else
+	    imx_printf( "iMatrix logging: %s\r\n", device_config.send_logs_to_imatrix == true ? "Enabled" : "Disabled" );
+	if( update_config == true )
+	    imatrix_save_config();
 }

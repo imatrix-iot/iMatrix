@@ -114,7 +114,7 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
     /*
      * During Setup alternate GREEN/RED quickly
      */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_BLINK_5 );
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_BLINK_2 | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_5 );
     /*
      * Let the user see this
      */
@@ -140,7 +140,7 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
     /*
      * Done Setup Turn LEDS OFF
      */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF );
+    imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
 
     return IMX_SUCCESS;
 }

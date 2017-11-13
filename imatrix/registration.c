@@ -163,8 +163,8 @@ void registration_process(wiced_time_t current_time )
             registration.error_code = NO_ERROR;
             registration.reg_timer = current_time;
             imx_printf( "Registration in process\r\n" );
-            set_host_led( IMX_LED_GREEN, IMX_LED_BLINK_1 );     // Set Green Led to Blink 1 times a second
-            set_host_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED Led to off
+            imx_set_led( IMX_LED_GREEN, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_1 );     // Set Green Led to Blink 1 times a second
+            imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );           // Set RED Led to off
             registration.state = CHECK_COAP_QUEUE;
             break;
         case CHECK_COAP_QUEUE :
@@ -182,8 +182,8 @@ void registration_process(wiced_time_t current_time )
                 /*
                  * Failure Show RED LED
                  */
-                set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
-                set_host_led( IMX_LED_RED, IMX_LED_ON );           // Set RED Led to on
+                imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
+                imx_set_led( IMX_LED_RED, IMX_LED_ON, 0 );           // Set RED Led to on
                 registration.reg_timer = current_time;
                 registration.state = REGISTRATION_SHOW_DONE;
             }
@@ -211,8 +211,8 @@ void registration_process(wiced_time_t current_time )
                 /*
                  * Failure Show RED LED
                  */
-                set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
-                set_host_led( IMX_LED_RED, IMX_LED_ON );           // Set RED Led to on
+                imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
+                imx_set_led( IMX_LED_RED, IMX_LED_ON, 0 );           // Set RED Led to on
                 registration.reg_timer = current_time;
                 registration.state = REGISTRATION_SHOW_DONE;
             }
@@ -220,7 +220,7 @@ void registration_process(wiced_time_t current_time )
     case SETUP_REGISTRATION :
         registration.retry_count = 0;
         registration.ack_received = false;
-        set_host_led( IMX_LED_GREEN, IMX_LED_BLINK_4 );             // Set Green Led to Blink 4 times a second
+        imx_set_led( IMX_LED_GREEN, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_4 );             // Set Green Led to Blink 4 times a second
         registration.state = SEND_REGISTRATION;
         break;
     case SEND_REGISTRATION :
@@ -237,8 +237,8 @@ void registration_process(wiced_time_t current_time )
             /*
              * Success Show GREEN LED
              */
-            set_host_led( IMX_LED_GREEN, IMX_LED_ON );
-            set_host_led( IMX_LED_RED, IMX_LED_OFF );
+            imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );
+            imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );
             registration.reg_timer = current_time;
             registration.state = REGISTRATION_SHOW_DONE;
         } else if( is_later( current_time, registration.reg_timer + REGISTRATION_TIMEOUT ) == true ) {
@@ -253,8 +253,8 @@ void registration_process(wiced_time_t current_time )
                 /*
                  * Failure Show RED LED
                  */
-                set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
-                set_host_led( IMX_LED_RED, IMX_LED_ON );           // Set RED Led to on
+                imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
+                imx_set_led( IMX_LED_RED, IMX_LED_ON, 0 );           // Set RED Led to on
                 registration.reg_timer = current_time;
                 registration.state = REGISTRATION_SHOW_DONE;
             }
@@ -263,8 +263,8 @@ void registration_process(wiced_time_t current_time )
         break;
     case REGISTRATION_SHOW_DONE :
         if( is_later( current_time, registration.reg_timer + REGISTRATION_DISPLAY ) == true ) {
-            set_host_led( IMX_LED_GREEN, IMX_LED_OFF );
-            set_host_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED Led to on
+            imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
+            imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );           // Set RED Led to on
             registration.state = REGISTRATION_IDLE;
             device_config.provisioned = true;
             icb.registration_in_process = false;

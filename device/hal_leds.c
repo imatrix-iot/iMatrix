@@ -111,58 +111,63 @@ void cli_set_led( uint16_t arg)
              * Start off
              */
             imx_printf( "Starting LED Test\r\n" );
-            imx_set_led( 0, IMX_LED_ALL_OFF );
+            imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
             wiced_rtos_delay_milliseconds( 500 );
 
-            for( i = 0; i < IMX_NO_LEDS; i++ ) {
+            for( i = 0; i < IMX_NO_LED_COMBINATIONS; i++ ) {
                 imx_printf( "Setting %s to ON..", led_names[ i ] );
-                imx_set_led( i, IMX_LED_ON );
+                imx_set_led( i, IMX_LED_ON, 0 );
                 wiced_rtos_delay_milliseconds( LED_TEST_TIME );
-                imx_set_led( i, IMX_LED_OFF );
+                imx_set_led( i, IMX_LED_OFF, 0 );
                 imx_printf( "OFF\r\n" );
             }
-            for( i = 0; i < IMX_NO_LEDS; i++ ) {
+            for( i = 0; i < IMX_NO_LED_COMBINATIONS; i++ ) {
                 imx_printf( "Setting %s to Blinking..", led_names[ i ] );
-                imx_set_led( i, IMX_LED_BLINK_5 );
+                imx_set_led( i, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_5 );
                 wiced_rtos_delay_milliseconds( LED_TEST_TIME );
-                imx_set_led( i, IMX_LED_OFF );
-                imx_printf( "OFF\r\n" );
-            }
-            for( i = 0; i < IMX_NO_LEDS; i++ ) {
-                imx_printf( "Setting %s to Flashing..", led_names[ i ] );
-                imx_set_led( i, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_2 );
-                wiced_rtos_delay_milliseconds( LED_TEST_TIME );
-                imx_set_led( i, IMX_LED_OFF );
+                imx_set_led( i, IMX_LED_OFF, 0 );
                 imx_printf( "OFF\r\n" );
             }
 
-            for( i = IMX_LED_RED_GREEN; i < IMX_NO_LED_COMBINATIONS; i++ ) {
-                imx_printf( "Setting %s to Alternating Blinking..", led_names[ i ] );
-                imx_set_led( i, IMX_LED_BLINK_5 );
+            for( i = 0; i < IMX_NO_LED_COMBINATIONS; i++ ) {
+                imx_printf( "Setting %s to Alt Blinking..", led_names[ i ] );
+                imx_set_led( i, IMX_LED_OTHER, IMX_LED_BLINK_2 | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_2 );
                 wiced_rtos_delay_milliseconds( LED_TEST_TIME );
-                imx_set_led( i, IMX_LED_OFF );
+                imx_set_led( i, IMX_LED_OFF, 0 );
                 imx_printf( "OFF\r\n" );
             }
-            for( i = IMX_LED_RED_GREEN; i < IMX_NO_LED_COMBINATIONS; i++ ) {
-                imx_printf( "Setting %s to Alternating Flashing..", led_names[ i ] );
-                imx_set_led( i, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_2 );
+
+            for( i = 0; i < IMX_NO_LED_COMBINATIONS; i++ ) {
+                imx_printf( "Setting %s to Flashing..", led_names[ i ] );
+                imx_set_led( i, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_1_2 );
                 wiced_rtos_delay_milliseconds( LED_TEST_TIME );
-                imx_set_led( i, IMX_LED_OFF );
+                imx_set_led( i, IMX_LED_OFF, 0 );
                 imx_printf( "OFF\r\n" );
             }
+
+            for( i = 0; i < IMX_NO_LED_COMBINATIONS; i++ ) {
+                imx_printf( "Setting %s to Alt Flashing..", led_names[ i ] );
+                imx_set_led( i, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_1_7 | IMX_LED_BLINK_2_2 );
+                wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+                imx_set_led( i, IMX_LED_OFF, 0 );
+                imx_printf( "OFF\r\n" );
+            }
+
             return;
         } else if( strcmp( token, "wifi" ) == 0 ) {
             imx_printf( "Wi Fi LED Test Start\r\n" );
-            imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_FLASH_2 | IMX_LED_BLINK_2 );
+            imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_BLINK_1_2 | IMX_LED_BLINK_2_2 );
             wiced_rtos_delay_milliseconds( LED_TEST_TIME );
             imx_printf( "Wi Fi LED Test Step 2\r\n" );
-            imx_set_led( IMX_LED_GREEN_RED, IMX_LED_FLASH | IMX_LED_FLASH_4 | IMX_LED_BLINK_2 );
+            imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_2 );
             wiced_rtos_delay_milliseconds( LED_TEST_TIME );
+            imx_printf( "Wi Fi LED Test Step 3\r\n" );
+            imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_BLINK_1_7 | IMX_LED_BLINK_2_1 );
             imx_printf( "Wi Fi LED Test Done\r\n" );
-            imx_set_led( 0, IMX_LED_ALL_OFF );      // Turn them all off
-
+            imx_set_led( 0, IMX_LED_ALL_OFF, 0 );      // Turn them all off
+            return;
         } else if( strcmp( token, "off" ) == 0 ) {
-            imx_set_led( 0, IMX_LED_ALL_OFF );      // Turn them all off
+            imx_set_led( 0, IMX_LED_ALL_OFF, 0 );      // Turn them all off
             return;
         } else if( strncmp( token, "0x", 2 ) == 0 )
             led = (imx_led_t) strtoul( &token[ 2 ], &foo, 16 );
@@ -178,10 +183,10 @@ void cli_set_led( uint16_t arg)
         if( token ) {
             if( strcmp( token, "on" ) == 0 ) {
                 rate = IMX_LED_ON;
-                imx_set_led( led, rate );
+                imx_set_led( led, IMX_LED_OTHER, rate );
             } else if( strcmp( token, "off" ) == 0 ) {
                 rate = IMX_LED_OFF;
-                imx_set_led( led, rate );
+                imx_set_led( led, IMX_LED_OTHER, rate );
             } else if( strcmp( token, "blink" ) == 0 ) {
                 token = strtok(NULL, " " );
                 if( token ) {
@@ -189,7 +194,7 @@ void cli_set_led( uint16_t arg)
                         rate = (imx_led_state_t) strtoul( &token[ 2 ], &foo, 16 );
                     else
                         rate = (imx_led_state_t) strtoul( token, &foo, 10 ) + 1;
-                    imx_set_led( led, rate );
+                    imx_set_led( led, IMX_LED_OTHER, rate );
                 } else
                     cli_print( "Need to specify blink rate\r\n" );
             } else

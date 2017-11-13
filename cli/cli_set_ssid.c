@@ -114,7 +114,7 @@ void cli_set_ssid( uint16_t arg)
 			set_wifi_ap_ssid( buffer1, buffer2, device_config.st_security_mode );
 			icb.wifi_up = false;
 			if( device_config.AP_setup_mode == true ) { // We were in set up mode - turn off the blinking led
-			    imx_set_led( IMX_LED_RED, IMX_LED_OFF );           // Set RED Led to off
+			    imx_set_led( IMX_LED_RED, IMX_LED_ALL_OFF, 0 );           // Set RED Led to off
 			    device_config.AP_setup_mode = false;
 			}
 			imatrix_save_config();

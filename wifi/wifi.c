@@ -581,6 +581,9 @@ void cli_wifi_setup( uint16_t arg )
 		icb.wifi_up = false;
 	}
 }
+/*
+ * Return the Wi Fi Status - to tell if we are on a station etc.
+ */
 imx_wifi_mode_t imx_get_wifi_mode(void)
 {
     if( icb.wifi_up == true ) {

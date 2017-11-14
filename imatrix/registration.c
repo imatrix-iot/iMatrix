@@ -50,7 +50,7 @@
 #include "../cli/interface.h"
 #include "../device/hal_leds.h"
 #include "../device/config.h"
-#include "../device/hal_leds.h"
+#include "../device/imx_leds.h"
 #include "../device/icb_def.h"
 #include "../time/ck_time.h"
 #include "registration.h"

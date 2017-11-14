@@ -62,7 +62,7 @@
 #include "../CoAP_interface/coap_def.h"
 #include "../device/icb_def.h"
 #include "../device/config.h"
-#include "../device/hal_leds.h"
+#include "../device/imx_leds.h"
 #include "../device/version.h"
 #include "../imatrix/imatrix_upload.h"
 #include "../json/mjson.h"

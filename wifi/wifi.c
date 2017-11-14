@@ -581,3 +581,13 @@ void cli_wifi_setup( uint16_t arg )
 		icb.wifi_up = false;
 	}
 }
+imx_wifi_mode_t imx_get_wifi_mode(void)
+{
+    if( icb.wifi_up == true ) {
+        if( device_config.AP_setup_mode == true )
+            return IMX_WIFI_ACCESS_POINT;
+        else
+            return IMX_WIFI_STATION;
+    } else
+        return IMX_WIFI_OFFLINE;
+}

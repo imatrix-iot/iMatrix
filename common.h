@@ -184,6 +184,7 @@ typedef enum {
     IMX_WIFI_ACCESS_POINT = 0,
     IMX_WIFI_STATION,
     IMX_WIFI_AD_HOC,
+    IMX_WIFI_OFFLINE,
 } imx_wifi_mode_t;
 
 /*

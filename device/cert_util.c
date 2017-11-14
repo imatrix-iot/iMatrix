@@ -46,7 +46,7 @@
 #include "../storage.h"
 #include "../device/icb_def.h"
 #include "../cli/cli.h"
-#include "cli\cli_dump.h"
+#include "cli/cli_dump.h"
 #include "../cli/interface.h"
 
 #include "cert_util.h"

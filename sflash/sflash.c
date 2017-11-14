@@ -39,7 +39,7 @@
 #include "imatrix.h"
 
 
-#include "..\ota_loader\ota_structure.h"
+#include "../ota_loader/ota_structure.h"
 #include "spi_flash.h"
 #include "wiced_apps_common.h"
 #include "spi_flash.h"

@@ -242,7 +242,8 @@ uint16_t wifi_init(void)
     /*
      * Update LED flash to show progress
      */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_1 | IMX_LED_BLINK_1_8 | IMX_LED_BLINK_2_1 );
+	if( device_config.AP_setup_mode == false )
+	    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_1 | IMX_LED_BLINK_1_8 | IMX_LED_BLINK_2_1 );
 	/*
 	 * Always set up the UDP Server
 	 */
@@ -288,8 +289,10 @@ uint16_t wifi_init(void)
 	    }
 	}
 	icb.wifi_up = true;
-    imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
-    imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );
+    if( device_config.AP_setup_mode == false ) {
+        imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
+        imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );
+    }
     /*
      * Log this connection
      */
@@ -311,7 +314,8 @@ uint16_t wifi_init(void)
     /*
      * All done here
      */
-    imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
+    if( device_config.AP_setup_mode == false )
+        imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
     return true;
 
 connectivity_deinit_and_fail:
@@ -321,7 +325,8 @@ connectivity_deinit_and_fail:
     /*
      * All done here
      */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF, 0 );
+    if( device_config.AP_setup_mode == false )
+        imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF, 0 );
     return false;// When the network was successfully torn down after an error.
 }
 

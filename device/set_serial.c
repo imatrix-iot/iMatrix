@@ -100,15 +100,18 @@ void set_serial_number(void)
     device_config.sn.serial1 = *(ptr);
     device_config.sn.serial2 = *(ptr + 1);
     device_config.sn.serial3 = *(ptr + 2);
-#endif
-
+#else
 #ifdef USE_CYW943907
 	//ptr = (uint32_t*) SERIAL_NUM_ADDR;
 	device_config.sn.serial1 = 1; //*(ptr);
 	device_config.sn.serial2 = 2; //*(ptr + 1);
 	device_config.sn.serial3 = 3; //*(ptr + 2);
+#else
+    device_config.sn.serial1 = 0; //*(ptr);
+    device_config.sn.serial2 = 0; //*(ptr + 1);
+    device_config.sn.serial3 = 0; //*(ptr + 2);
 #endif
-
+#endif
 	imatrix_save_config();
 
 }

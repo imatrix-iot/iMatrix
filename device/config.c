@@ -239,7 +239,9 @@ wiced_result_t imatrix_load_config(void)
   */
 wiced_result_t imatrix_save_config(void)
 {
+#ifdef USE_CYW943907
     return WICED_SUCCESS;
+#endif
     return wiced_dct_write( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, config ), sizeof( IOT_Device_Config_t ) );
 }
 

@@ -264,6 +264,11 @@ typedef enum {
     IMX_NO_LED_COMBINATIONS,
 } imx_led_t;
 
+typedef enum {
+    IMX_ETHERNET,
+    IMX_WIFI
+} imx_interface_t;
+
 typedef uint32_t imx_status_t;
 
 typedef struct var_data_header {
@@ -329,6 +334,7 @@ typedef struct {
     unsigned int log_wifi_AP            : 1;
     unsigned int log_wifi_rssi          : 1;
     unsigned int log_wifi_rfnoise       : 1;
+    imx_interface_t interface;
     imx_led_functions_t led_functions[ IMX_NO_LEDS ];   // Red, Green, Blue
 } imx_imatrix_init_config_t;
 

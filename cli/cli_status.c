@@ -199,7 +199,7 @@ void cli_status( uint16_t arg )
 
         for( i = 0; i < no_items; i++ ) {
             if( csb[ i ].enabled == true ) {
-                cli_print( "  No: %2u, %32s, ID: 0x%08lx, ", i, csb[ i ].name, csb[ i ].id );
+                cli_print( "  No: %2u(%s), %32s, ID: 0x%08lx, ", i, csb[ i ].read_only == true ? "R  " : "R/W", csb[ i ].name, csb[ i ].id );
                 if( csd[ i ].valid == true ) {
                     cli_print( "Current setting: " );
                     switch( csb[ i ].data_type ) {

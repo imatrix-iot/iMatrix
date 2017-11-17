@@ -107,18 +107,24 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
 
     SET_CSB_VARS( type );
 
+    imx_printf( "Setting %s( %s ): %u, data type(%s) : %u with value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", csb[ entry ].name, entry, csb->read_only == true ? "Read Only" : "Read/Write", csb[ entry ].data_type, value );
     /*
      * Do some error checking
      */
-    if( csb->read_only == true )
+    if( csb[ entry ].read_only == true ) {
+        imx_printf( "Read Only entry\r\n" );
         return false;
-
+    }
 	if( type == IMX_CONTROLS ) {
-		if( entry >= device_config.no_controls )
+		if( entry >= device_config.no_controls ) {
+	        imx_printf( "Entry exceeds number of items\r\n" );
 			return false;
+		}
 	} else {
-        if( entry >= device_config.no_sensors )
+        if( entry >= device_config.no_sensors ) {
+            imx_printf( "Entry exceeds number of items\r\n" );
             return false;
+        }
 	}
 	/*
 	 * Process the entry
@@ -126,7 +132,7 @@ uint16_t set_register( peripheral_type_t type, uint16_t entry, char *value )
     /*
      * Save value to last value - this will be returned by sample routine
      */
-//    cli_print( "Setting %s( %s ): %u, data type: %u with value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", csb[ entry ].name, entry, csb[ entry ].data_type, value );
+	imx_printf( "Setting %s( %s ): %u, data type: %u with value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", csb[ entry ].name, entry, csb[ entry ].data_type, value );
     switch( csb[ entry ].data_type ) {
         case IMX_INT32 :
             csd[ entry ].last_value.int_32bit = (int32_t) atoi( value );

@@ -76,7 +76,7 @@ uint16_t check_valid_ip_address(void);
 void wifi_logging(void);
 char* get_wifi_ssid( char* buffer, uint16_t index );
 void wifi_set_default_ap_ssid(void);
-void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security );
+void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security, uint16_t channel );
 void wifi_set_default_st_ssid(void);
 void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security );
 void st_printf_wifi_ssid(void);

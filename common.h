@@ -123,9 +123,9 @@
 /*
  * Location defaults - Zephyr Cove Office
  */
-#define IMX_LONGITUDE_DEFAULT           -119.943016
-#define IMX_LATITUDE_DEFAULT            38.986835
-#define IMX_ELEVATION_DEFAULT           1925.15         // Elevation in Meters
+#define IMX_FACTORY_LONGITUDE_DEFAULT           -119.943016
+#define IMX_FACTORY_LATITUDE_DEFAULT            38.986835
+#define IMX_FACTORY_ELEVATION_DEFAULT           1925.15         // Elevation in Meters
 
 #define WARNING_LEVELS                  ( 3 )
 #define IMX_NO_LEDS                     ( 3 )
@@ -311,6 +311,7 @@ typedef struct {
     char default_ap_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
     char default_st_ssid[ IMX_SSID_LENGTH + 1 ];
     char default_st_wpa[ IMX_WPA2PSK_LENGTH + 1 ];
+    uint16_t default_ap_channel;
     uint16_t default_ap_eap_mode;
     uint16_t default_st_eap_mode;
     uint32_t default_ap_security_mode;

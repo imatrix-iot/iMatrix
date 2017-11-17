@@ -111,7 +111,7 @@ void cli_set_ssid( uint16_t arg)
 			}
 			strcpy( device_config.st_ssid, buffer1 );
 			strcpy( device_config.st_wpa, buffer2 );
-			set_wifi_ap_ssid( buffer1, buffer2, device_config.st_security_mode );
+			set_wifi_ap_ssid( buffer1, buffer2, device_config.st_security_mode, 1 );
 			icb.wifi_up = false;
 			if( device_config.AP_setup_mode == true ) { // We were in set up mode - turn off the blinking led
 			    imx_set_led( IMX_LED_RED, IMX_LED_ALL_OFF, 0 );           // Set RED Led to off

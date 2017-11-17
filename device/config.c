@@ -100,11 +100,11 @@ wiced_result_t imatrix_load_config(void)
    wiced_result_t result;
 
     update_cert_pointers();// Make sure cert pointers are updated regardless of any errors accessing the DCT.
-
+/*
     result = wiced_dct_read_with_copy( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, config ), sizeof( IOT_Device_Config_t ) );
     if ( result != WICED_SUCCESS )
         return result;
-
+*/
     if ( device_config.valid_config == IMX_MAGIC_CONFIG) {
         imx_printf( "Restored configuration from DCT\r\n" );
         return WICED_SUCCESS;
@@ -148,6 +148,7 @@ wiced_result_t imatrix_load_config(void)
     device_config.st_eap_mode = imatrix_init_config.default_st_eap_mode;
     device_config.ap_security_mode = imatrix_init_config.default_ap_security_mode;
     device_config.st_security_mode = imatrix_init_config.default_st_security_mode;
+    device_config.default_ap_channel = imatrix_init_config.default_ap_channel;
     if( imatrix_init_config.start_in_station_mode == true ) {
         /*
          * App is forcing to use default settings Wi Fi to Station mode using presets
@@ -238,6 +239,7 @@ wiced_result_t imatrix_load_config(void)
   */
 wiced_result_t imatrix_save_config(void)
 {
+    return WICED_SUCCESS;
     return wiced_dct_write( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, config ), sizeof( IOT_Device_Config_t ) );
 }
 

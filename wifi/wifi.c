@@ -481,7 +481,7 @@ void wifi_set_default_ap_ssid(void)
     else
         sprintf( ap_ssid, "%s-%02X%02X%02X", device_config.product_name, (uint16_t) dct_wifi->mac_address.octet[ 3 ], (uint16_t) dct_wifi->mac_address.octet[ 4 ], (uint16_t) dct_wifi->mac_address.octet[ 5 ] );
     imx_printf( "Setting Access Point to SSID:%s\r\n", ap_ssid );
-    set_wifi_ap_ssid( ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
+    set_wifi_ap_ssid( ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode, device_config.default_ap_channel );
 }
 
 /**
@@ -491,7 +491,7 @@ void wifi_set_default_ap_ssid(void)
   * are stored as length specified strings in the DCT.
   *
   */
-void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security )
+void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security, uint16_t channel )
 {
     platform_dct_wifi_config_t* dct_wifi = NULL;
     platform_dct_network_config_t* dct_network = NULL;
@@ -510,6 +510,7 @@ void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security )
     strcpy( device_config.ap_ssid, ssid );
     strcpy( device_config.ap_wpa, passphrase );
     device_config.ap_security_mode = security;
+    device_config.ap_channel = channel;
 
     // Modify the SSID and Passphrase in DCT
 
@@ -518,6 +519,7 @@ void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security )
 
     strncpy( (char *) save.wifi.soft_ap_settings.SSID.value, ssid, IMX_SSID_LENGTH );
     save.wifi.soft_ap_settings.SSID.length = strlen( ssid );
+    save.wifi.soft_ap_settings.channel = channel;
     strncpy( save.wifi.soft_ap_settings.security_key, passphrase, SECURITY_KEY_SIZE );
     save.wifi.soft_ap_settings.security_key_length = strlen( passphrase );
     save.wifi.soft_ap_settings.security = security;

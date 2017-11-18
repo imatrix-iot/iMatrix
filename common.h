@@ -265,8 +265,8 @@ typedef enum {
 } imx_led_t;
 
 typedef enum {
-    IMX_ETHERNET,
-    IMX_WIFI
+    IMX_INTERFACE_ETHERNET,
+    IMX_INTERFACE_WIFI
 } imx_interface_t;
 
 typedef uint32_t imx_status_t;

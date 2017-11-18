@@ -100,11 +100,11 @@ wiced_result_t imatrix_load_config(void)
    wiced_result_t result;
 
     update_cert_pointers();// Make sure cert pointers are updated regardless of any errors accessing the DCT.
-/*
+#ifdef USE_STM32
     result = wiced_dct_read_with_copy( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, config ), sizeof( IOT_Device_Config_t ) );
     if ( result != WICED_SUCCESS )
         return result;
-*/
+#endif
     if ( device_config.valid_config == IMX_MAGIC_CONFIG) {
         imx_printf( "Restored configuration from DCT\r\n" );
         return WICED_SUCCESS;

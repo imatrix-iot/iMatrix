@@ -265,11 +265,9 @@ void imatrix_print_config( uint16_t arg )
 	        device_config.indoor_x, device_config.indoor_y );
     cli_print( "Default AP SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
     cli_print( "Default ST SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_st_ssid, device_config.default_st_wpa, device_config.default_st_security_mode );
-	cli_print( "Operating Mode: %s, ", ( device_config.AP_setup_mode == true ) ? "Wi Fi Access Point" : "Wi Fi Station" );
-	if( device_config.AP_setup_mode == true )
-	    cli_print( "SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.ap_ssid, device_config.ap_wpa, device_config.ap_security_mode );
-	else
-	    cli_print( "SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.st_ssid, device_config.st_wpa, device_config.st_security_mode );
+    cli_print( "Access Point Stored SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.ap_ssid, device_config.ap_wpa, device_config.ap_security_mode );
+    cli_print( "Station Stored SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.st_ssid, device_config.st_wpa, device_config.st_security_mode );
+    cli_print( "Current Operating Mode: %s\r\n", ( device_config.AP_setup_mode == true ) ? "Wi Fi Access Point" : "Wi Fi Station" );
 
     cli_print( "iMatrix URL: %s, iMatrix batch check time: %lumS\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time );
 	cli_print( "Manufacturing URL: %s, Bind URI: %s, OTA URL: %s\r\n", device_config.manufacturing_url, device_config.imatrix_bind_uri, device_config.ota_public_url );

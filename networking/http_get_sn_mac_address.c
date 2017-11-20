@@ -206,7 +206,7 @@ uint16_t http_get_sn_mac_address( void )
 				break;
 			case GET_MAC_SEND_REQUEST :		// Create query request and send
 				memset( local_buffer, 0x00, BUFFER_LENGTH );
-				sprintf( &local_buffer[ strlen( local_buffer ) ], "GET %s?", device_config.imatrix_bind_uri );
+				sprintf( &local_buffer[ strlen( local_buffer ) ], "GET /%s?", device_config.imatrix_bind_uri );
 				sprintf( &local_buffer[ strlen( local_buffer ) ], "cpuid=0x%08lX%08lX%08lX&productid=0x%08lX", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.product_id );
 				strcat( local_buffer, " HTTP/1.1\nHost: " );
 				strcat( local_buffer, device_config.manufacturing_url );

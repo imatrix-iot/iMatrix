@@ -464,6 +464,14 @@ void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security )
     strcpy( (char *) save.network.hostname.value, HOSTNAME_PREFIX );
     strncat( (char *) save.network.hostname.value, device_config.device_serial_number, HOSTNAME_SIZE - 8 );
     wiced_dct_write( &( save.network ), DCT_NETWORK_CONFIG_SECTION, 0, sizeof(platform_dct_network_config_t) );
+
+    if( device_config.AP_setup_mode == true ) { // We were in set up mode - turn off the blinking led
+        imx_set_led( IMX_LED_RED, IMX_LED_ALL_OFF, 0 );           // Set RED Led to off
+        device_config.AP_setup_mode = false;
+    }
+    icb.wifi_up = false;
+    imatrix_save_config();
+
 }
 
 /**

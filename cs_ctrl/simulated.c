@@ -178,12 +178,12 @@ uint16_t print_register( peripheral_type_t type, uint16_t entry )
 		if( entry >= device_config.no_controls )
 			return false;
 	    csd = &cd[ 0 ];
-        csb = &device_config.ccb[ 0 ];  \
+        csb = &device_config.ccb[ 0 ];
 	} else {
 		if( entry >= device_config.no_sensors )
 			return false;
 	    csd = &sd[ 0 ];
-        csb = &device_config.scb[ 0 ];  \
+        csb = &device_config.scb[ 0 ];
 	}
     switch( csb[ entry].data_type ) {
         case IMX_INT32 :

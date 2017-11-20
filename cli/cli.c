@@ -296,7 +296,12 @@ void cli_process( void )
 			break;
 		case CLI_PROCESS_CMD :
 			token = strtok( command_line, " " );
-			if( imx_cli_mode == true ) {
+			if( token[ 0 ] == '!' ) {
+			    /*
+			     * Ignore comments
+			     */
+			    cmd_found = true;
+			} else if( imx_cli_mode == true ) {
 	            if( strcmp( token, IMX_APP_COMMAND ) == 0x00 ) {
 	                imx_cli_mode = false;
 	                verbose_state = device_config.AT_verbose;   // Save state

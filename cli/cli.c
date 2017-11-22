@@ -335,8 +335,10 @@ void cli_process( void )
                         cmd_found = (host_cli_handler)( token );
                 }
 			}
-            if( ( cmd_found == false ) && ( token != NULL ) )
-                cli_print( "Unknown Command: %s\r\n", token );
+            if( ( cmd_found == false ) && ( token != NULL ) ) {
+                if( strlen( token ) > 1 )
+                    cli_print( "Unknown Command: %s\r\n", token );
+            }
 			if( active_device == CONSOLE_OUTPUT )
 			    cli_state = CLI_SETUP_CONSOLE;
 			else

@@ -439,7 +439,7 @@ void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security )
     /*
      * Save in config
      */
-    imx_printf( "Setting SSID: %s, Passphrase: %s, Security Code: 0x%08lx\r\n", ssid, passphrase, (uint32_t) security );
+    imx_printf( "Setting SSID: %s, Passphrase: ->%s<-, Security Code: 0x%08lx\r\n", ssid, passphrase, (uint32_t) security );
     strcpy( device_config.st_ssid, ssid );
     strcpy( device_config.st_wpa, passphrase );
     device_config.st_security_mode = security;

@@ -144,11 +144,12 @@ uint16_t coap_post_config_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, ui
         response = BAD_REQUEST;
         goto bad_data;
     }
-    if( result || ( strcmp( ssid, "" ) == 0x00 )|| ( strcmp( phrase_key, "" ) == 0x00 ) || ( security_type == NO_SECURITY ) ) {
+    if( result || ( strcmp( ssid, "" ) == 0x00 )|| ( security_type == NO_SECURITY ) ) {
         PRINTF( "Invalid JSON object in coap_post_control_securessid function.\r\n");
         response = BAD_REQUEST;
         goto bad_data;
     }
+
 
     PRINTF( "SSID: %s, Phrase Key: %s, Security Type: %u, status: %d\r\n", ssid, phrase_key, security_type, result );
 

@@ -219,7 +219,7 @@ void cli_init(void)
   */
 void cli_process( void )
 {
-	char ch, *token;
+	char ch, *token = NULL;
 	uint16_t i;
 	uint32_t expected_data_size;
 
@@ -295,49 +295,51 @@ void cli_process( void )
 			}
 			break;
 		case CLI_PROCESS_CMD :
-			token = strtok( command_line, " " );
-			if( token[ 0 ] == '!' ) {
+			if( command_line[ 0 ] == '!' ) {
 			    /*
 			     * Ignore comments
 			     */
 			    cmd_found = true;
-			} else if( imx_cli_mode == true ) {
-	            if( strcmp( token, IMX_APP_COMMAND ) == 0x00 ) {
-	                imx_cli_mode = false;
-	                verbose_state = device_config.AT_verbose;   // Save state
-	                device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD_STATUS;
-                    cmd_found = true;
-	            } else {
-                    cmd_found = false;// Exit do loop when true.
-                    if( token != NULL ) {
-                        i = 0;// Exit do loop when i == NO_CMDS
-                        do {
-                            if( strcmp( token, command[ i ].command_string ) == 0x00 ) {
-                                cmd_found = true;
-                                if( *command[ i ].cli_function != NULL )
-                                    (*command[ i ].cli_function)( command[ i ].arg );
-                            }
-                            i++;
-                        } while ( ( i < NO_CMDS ) && ( cmd_found == false ) );
-                    }
-	            }
 			} else {
-                if( strcmp( token, IMX_EXIT_APP_COMMAND ) == 0x00 ) {
-                    imx_cli_mode = true;
-                    device_config.AT_verbose = verbose_state;
-                    cmd_found = true;
+	            token = strtok( command_line, " " );
+                if( imx_cli_mode == true ) {
+                    if( strcmp( token, IMX_APP_COMMAND ) == 0x00 ) {
+                        imx_cli_mode = false;
+                        verbose_state = device_config.AT_verbose;   // Save state
+                        device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD_STATUS;
+                        cmd_found = true;
+                    } else {
+                        cmd_found = false;// Exit do loop when true.
+                        if( token != NULL ) {
+                            i = 0;// Exit do loop when i == NO_CMDS
+                            do {
+                                if( strcmp( token, command[ i ].command_string ) == 0x00 ) {
+                                    cmd_found = true;
+                                    if( *command[ i ].cli_function != NULL )
+                                        (*command[ i ].cli_function)( command[ i ].arg );
+                                }
+                                i++;
+                            } while ( ( i < NO_CMDS ) && ( cmd_found == false ) );
+                        }
+                    }
                 } else {
-                    cmd_found = false;// Exit do loop when true.
-                    /*
-                     * See if we pass to host CLI
-                     */
-                    if( host_cli_handler != NULL )
-                        cmd_found = (host_cli_handler)( token );
+                    if( strcmp( token, IMX_EXIT_APP_COMMAND ) == 0x00 ) {
+                        imx_cli_mode = true;
+                        device_config.AT_verbose = verbose_state;
+                        cmd_found = true;
+                    } else {
+                        cmd_found = false;// Exit do loop when true.
+                        /*
+                         * See if we pass to host CLI
+                         */
+                        if( host_cli_handler != NULL )
+                            cmd_found = (host_cli_handler)( token );
+                    }
                 }
 			}
-            if( ( cmd_found == false ) && ( token != NULL ) ) {
-                if( strlen( token ) > 1 )
-                    cli_print( "Unknown Command: %s\r\n", token );
+            if( cmd_found == false ) {
+                if( token != NULL )
+                    cli_print( "Unknown Command: %s, length: %u\r\n", token, strlen( token ) );
             }
 			if( active_device == CONSOLE_OUTPUT )
 			    cli_state = CLI_SETUP_CONSOLE;

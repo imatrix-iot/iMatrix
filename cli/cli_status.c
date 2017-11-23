@@ -112,7 +112,7 @@ void cli_status( uint16_t arg )
     cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
     cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
-    cli_print( "Wi Fi Details: Successful Connections: %lu, Failed Attempts: %lu ", icb.wifi_success_connect_count, icb.wifi_failed_connect_count );
+    cli_print( "Wi Fi Details: Successful Connections: %lu, Failed Attempts: %lu\r\n", icb.wifi_success_connect_count, icb.wifi_failed_connect_count );
 	cli_print( "Device is: " );
 	if( icb.wifi_up == true ) {
 		cli_print( "Online, " );
@@ -122,7 +122,7 @@ void cli_status( uint16_t arg )
                 (unsigned int)((GET_IPV4_ADDRESS( icb.my_ip ) >>  8) & 0xFF),
                 (unsigned int)((GET_IPV4_ADDRESS( icb.my_ip ) >>  0) & 0xFF ) );
 		if( device_config.AP_setup_mode == true ) {
-			cli_print( "Access Point / Setup mode, SSID: %s, WPA2PSK: %s, ", device_config.ap_ssid, device_config.ap_wpa );
+			cli_print( "Access Point / Setup mode, SSID: %s, WPA2PSK: ->%s<-, Security Mode: 0x%x, ", device_config.ap_ssid, device_config.ap_wpa, device_config.ap_security_mode );
 			/*
 			 * Add Code to list clients
 			 */

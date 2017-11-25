@@ -56,7 +56,8 @@ $(NAME)_SOURCES := imatrix_interface.c imatrix_interface.h storage.c storage.h h
 at_cmds/at_cmds.c at_cmds/at_cmds.h \
 ble/ble_config.c ble/ble_manager.c ble/ble_manager.h \
 cli/cli.c cli/cli.h cli/cli_help.c cli/cli_help.h cli/cli_reboot.c cli/cli_reboot.h cli/cli_status.c cli/status.h \
-cli/cli_set_ssid.c cli/cli_set_ssid.h cli/cli_dump.c cli/cli_dump.h cli/cli_log.c cli/cli_log.h cli/cli_set_serial.c cli/cli_set_serial.h \
+cli/cli_set_ssid.c cli/cli_set_ssid.h cli/cli_dump.c cli/cli_dump.h cli/cli_log.c cli/cli_log.h cli/cli_ntp.c cli/cli_ntp.h \
+cli/cli_set_serial.c cli/cli_set_serial.h \
 cli/interface.c cli/interface.h cli/print_dct.c cli/print_dct.h cli/telnetd.c cli/telnetd.h cli/cli_debug.c cli/cli_debug.h \
 coap/coap.c coap/coap.h coap/coap_setup.c coap/coap_setup.h coap/coap_udp_recv.c coap_udp_recv.h \
 coap/add_coap_option.c coap/add_coap_option.h coap/coap_process.c coap/coap_process.h \

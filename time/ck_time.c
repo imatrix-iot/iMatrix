@@ -134,7 +134,7 @@ wiced_result_t start_stopped_auto_time_sync_if_random_delay_is_finished()
 
 	if ( ( when_sntp_timer_started != 0 ) || ( sntp_random_delay_ms != INVALID_SNTP_STARTUP_DELAY ) ) {// Zero means the random delay timer is not running.
 		wiced_time_get_time( &now );
-		if ( is_later( now, when_sntp_timer_started + sntp_random_delay_ms ) ) {
+		if ( imx_is_later( now, when_sntp_timer_started + sntp_random_delay_ms ) ) {
 		    when_sntp_timer_started = 0;
 		    sntp_random_delay_ms = INVALID_SNTP_STARTUP_DELAY;
 
@@ -216,7 +216,7 @@ char* sprintf_iso8601_time(char* str_out, uint32_t max_length, wiced_iso8601_tim
  *
  * written by Eric Thelin 21 June 2015
  */
-wiced_utc_time_t current_local_time()
+wiced_utc_time_t imx_current_local_time(void)
 {
 
     wiced_utc_time_t utc_seconds_since_1969;
@@ -237,7 +237,7 @@ wiced_utc_time_t current_local_time()
  *
  * Written by Eric Thelin 22 June 2015
  */
-uint16_t day_of_week(wiced_utc_time_t seconds_since_1969)
+uint16_t imx_day_of_week(wiced_utc_time_t seconds_since_1969)
 {
     uint32_t days = seconds_since_1969 / (24 * 3600);
     days = days + 4;
@@ -344,7 +344,7 @@ wiced_result_t wiced_local_time_get_iso8601_time(wiced_iso8601_time_t* iso8601_t
     uint32_t            sub_second = 0;
     wiced_bool_t        is_a_leap_year;
 
-    local_time = current_local_time();
+    local_time = imx_current_local_time();
     second = local_time;
 
     /* Calculate year */
@@ -533,7 +533,7 @@ wiced_time_t time_difference( wiced_time_t latest, wiced_time_t earliest )
  *
  * written by Eric Thelin 29 June 2016
  */
-uint16_t is_later(  wiced_time_t time1, wiced_time_t time2 )
+bool imx_is_later(  wiced_time_t time1, wiced_time_t time2 )
 {
 	const wiced_time_t range_top_quarter = 0xC0000000;
 	const wiced_time_t range_mid_point =   0x80000000;
@@ -567,9 +567,9 @@ uint16_t is_later(  wiced_time_t time1, wiced_time_t time2 )
  * written by Eric Thelin 30 June 2016
  */
 uint16_t timer_timeout( wiced_time_t current_time, wiced_time_t start, uint32_t wait )
-//uint16_t is_later(  wiced_time_t time1, wiced_time_t time2 )
+//uint16_t imx_is_later(  wiced_time_t time1, wiced_time_t time2 )
 {
-	return is_later( current_time, start + wait );
+	return imx_is_later( current_time, start + wait );
 }
 
 /**
@@ -595,7 +595,7 @@ uint16_t save_ntp_information_to_config_when_needed()
  *
  * written by Eric Thelin 5 July 2016
  **/
-uint16_t ntp_succeeded_at_least_once()
+uint16_t imx_ntp_succeeded_at_least_once(void)
 {
 	return (uint16_t) ntp_succeeded_since_boot;
 }

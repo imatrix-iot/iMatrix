@@ -174,6 +174,10 @@ imx_result_t imx_sample_wifi_channel(uint16_t arg, void *value );
 /*
  * Time & Watchdogs Update
  */
+wiced_utc_time_t imx_current_local_time(void);
+uint16_t imx_ntp_succeeded_at_least_once(void);
+uint16_t imx_day_of_week(wiced_utc_time_t seconds_since_1969);
+bool imx_is_later(  wiced_time_t time1, wiced_time_t time2 );
 imx_result_t imx_get_utc(uint16_t arg, void *value );
 void imx_kick_watchdog(void);
 /*

@@ -281,7 +281,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
      * see if change in error or all we are getting is errors. - Only send once per batch
      */
     if( ( csd[ entry ].error != csd[ entry ].last_error ) ||
-        ( is_later( current_time, csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) ) == true ) ) {
+        ( imx_is_later( current_time, csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) ) == true ) ) {
     //              imx_printf( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ entry ].error, csd[ entry ].last_error, csd[ entry ].last_sample_time, ( csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) - (uint32_t) current_time )  );
         csd[ entry ].last_sample_time = current_time;
         csd[ entry ].last_error = csd[ entry ].error;

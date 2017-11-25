@@ -66,6 +66,7 @@
 #include "cli_help.h"
 #include "cli_dump.h"
 #include "cli_log.h"
+#include "cli_ntp.h"
 #include "cli_reboot.h"
 #include "cli_status.h"
 #include "cli_set_serial.h"
@@ -117,6 +118,7 @@ enum cmds {				// Must match commands variable order
     CLI_PRINT_LUT,      // print the LUT
 	CLI_LED,			// Set the LED and Mode
     CLI_LOG,            // Enable/Disable Log
+    CLI_NTP,
 	CLI_DUMP_MEMORY,	// dump internal memory
 	CLI_MFG_TEST,       // Do a manufacturing test / function
     CLI_REBOOT,         // reboot
@@ -178,6 +180,7 @@ cli_commands_t command[ NO_CMDS ] = {
 		{ "led", &cli_set_led, 0, "Set led state <led led_no | state <on|off|blink_rate per second>" },
 		{ "log", &cli_log, 0, "log <on|off> Enable/Disable Logging to iMatrix" },
 		{ "m", &cli_dump, DUMP_MEMORY, "m [ <start address> ] [ <length> ] if no start, start at 0, if no length, print out 1k of SRAM data" },
+		{ "ntp", &cli_ntp, 0, "ntp - Retry get NTP" },
 		{ "mfg", mfg_test, 0, "mfg <test/function number>" },
 		{ "reboot", &cli_reboot, 0, "reboot the device" },	// reboot the device
 		{ "s", &cli_status, 0, "Print the status" },		// Current Status

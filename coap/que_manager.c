@@ -264,10 +264,10 @@ void list_add_at( wiced_time_t timestamp, message_list_t *list, message_t *new_e
     }
     else {
         entry = list->tail;
-        while ( is_later( entry->coap.next_timestamp, timestamp )  && ( entry->header.prev != NULL )) {
+        while ( imx_is_later( entry->coap.next_timestamp, timestamp )  && ( entry->header.prev != NULL )) {
             entry = entry->header.prev;
         }
-        if ( is_later( entry->coap.next_timestamp, timestamp ) ) { // then entry.prev == NULL so insert before entry
+        if ( imx_is_later( entry->coap.next_timestamp, timestamp ) ) { // then entry.prev == NULL so insert before entry
             list->head = new_entry;
             new_entry->header.prev = NULL;
             new_entry->header.next = entry;
@@ -316,7 +316,7 @@ message_t *list_pop_before( wiced_time_t timestamp, message_list_t *list )
         imx_printf( "Unable to lock list mutex...\r\n" );
     }
 
-    if ( ( list->head == NULL ) || ( is_later( list->head->coap.next_timestamp, timestamp ) ) ) {// Assume no entries
+    if ( ( list->head == NULL ) || ( imx_is_later( list->head->coap.next_timestamp, timestamp ) ) ) {// Assume no entries
         entry = NULL;
     }
     else {
@@ -564,7 +564,7 @@ wiced_result_t msg_release( message_t *msg )
 
 /**
  * Release all messages in the list.
- * NOTE: See the is_later() function for details on how a roll over is handled
+ * NOTE: See the imx_is_later() function for details on how a roll over is handled
  * and how to force it to return false in list_pop_before().
  *
  * written by Eric Thelin 29 June 2016

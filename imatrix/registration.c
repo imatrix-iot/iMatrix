@@ -173,7 +173,7 @@ void registration_process(wiced_time_t current_time )
              */
             if( coap_udp_xmit_empty() == true )
                 registration.state = SETUP_LINK;
-            if( is_later( current_time, registration.reg_timer + COAP_TIMEOUT ) == true ) {
+            if( imx_is_later( current_time, registration.reg_timer + COAP_TIMEOUT ) == true ) {
                 /*
                  * Something strange going on - should never have traffic still going on at this point.
                  */
@@ -192,7 +192,7 @@ void registration_process(wiced_time_t current_time )
             /*
              * Wait a bit to make sure CoAP transmit fully flushed
              */
-            if( is_later( current_time, registration.reg_timer + COAP_DELAY ) == true ) {
+            if( imx_is_later( current_time, registration.reg_timer + COAP_DELAY ) == true ) {
                 device_config.AP_setup_mode = false;
                 imatrix_save_config();
                 registration.reg_timer = current_time;
@@ -203,7 +203,7 @@ void registration_process(wiced_time_t current_time )
         case CHECK_WIFI_UP :
             if( icb.wifi_up == true )
                 registration.state = SETUP_REGISTRATION;
-            else if( is_later( current_time, registration.reg_timer + WIFI_TIMEOUT ) == true ) {
+            else if( imx_is_later( current_time, registration.reg_timer + WIFI_TIMEOUT ) == true ) {
                 imx_printf( "Wi Fi Failed to come up\r\n" );
                 device_config.AP_setup_mode = true;     // Come back up in AP mode
                 imatrix_save_config();
@@ -241,7 +241,7 @@ void registration_process(wiced_time_t current_time )
             imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );
             registration.reg_timer = current_time;
             registration.state = REGISTRATION_SHOW_DONE;
-        } else if( is_later( current_time, registration.reg_timer + REGISTRATION_TIMEOUT ) == true ) {
+        } else if( imx_is_later( current_time, registration.reg_timer + REGISTRATION_TIMEOUT ) == true ) {
             if( registration.retry_count >= REGISTRATION_RETRIES ) {
                 imx_printf( "Aborting due to retry accounts exceeded\r\n" );
                 /*
@@ -262,7 +262,7 @@ void registration_process(wiced_time_t current_time )
 
         break;
     case REGISTRATION_SHOW_DONE :
-        if( is_later( current_time, registration.reg_timer + REGISTRATION_DISPLAY ) == true ) {
+        if( imx_is_later( current_time, registration.reg_timer + REGISTRATION_DISPLAY ) == true ) {
             imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
             imx_set_led( IMX_LED_RED, IMX_LED_OFF, 0 );           // Set RED Led to on
             registration.state = REGISTRATION_IDLE;

@@ -235,7 +235,7 @@ void imatrix_upload(wiced_time_t current_time)
         		/*
         		 * See if it is time to check for batches completed
         		 */
-        		if( is_later( current_time, imatrix.last_upload_time + device_config.imatrix_batch_check_time ) ) {
+        		if( imx_is_later( current_time, imatrix.last_upload_time + device_config.imatrix_batch_check_time ) ) {
             		for( i = 0; i < no_items; i++ ) {
                         if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
                             if( ( csd[ i ].send_batch == true ) ||

@@ -156,7 +156,7 @@ void process_wifi(wiced_time_t current_time )
 
 				// Calculate the correct boot time the first time NTP succeeds.
 
-			    if ( ( icb.boot_time == icb.fake_utc_boot_time ) && ntp_succeeded_at_least_once() ) {
+			    if ( ( icb.boot_time == icb.fake_utc_boot_time ) && imx_ntp_succeeded_at_least_once() ) {
 					wiced_time_t time;
 					wiced_time_get_time( &time );
 					wiced_time_get_utc_time( &utc_time );
@@ -166,7 +166,7 @@ void process_wifi(wiced_time_t current_time )
 
 				// Start keep alive when backoff expires.
 
-				if ( ( keep_alive_backoff != KEEP_ALIVE_ALREADY_STARTED ) && ( is_later( current_time, wifi_up_time + keep_alive_backoff ) ) ) {
+				if ( ( keep_alive_backoff != KEEP_ALIVE_ALREADY_STARTED ) && ( imx_is_later( current_time, wifi_up_time + keep_alive_backoff ) ) ) {
 				    start_keep_alive( KEEP_ALIVE_PERIOD_MSEC );
 					keep_alive_backoff = KEEP_ALIVE_ALREADY_STARTED;
 				}

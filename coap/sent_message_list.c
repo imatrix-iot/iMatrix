@@ -163,7 +163,7 @@ void expect_response_from( coap_message_t* msg )
 
 		// If the matching message in the list is more recent, discard the passed in message without saving anything.
 
-		if ( is_later( messages_awaiting_response.list[ sent.id ].initial_timestamp, msg->initial_timestamp ) ) {
+		if ( imx_is_later( messages_awaiting_response.list[ sent.id ].initial_timestamp, msg->initial_timestamp ) ) {
 			imx_printf("Rejecting new message because it is too old.");
 			return;
 		}
@@ -269,7 +269,7 @@ void free_all_expired_sent_msg()
 	wiced_time_get_time( &now );
 
 	while ( entry_id != NOT_FOUND_IN_LIST ) {
-		if ( is_later( now, messages_awaiting_response.list[ entry_id ].initial_timestamp + SENT_MESSAGE_EXPIRATION ) ) {
+		if ( imx_is_later( now, messages_awaiting_response.list[ entry_id ].initial_timestamp + SENT_MESSAGE_EXPIRATION ) ) {
 
 			// Free expired entry;
 
@@ -383,7 +383,7 @@ static void free_oldest_msg()
 	// Loop over remaining entries.
 
 	while ( next_entry != NOT_FOUND_IN_LIST ) {
-		if ( is_later( messages_awaiting_response.list[ oldest ].initial_timestamp,
+		if ( imx_is_later( messages_awaiting_response.list[ oldest ].initial_timestamp,
 				messages_awaiting_response.list[ next_entry ].initial_timestamp ) ) {
             before_oldest = entry;
 			oldest = next_entry;
@@ -414,7 +414,7 @@ static void free_oldest_msg()
 void test_is_later()
 {
 	imx_printf("Initial time[0] %lu ",  messages_awaiting_response.list[ 0 ].initial_timestamp);
-	if ( is_later( messages_awaiting_response.list[ 0 ].initial_timestamp,
+	if ( imx_is_later( messages_awaiting_response.list[ 0 ].initial_timestamp,
 					messages_awaiting_response.list[ 49].initial_timestamp ) ) {
 		imx_printf(">");
 	} else imx_printf("<=");

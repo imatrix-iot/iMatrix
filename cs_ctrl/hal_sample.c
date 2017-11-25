@@ -138,7 +138,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	 *
 	 * Sample rate of 0 represents event driven
 	 */
-	if( ( csb[ *active ].enabled == true ) && ( csb[ *active ].sample_rate > 0 ) && ( is_later( current_time, csd[ *active ].last_poll_time + csb[ *active ].poll_rate ))) {
+	if( ( csb[ *active ].enabled == true ) && ( csb[ *active ].sample_rate > 0 ) && ( imx_is_later( current_time, csd[ *active ].last_poll_time + csb[ *active ].poll_rate ))) {
 		status = 0;	// Controls may not have an update function as the may just be set remotely
 		if( f[ *active ].update != NULL ) {
 			status = ( f[ *active ].update)( f[ *active ].arg, &sampled_value );
@@ -175,7 +175,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
 	             * see if change in error or all we are getting is errors. - Only send once per batch
 	             */
 	            if( ( csd[ *active ].error != csd[ *active ].last_error ) ||
-	                ( is_later( current_time, csd[ *active ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) ) == true ) ) {
+	                ( imx_is_later( current_time, csd[ *active ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ *active ].sample_batch_size * 1000L  ) ) == true ) ) {
 	/*
 	 *
 	                print_status( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ *active ].error, csd[ *active ].last_error, csd[ *active ].last_sample_time,
@@ -269,7 +269,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
          *
          */
         if( ( ( csb[ *active ].send_imatrix == true ) && ( csd[ *active ].valid == true ) ) &&
-            ( ( is_later( current_time, csd[ *active ].last_sample_time + (wiced_time_t) ( csb[ *active ].sample_rate ) ) == true ) ||
+            ( ( imx_is_later( current_time, csd[ *active ].last_sample_time + (wiced_time_t) ( csb[ *active ].sample_rate ) ) == true ) ||
             ( csd[ *active ].warning != csd[ *active ].last_warning ) ||
             ( percent_change_detected == true ) ) ) {
 

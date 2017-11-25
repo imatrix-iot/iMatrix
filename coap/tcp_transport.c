@@ -239,7 +239,7 @@ void process_tcp( wiced_time_t current_time )
             tcp.state = TCP_INIT;
             break;
         case TCP_RETRY :
-            if( is_later( current_time, tcp.last_attempt + TCP_RETRY_TIME ) )
+            if( imx_is_later( current_time, tcp.last_attempt + TCP_RETRY_TIME ) )
                 tcp.state = TCP_INIT;
             break;
         case TCP_REGISTER :
@@ -304,7 +304,7 @@ void process_tcp( wiced_time_t current_time )
                 } else
                     tcp.state = TCP_CLOSE_CONNECTION;
             } else {
-                if( is_later( current_time, tcp.last_attempt + TCP_REGISTRATION_TIMEOUT ) ) {
+                if( imx_is_later( current_time, tcp.last_attempt + TCP_REGISTRATION_TIMEOUT ) ) {
                     imx_printf( "Timed out waiting for response from CoAP Server\r\n" );
                     tcp.state = TCP_CLOSE_CONNECTION;
                 }

@@ -36,7 +36,7 @@
 
 #include "wiced.h"
 #include "interface.h"
-#include "..\time\ck_time.h"
+#include "../time/ck_time.h"
 
 /******************************************************
  *                      Macros

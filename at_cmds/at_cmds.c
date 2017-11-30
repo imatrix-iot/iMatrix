@@ -201,11 +201,7 @@ void cli_at( uint16_t arg )
 	             * get the register
 	             */
 	            at_register = token[ 3 ] - 0x30;
-	            if( at_register == 1 ) {
-	                /*
-	                 * Check if next char is a digit
-	                 */
-	                if( isdigit( (int) token[ 4 ] ) != 0x00 ) {
+	            if( isdigit( (int) token[ 4 ] ) != 0x00 ) {
 	                    at_register = at_register * 10 + ( token[ 4 ] - 0x30 );
 	                    reg_width = 1;
 	                } else

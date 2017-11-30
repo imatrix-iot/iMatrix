@@ -202,11 +202,10 @@ void cli_at( uint16_t arg )
 	             */
 	            at_register = token[ 3 ] - 0x30;
 	            if( isdigit( (int) token[ 4 ] ) != 0x00 ) {
-	                    at_register = at_register * 10 + ( token[ 4 ] - 0x30 );
-	                    reg_width = 1;
-	                } else
-	                    reg_width = 0;
-	            }
+	                at_register = at_register * 10 + ( token[ 4 ] - 0x30 );
+	                reg_width = 1;
+	            } else
+	                reg_width = 0;
 	        } else {
 	            cli_print( "No Register Supplied\r\n" );
 	            icb.AT_command_errors += 1;

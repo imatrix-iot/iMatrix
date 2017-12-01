@@ -96,10 +96,11 @@ void cli_at( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 	bool process_ct = false;
-	uint16_t at_register, result, i;
+	uint16_t at_register, result, i, reg_width;
 	peripheral_type_t type;
 	char *token;
 
+	reg_width = 0;
 	/*
 	 * Statistics collection
 	 */
@@ -200,18 +201,23 @@ void cli_at( uint16_t arg )
 	             * get the register
 	             */
 	            at_register = token[ 3 ] - 0x30;
+	            if( isdigit( (int) token[ 4 ] ) != 0x00 ) {
+	                at_register = at_register * 10 + ( token[ 4 ] - 0x30 );
+	                reg_width = 1;
+	            } else
+	                reg_width = 0;
 	        } else {
 	            cli_print( "No Register Supplied\r\n" );
 	            icb.AT_command_errors += 1;
 	            at_print( AT_RESPONSE_ERROR );
 	            return;
 	        }
-	        if( token[ 4 ] == '=' ) {
+	        if( token[ 4 + reg_width ] == '=' ) {
 	            /*
 	             * Save value
 	             */
-	            result = set_register( type, at_register, &token[ 5 ] );
-	        } else if( token[ 4 ] == '?' ) {
+	            result = set_register( type, at_register, &token[ 5 + reg_width ] );
+	        } else if( token[ 4 + reg_width ] == '?' ) {
 	            /*
 	             * Display value
 	             */

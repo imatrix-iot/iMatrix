@@ -61,6 +61,7 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void log_wifi_connection(void);
-void wifi_logging(void);
+void log_wifi_connection(void);  // Describe current connection details.
+void log_wifi_join_event_results( void );  // Report how many attempts were required to connect. Also update counters.
+
 #endif /* WIFI_LOGGING_H_ */

@@ -166,6 +166,7 @@ uint16_t wifi_init(void)
 		wifi_set_default_ap_ssid();
 	    interface = WICED_AP_INTERFACE;
 	    wiced_result = wiced_network_up(interface, WICED_USE_INTERNAL_DHCP_SERVER, &ap_ip_settings);
+	    log_wifi_join_event_results();
 	    if( wiced_result != WICED_SUCCESS ) {
 	        imx_printf( "Network failed to start in Access Point Mode, failed with error code: %u.\n", wiced_result );
 	        return false;
@@ -201,6 +202,7 @@ uint16_t wifi_init(void)
 	    	    // This network_up function checks the network status and only does something if the network is not up already.
 	    	    break;
 	    }
+	    log_wifi_join_event_results();
 	    /*
 	     * See if the network came up.
 	     */

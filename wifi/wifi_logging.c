@@ -47,6 +47,7 @@
 #include "../device/icb_def.h"
 #include "../device/hal_wifi.h"
 #include "../device/var_data.h"
+#include "../imatrix/logging.h"
 
 #include "wifi_logging.h"
 
@@ -136,4 +137,31 @@ void log_wifi_connection(void)
 
     imx_printf( "\r\n" );
 
+}
+
+/**
+ * After a call to network_up(), wiced_network_resume_after_deep_sleep() or join_ent(),
+ * use this function to send iMatrix the total number of failed WiFi join attempts and successful ones
+ * since the last time this function was called.
+ * Additionally, the icb.wifi_(failed||success)_connect_count counters are incremented appropriately.
+ *
+ * written by Eric Thelin 30 November 2017
+ */
+
+void log_wifi_join_event_results( void )
+{
+#define WIFI_MSG_FORMAT_STRING "Wi Fi Failed to Connect %lu Times and Connected %lu Times"
+
+    char msg[ strlen( WIFI_MSG_FORMAT_STRING ) + 7 * 2 + 1 ]; // Add 7 digits/uint32 and 1 NULL terminator
+    uint32_t joins = wiced_successful_wifi_joins();
+    uint32_t failed_joins = wiced_failed_wifi_joins();
+
+    wiced_reset_wifi_event_counters( WICED_SUCCESSFUL_WIFI_JOIN_EVENT_COUNTER | WICED_FAILED_WIFI_JOIN_EVENT_COUNTER ); // Reset all counters to 0.
+
+    sprintf( msg, WIFI_MSG_FORMAT_STRING, failed_joins, joins );
+    log_iMatrix( msg );
+    printf( "WIFI LOG: %s\r\n", msg );
+
+    icb.wifi_failed_connect_count += failed_joins;
+    icb.wifi_success_connect_count += joins;
 }

@@ -112,7 +112,12 @@ void cli_status( uint16_t arg )
     cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
     cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
-    cli_print( "Wi Fi Details: Successful Connections: %lu, Failed Attempts: %lu\r\n", icb.wifi_success_connect_count, icb.wifi_failed_connect_count );
+
+	// Display Wi Fi details from connection attempts up through the last one called by iMatrix code using the icb counters and
+	// include additional wifi connection attempts since the last iMatrix connection by using wiced_..wifi_joins() functions.
+
+	cli_print( "Wi Fi Details: Successful Connections: %lu, Failed Attempts: %lu\r\n", icb.wifi_success_connect_count + wiced_successful_wifi_joins(),
+	        icb.wifi_failed_connect_count + wiced_failed_wifi_joins());
 	cli_print( "Device is: " );
 	if( icb.wifi_up == true ) {
 		cli_print( "Online, " );

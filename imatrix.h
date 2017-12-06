@@ -80,19 +80,6 @@ imx_imatrix_init_config_t imatrix_config = {
  *                    Constants
  ******************************************************/
 
-/*
- *  Define the number of sensors and controls in the system
- *
- */
-#define IMX_MAX_NO_SENSORS              ( 5 + 32 )      // 5 Integrated Wi Fi Channel, BSSID, RSSI, Noise, On Board Temp - 32 User Defined
-#define IMX_MAX_NO_CONTROLS             ( 0 + 16 )      // 16 User Defined
-/*
- *  Define the number of Smart Arduino controls and sensors in the system
- *
- */
-#define IMX_MAX_ARDUINO_CONTROLS        ( 8 )
-#define IMX_MAX_ARDUINO_SENSORS         ( 8 )
-
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -180,6 +167,12 @@ uint16_t imx_day_of_week(wiced_utc_time_t seconds_since_1969);
 bool imx_is_later(  wiced_time_t time1, wiced_time_t time2 );
 imx_result_t imx_get_utc(uint16_t arg, void *value );
 void imx_kick_watchdog(void);
+/*
+ * Memory management - used to take advantage of CCMSRAM space - will allocate from regular heap - but never freed
+ */
+void *imx_allocate_storage( uint16_t size );
+void imx_add_var_free_pool( var_data_entry_t *var_data_ptr );
+var_data_entry_t *imx_get_var_data( uint16_t length );
 /*
  * CoAP Processing defines
  */

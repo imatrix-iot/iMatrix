@@ -66,7 +66,8 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ], sd[ MAX_NO_SENSORS ];
+extern control_sensor_data_t *cd[];
+extern control_sensor_data_t *sd[];
 extern imx_control_sensor_block_t imx_controls_defaults[], imx_sensors_defaults[];
 extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 
@@ -119,22 +120,17 @@ void cs_init(void)
     wiced_time_t current_time;
 
     /*
-     * This data is in CCMSRAM - Initialize to zeros
-     */
-    memset( &cd, 0x00, sizeof( cd ) );
-    memset( &sd, 0x00, sizeof( sd ) );
-    /*
      * Set last update time as now
      */
     wiced_time_get_time( &current_time );   // Current time in mS
 
     for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
         if( type == IMX_CONTROLS ) {
-            csd = &cd[ 0 ];
+            csd = cd[ 0 ];
             csb = &device_config.ccb[ 0 ];
             f = &imx_control_functions[ 0 ];
         } else {
-            csd = &sd[ 0 ];
+            csd = sd[ 0 ];
             csb = &device_config.scb[ 0 ];
             f = &imx_sensor_functions[ 0 ];
         }

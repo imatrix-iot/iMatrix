@@ -58,10 +58,10 @@
 #define SET_CSB_VARS( type )    \
                 if( type == IMX_CONTROLS ) {        \
                     csb = &device_config.ccb[ 0 ];  \
-                    csd = &cd[ 0 ];                 \
+                    csd = cd[ 0 ];                 \
                 } else {                            \
                     csb = &device_config.scb[ 0 ];  \
-                    csd = &sd[ 0 ];                 \
+                    csd = sd[ 0 ];                 \
                 }
 
 
@@ -89,8 +89,8 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
-extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
+extern control_sensor_data_t *cd[];
+extern control_sensor_data_t *sd[];
 
 /******************************************************
  *               Function Definitions
@@ -177,12 +177,12 @@ uint16_t print_register( peripheral_type_t type, uint16_t entry )
 	if( type == IMX_CONTROLS ) {
 		if( entry >= device_config.no_controls )
 			return false;
-	    csd = &cd[ 0 ];
+	    csd = cd[ 0 ];
         csb = &device_config.ccb[ 0 ];
 	} else {
 		if( entry >= device_config.no_sensors )
 			return false;
-	    csd = &sd[ 0 ];
+	    csd = sd[ 0 ];
         csb = &device_config.scb[ 0 ];
 	}
     switch( csb[ entry].data_type ) {

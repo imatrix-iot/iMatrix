@@ -57,7 +57,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-
+#define BSSID_STRING_LENGTH     20
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -92,7 +92,9 @@ extern iMatrix_Control_Block_t icb;
 void log_wifi_connection(void)
 {
     int32_t channel, noise, rssi;
+    wiced_mac_t ap_bssid;
     var_data_entry_t *var_data_ptr;
+    char bssid_string[ BSSID_STRING_LENGTH ];
 
     if( ( icb.wifi_up == false ) || ( device_config.AP_setup_mode == true ) )
         return;     // Nothing to log
@@ -106,15 +108,14 @@ void log_wifi_connection(void)
         imx_printf( " Channel: %ld", channel );
         imx_set_sensor( imx_get_wifi_channel_scb(), &channel );
         /*
-         * This is variable length data, get a buffer to put the data in
+         * Add BSSID Address
          */
-        var_data_ptr = get_var_data( sizeof( wiced_mac_t ) );
+        hal_get_wifi_bssid( &ap_bssid );
+        var_data_ptr = imx_get_var_data( strlen( bssid_string ) );
         if( var_data_ptr != NULL ) {
-            /*
-             * Add BSSID Address
-             */
-            hal_get_wifi_bssid( ( wiced_mac_t *) var_data_ptr->data );
-            var_data_ptr->header.length = sizeof( wiced_mac_t );
+            sprintf( bssid_string, "%02x:%02x:%02x:%02x:%02x:%02x", var_data_ptr->data[ 0 ], var_data_ptr->data[ 1 ], var_data_ptr->data[ 2 ], var_data_ptr->data[ 3 ],
+                                var_data_ptr->data[ 4 ], var_data_ptr->data[ 5 ] );
+            var_data_ptr->header.length = strlen( bssid_string );
             imx_printf( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", var_data_ptr->data[ 0 ], var_data_ptr->data[ 1 ], var_data_ptr->data[ 2 ], var_data_ptr->data[ 3 ],
                     var_data_ptr->data[ 4 ], var_data_ptr->data[ 5 ] );
             imx_set_sensor( imx_get_wifi_bssid_scb(), (void *) var_data_ptr );

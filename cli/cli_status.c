@@ -75,8 +75,8 @@
  ******************************************************/
 extern IOT_Device_Config_t device_config;
 extern iMatrix_Control_Block_t icb;
-extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
+extern control_sensor_data_t *sd[];
+extern control_sensor_data_t *cd[];
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -189,10 +189,10 @@ void cli_status( uint16_t arg )
 	for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 	    if( type == IMX_CONTROLS ) {
 	        csb = &device_config.ccb[ 0 ];
-	        csd = &cd[ 0 ];
+	        csd = cd[ 0 ];
 	    } else {
 	        csb = &device_config.scb[ 0 ];
-            csd = &sd[ 0 ];
+            csd = sd[ 0 ];
 	    }
         cli_print( "%u %s: Current Status @: %lu mSec\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors, ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
@@ -228,7 +228,7 @@ void cli_status( uint16_t arg )
                             cli_print( "32 Bit Float" );
                             break;
                     }
-                    cli_print( ", Errors: %lu, ", cd[ i ].errors );
+                    cli_print( ", Errors: %lu, ", cd[ i ]->errors );
                     if( csb[ i ].sample_rate == 0 )
                         cli_print( "Event Driven" );
                     else {

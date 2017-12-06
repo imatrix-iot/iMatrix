@@ -79,8 +79,7 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-extern iMatrix_Control_Block_t icb;
-extern imx_imatrix_init_config_t imatrix_init_config;
+extern imx_imatrix_init_config_t imx_imatrix_init_config;
 #include "factory_def.c"
 /******************************************************
  *               Function Definitions
@@ -95,9 +94,10 @@ extern imx_imatrix_init_config_t imatrix_init_config;
   * @param  None
   * @retval : None
   */
-wiced_result_t imatrix_load_config(void)
+wiced_result_t imatrix_load_config(bool override_config)
 {
    wiced_result_t result;
+   uint16_t i;
 
     update_cert_pointers();// Make sure cert pointers are updated regardless of any errors accessing the DCT.
 #ifdef USE_STM32
@@ -105,7 +105,7 @@ wiced_result_t imatrix_load_config(void)
     if ( result != WICED_SUCCESS )
         return result;
 #endif
-    if ( device_config.valid_config == IMX_MAGIC_CONFIG) {
+    if ( ( device_config.valid_config == IMX_MAGIC_CONFIG) && ( override_config == false)  ){
         imx_printf( "Restored configuration from DCT\r\n" );
         return WICED_SUCCESS;
     }
@@ -117,61 +117,70 @@ wiced_result_t imatrix_load_config(void)
      * Start with know values and then update based on Host configuration
      */
     memcpy( &device_config, &factory_default_config, sizeof( IOT_Device_Config_t ) );
-
-    device_config.product_id = imatrix_init_config.product_id;
-    device_config.manufactuer_id = imatrix_init_config.manufactuer_id;
+    /*
+     * Set up system based on settings in user provided init structure
+     */
+    device_config.product_id = imx_imatrix_init_config.product_id;
+    device_config.manufactuer_id = imx_imatrix_init_config.manufactuer_id;
     /*
      * Load the iMatrix URL and other configuration items that define this Thing
      */
-    strncpy( device_config.imatrix_public_url, imatrix_init_config.imatrix_public_url, IMX_IMATRIX_URL_LENGTH );
-    strncpy( device_config.product_name, imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
+    strncpy( device_config.imatrix_public_url, imx_imatrix_init_config.imatrix_public_url, IMX_IMATRIX_URL_LENGTH );
+    strncpy( device_config.product_name, imx_imatrix_init_config.product_name, IMX_PRODUCT_NAME_LENGTH );
     /*
      * Default Device name as product name
      */
-    strncpy( device_config.device_name, imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
-    strncpy( device_config.ota_public_url, imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
-    strncpy( device_config.manufacturing_url, imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
-    strncpy( device_config.imatrix_bind_uri, imatrix_init_config.imatrix_bind_uri, IMX_IMATRIX_URI_LENGTH );
-    strncpy( device_config.default_ap_ssid, imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );
-    strncpy( device_config.default_ap_wpa, imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
-    strncpy( device_config.default_st_ssid, imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );
-    strncpy( device_config.default_st_wpa, imatrix_init_config.default_st_wpa, IMX_WPA2PSK_LENGTH );
-    strncpy( device_config.ap_ssid, imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );
-    strncpy( device_config.ap_wpa, imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
-    strncpy( device_config.st_ssid, imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );
-    strncpy( device_config.st_wpa, imatrix_init_config.default_st_wpa, IMX_WPA2PSK_LENGTH );
-    device_config.default_ap_eap_mode = imatrix_init_config.default_ap_eap_mode;
-    device_config.default_st_eap_mode = imatrix_init_config.default_st_eap_mode;
-    device_config.default_ap_security_mode = imatrix_init_config.default_ap_security_mode;
-    device_config.default_st_security_mode = imatrix_init_config.default_st_security_mode;
-    device_config.ap_eap_mode = imatrix_init_config.default_ap_eap_mode;
-    device_config.st_eap_mode = imatrix_init_config.default_st_eap_mode;
-    device_config.ap_security_mode = imatrix_init_config.default_ap_security_mode;
-    device_config.st_security_mode = imatrix_init_config.default_st_security_mode;
-    device_config.default_ap_channel = imatrix_init_config.default_ap_channel;
+    strncpy( device_config.device_name, imx_imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
+    strncpy( device_config.ota_public_url, imx_imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
+    strncpy( device_config.manufacturing_url, imx_imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
+    strncpy( device_config.imatrix_bind_uri, imx_imatrix_init_config.imatrix_bind_uri, IMX_IMATRIX_URI_LENGTH );
+    strncpy( device_config.default_ap_ssid, imx_imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.default_ap_wpa, imx_imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
+    strncpy( device_config.default_st_ssid, imx_imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.default_st_wpa, imx_imatrix_init_config.default_st_wpa, IMX_WPA2PSK_LENGTH );
+    strncpy( device_config.ap_ssid, imx_imatrix_init_config.default_ap_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.ap_wpa, imx_imatrix_init_config.default_ap_wpa, IMX_WPA2PSK_LENGTH );
+    strncpy( device_config.st_ssid, imx_imatrix_init_config.default_st_ssid, IMX_SSID_LENGTH );
+    strncpy( device_config.st_wpa, imx_imatrix_init_config.default_st_wpa, IMX_WPA2PSK_LENGTH );
+    device_config.default_ap_eap_mode = imx_imatrix_init_config.default_ap_eap_mode;
+    device_config.default_st_eap_mode = imx_imatrix_init_config.default_st_eap_mode;
+    device_config.default_ap_security_mode = imx_imatrix_init_config.default_ap_security_mode;
+    device_config.default_st_security_mode = imx_imatrix_init_config.default_st_security_mode;
+    device_config.ap_eap_mode = imx_imatrix_init_config.default_ap_eap_mode;
+    device_config.st_eap_mode = imx_imatrix_init_config.default_st_eap_mode;
+    device_config.ap_security_mode = imx_imatrix_init_config.default_ap_security_mode;
+    device_config.st_security_mode = imx_imatrix_init_config.default_st_security_mode;
+    device_config.default_ap_channel = imx_imatrix_init_config.default_ap_channel;
     device_config.ap_channel = device_config.default_ap_channel;
-    if( imatrix_init_config.start_in_station_mode == true ) {
+    if( imx_imatrix_init_config.start_in_station_mode == true ) {
         /*
          * App is forcing to use default settings Wi Fi to Station mode using presets
          */
         device_config.AP_setup_mode = false;
     }
-    device_config.no_sensors = imatrix_init_config.no_sensors;
-    device_config.no_controls = imatrix_init_config.no_controls;
-    device_config.no_arduino_sensors = imatrix_init_config.no_arduino_sensors;
-    device_config.no_arduino_controls = imatrix_init_config.no_arduino_controls;
-    device_config.building_id = imatrix_init_config.building_id;
-    device_config.product_capabilities = imatrix_init_config.product_capabilities;
-    device_config.level_id = imatrix_init_config.level_id;
-    device_config.indoor_x = imatrix_init_config.indoor_x;
-    device_config.indoor_y = imatrix_init_config.indoor_y;
-    device_config.longitude = imatrix_init_config.longitude;
-    device_config.latitude = imatrix_init_config.latitude;
-    device_config.elevation = imatrix_init_config.elevation;
-    device_config.at_command_mode = imatrix_init_config.at_command_mode;
-    device_config.log_wifi_AP = imatrix_init_config.log_wifi_AP;
-    device_config.log_wifi_rssi = imatrix_init_config.log_wifi_rssi;
-    device_config.log_wifi_rfnoise = imatrix_init_config.log_wifi_rfnoise;
+    device_config.no_sensors = imx_imatrix_init_config.no_sensors;
+    device_config.no_controls = imx_imatrix_init_config.no_controls;
+    device_config.history_size = imx_imatrix_init_config.history_size;
+    if( imx_imatrix_init_config.no_variable_length_pools > IMX_MAX_VAR_LENGTH_POOLS )
+        device_config.no_variable_length_pools = IMX_MAX_VAR_LENGTH_POOLS;
+    else
+        device_config.no_variable_length_pools = imx_imatrix_init_config.no_variable_length_pools;
+    for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
+        device_config.var_data_config[ i ].size = imx_imatrix_init_config.var_data_config[ i ].size;
+        device_config.var_data_config[ i ].no_entries = imx_imatrix_init_config.var_data_config[ i ].no_entries;
+    }
+    device_config.building_id = imx_imatrix_init_config.building_id;
+    device_config.product_capabilities = imx_imatrix_init_config.product_capabilities;
+    device_config.level_id = imx_imatrix_init_config.level_id;
+    device_config.indoor_x = imx_imatrix_init_config.indoor_x;
+    device_config.indoor_y = imx_imatrix_init_config.indoor_y;
+    device_config.longitude = imx_imatrix_init_config.longitude;
+    device_config.latitude = imx_imatrix_init_config.latitude;
+    device_config.elevation = imx_imatrix_init_config.elevation;
+    device_config.at_command_mode = imx_imatrix_init_config.at_command_mode;
+    device_config.log_wifi_AP = imx_imatrix_init_config.log_wifi_AP;
+    device_config.log_wifi_rssi = imx_imatrix_init_config.log_wifi_rssi;
+    device_config.log_wifi_rfnoise = imx_imatrix_init_config.log_wifi_rfnoise;
 
     /*
      * Do we have AT commands - Host processor will not expect extra status updates on serial interface
@@ -224,6 +233,7 @@ wiced_result_t imatrix_load_config(void)
 
     }
 #endif
+    imx_printf( "User Configuration entries loaded\r\n" );
 
     cs_reset_defaults();
 

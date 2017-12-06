@@ -67,7 +67,7 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-wiced_result_t imatrix_load_config(void);
+wiced_result_t imatrix_load_config(bool override_config);
 wiced_result_t imatrix_save_config(void);
 void imatrix_print_config( uint16_t arg );
 wiced_result_t imatrix_print_saved_config( uint16_t arg );

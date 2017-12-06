@@ -74,10 +74,10 @@
 #define SET_CSB_VARS( type )    \
                 if( type == IMX_CONTROLS ) {        \
                     csb = &device_config.ccb[ 0 ];  \
-                    csd = &cd[ 0 ];                 \
+                    csd = cd[ 0 ];                 \
                 } else {                            \
                     csb = &device_config.scb[ 0 ];  \
-                    csd = &sd[ 0 ];                 \
+                    csd = sd[ 0 ];                 \
                 }                                   \
                 no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
@@ -131,8 +131,8 @@ extern uint16_t message_id;
 extern uint32_t request_id;
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
 extern iMatrix_Control_Block_t icb;
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
-extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
+extern control_sensor_data_t *cd[];
+extern control_sensor_data_t *sd[];
 
 static imatrix_data_t imatrix;
 /******************************************************
@@ -500,7 +500,7 @@ void imatrix_upload(wiced_time_t current_time)
                                              */
                                             if( csd[ i ].data[ var_data_index ].var_data != csd[ i ].last_value.var_data ) {
                                                 imx_printf( "About to free data\r\n" );
-                                                add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
+                                                imx_add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
                                             }
                                             /*
                                              * Move up the data and re calculate the last sample time
@@ -545,7 +545,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                  */
                                                 if( csd[ i ].last_value.var_data != csd[ i ].data[ var_data_index ].var_data ) {
                                                     imx_printf( "About to free data\r\n" );
-                                                    add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
+                                                    imx_add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
                                                     /*
                                                      * Move data up in history
                                                      */

@@ -67,8 +67,8 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;   // Defined in device\config.h
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
-extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
+extern control_sensor_data_t *cd[];
+extern control_sensor_data_t *sd[];
 
 /******************************************************
  *               Function Definitions
@@ -83,14 +83,21 @@ extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
  */
 imx_status_t imx_set_sensor( uint16_t entry, void *value )
 {
+    imx_printf( "Saving Sensor: %u, Value Address 0x%08x\r\n", entry, value );
     if( entry > device_config.no_sensors )
         return IMX_INVALID_ENTRY;
     if( device_config.scb[ entry ].enabled == false )
         return IMX_CONTROL_DISABLED;
     if( device_config.scb[ entry ].sample_rate == 0 )
         hal_event( IMX_SENSORS, entry, value );
-    else
-        memcpy( &sd[ entry ].last_value, value, SAMPLE_LENGTH );
+    else {
+        /*
+         * If this is a variable length entry - check if we need to free up previous entry
+         */
+        imx_printf( "Saving Sensor to location: 0x%08x\r\n", (uint32_t) &sd[ entry ]->last_value);
+        memcpy( &sd[ entry ]->last_value, value, SAMPLE_LENGTH );
+        imx_printf( "Saved Sensor: %u, New value 0x%08lx\r\n", entry, sd[ entry ]->last_value.uint_32bit );
+    }
     return IMX_SUCCESS;
 }
 imx_status_t imx_get_sensor( uint16_t entry, void *value )
@@ -99,8 +106,8 @@ imx_status_t imx_get_sensor( uint16_t entry, void *value )
         return IMX_INVALID_ENTRY;
     if( device_config.scb[ entry ].enabled == false )
         return IMX_SENSOR_DISABLED;
-    if( sd[ entry ].valid == true ) {
-        memcpy( value, &sd[ entry ].last_value, SAMPLE_LENGTH );
+    if( sd[ entry ]->valid == true ) {
+        memcpy( value, &sd[ entry ]->last_value, SAMPLE_LENGTH );
         return IMX_SUCCESS;
     } else
         return IMX_NO_DATA;
@@ -113,8 +120,12 @@ imx_status_t imx_set_control( uint16_t entry, void *value )
         return IMX_CONTROL_DISABLED;
     if( device_config.ccb[ entry ].sample_rate == 0 )
         hal_event( IMX_CONTROLS, entry, value );
-    else
-        memcpy( &cd[ entry ].last_value, value, SAMPLE_LENGTH );
+    else {
+        /*
+         * If this is a variable length entry - check if we need to free up previous entry
+         */
+        memcpy( &cd[ entry ]->last_value, value, SAMPLE_LENGTH );
+    }
     return IMX_SUCCESS;
 }
 imx_status_t imx_get_control( uint16_t entry, void *value )
@@ -123,8 +134,8 @@ imx_status_t imx_get_control( uint16_t entry, void *value )
         return IMX_INVALID_ENTRY;
     if( device_config.ccb[ entry ].enabled == false )
         return IMX_CONTROL_DISABLED;
-    if( cd[ entry ].valid == true ) {
-        memcpy( value, &cd[ entry ].last_value, SAMPLE_LENGTH );
+    if( cd[ entry ]->valid == true ) {
+        memcpy( value, &cd[ entry ]->last_value, SAMPLE_LENGTH );
         return IMX_SUCCESS;
     } else
         return IMX_NO_DATA;

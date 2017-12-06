@@ -81,7 +81,7 @@
 #define IMX_NO_RF_SCAN_RECORDS          ( 20 )
 #define IMX_ORGANIZATION_ID_LENGTH      ( 10 )
 #define IMX_PRODUCT_ID_LENGTH           ( 10 )
-
+#define IMX_MAX_VAR_LENGTH_POOLS        ( 8 )
 /*
  * Wi-Fi Credentials length
  */
@@ -205,19 +205,21 @@ typedef enum {
     IMX_INVALID_ENTRY,
     IMX_CONTROL_DISABLED,
     IMX_SENSOR_DISABLED,
+    IMX_SENSOR_ERROR,
     IMX_GENERAL_FAILURE,
     IMX_INIT_ERROR,
     IMX_I2C_ERROR,
     IMX_SPI_ERROR,
     IMX_INVALID_READING,
     IMX_FAIL_CRC,
-    IMX_BAD_ARDUINO,
-    IMX_UNKNOWN_ARDUINO_CONTROL,
-    IMX_UNKNOWN_ARDUINO_SENSOR,
-    IMX_MUST_SUPPLY_DEFAULTS,
+    IMX_FAIL_COAP_SETUP,
+    IMX_OUT_OF_MEMORY,
     IMX_MAXIMUM_CONTROLS_EXCEEDED,
-    IMX_MUST_SUPPLY_CONTROL,
     IMX_MAXIMUM_SENSORS_EXCEEDED,
+    IMX_MAXIMUM_HISTORY_EXCEEDED,
+    IMX_MAXIMUM_VARIBALE_DATA_EXCEEDED,
+    IMX_MUST_SUPPLY_DEFAULTS,
+    IMX_MUST_SUPPLY_CONTROL,
     IMX_MUST_SUPPLY_SAMPLE,
     /*
      * Following are Result/Error Conditions for Sensor Sampling
@@ -295,6 +297,11 @@ typedef union data_32 {
     var_data_entry_t *var_data;
 } data_32_t;
 
+typedef struct imx_var_data_config {
+    uint16_t size;
+    uint16_t no_entries;
+} imx_var_data_config_t;
+
 typedef struct imx_led_functions {
     void (*init_led)(void);
     void (*set_led)( bool state );
@@ -318,8 +325,6 @@ typedef struct {
     uint32_t default_st_security_mode;
     uint16_t no_sensors;
     uint16_t no_controls;
-    uint16_t no_arduino_sensors;
-    uint16_t no_arduino_controls;
     uint32_t product_capabilities;
     uint32_t product_id;
     uint32_t manufactuer_id;
@@ -330,6 +335,15 @@ typedef struct {
     float longitude;
     float latitude;
     float elevation;
+    /*
+     * Following items determine memory model setup
+     */
+    uint16_t history_size;
+    uint16_t no_variable_length_pools;
+    imx_var_data_config_t var_data_config[ IMX_MAX_VAR_LENGTH_POOLS ];
+    /*
+     * Following items are flags
+     */
     unsigned int start_in_station_mode  : 1;                // Start Client with default Station Settings - Use for Development only
     unsigned int at_command_mode        : 1;                // What type of command interface is used
     unsigned int log_wifi_AP            : 1;

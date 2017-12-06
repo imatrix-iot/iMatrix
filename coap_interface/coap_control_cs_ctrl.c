@@ -74,7 +74,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-
+#define MAX_STRING_SIZE     256     // for now - change this
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -95,9 +95,9 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;   // Defined in device\config.h
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
-extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
-extern imx_functions_t imx_control_functions[ MAX_NO_CONTROLS ];
+extern control_sensor_data_t *cd[];
+extern control_sensor_data_t *sd[];
+extern imx_functions_t *imx_control_functions;
 extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
@@ -171,17 +171,17 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
                     if( device_config.ccb[ i ].id == id ) {
                         switch( device_config.ccb[ i ].data_type ) {
                             case IMX_UINT32 :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"uint_value\" : %lu }", device_config.ccb[ i ].name, cd[ i ].last_value.uint_32bit );
+                                sprintf( json_out, "{ \"name\" : \"%s\", \"uint_value\" : %lu }", device_config.ccb[ i ].name, cd[ i ]->last_value.uint_32bit );
                                 break;
                             case IMX_INT32 :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"int_value\" : %ld }", device_config.ccb[ i ].name, cd[ i ].last_value.uint_32bit );
+                                sprintf( json_out, "{ \"name\" : \"%s\", \"int_value\" : %ld }", device_config.ccb[ i ].name, cd[ i ]->last_value.uint_32bit );
                                 break;
                             case IMX_FLOAT :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.ccb[ i ].name, cd[ i ].last_value.float_32bit );
+                                sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.ccb[ i ].name, cd[ i ]->last_value.float_32bit );
                                 break;
                             case IMX_VARIABLE_LENGTH :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
-                                        device_config.ccb[ i ].name, ( cd[ i ].last_value.var_data == NULL ? "" : (char* ) cd[ i ].last_value.var_data->data ) );
+                                        device_config.ccb[ i ].name, ( cd[ i ]->last_value.var_data == NULL ? "" : (char* ) cd[ i ]->last_value.var_data->data ) );
                                 break;
                         }
                         goto done;
@@ -191,17 +191,17 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
                     if( device_config.scb[ i ].id == id ) {
                         switch( device_config.scb[ i ].data_type ) {
                             case IMX_UINT32 :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"uint_value\" : %lu }", device_config.scb[ i ].name, sd[ i ].last_value.uint_32bit );
+                                sprintf( json_out, "{ \"name\" : \"%s\", \"uint_value\" : %lu }", device_config.scb[ i ].name, sd[ i ]->last_value.uint_32bit );
                                 break;
                             case IMX_INT32 :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"int_value\" : %ld }", device_config.scb[ i ].name, sd[ i ].last_value.uint_32bit );
+                                sprintf( json_out, "{ \"name\" : \"%s\", \"int_value\" : %ld }", device_config.scb[ i ].name, sd[ i ]->last_value.uint_32bit );
                                 break;
                             case IMX_FLOAT :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.scb[ i ].name, sd[ i ].last_value.float_32bit );
+                                sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.scb[ i ].name, sd[ i ]->last_value.float_32bit );
                                 break;
                             case IMX_VARIABLE_LENGTH :
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
-                                        device_config.scb[ i ].name, ( sd[ i ].last_value.var_data == NULL ? "" : (char *) sd[ i ].last_value.var_data->data ) );
+                                        device_config.scb[ i ].name, ( sd[ i ]->last_value.var_data == NULL ? "" : (char *) sd[ i ]->last_value.var_data->data ) );
                                 break;
                         }
                         goto done;
@@ -244,7 +244,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
 {
     UNUSED_PARAMETER( arg );
 
-    char string_value[ POOL_0_SIZE ];
+    char string_value[ MAX_STRING_SIZE ];
     uint16_t i;
     unsigned int id, uint_value;
     int int_value;
@@ -270,7 +270,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
         {"uint_value", t_uinteger, .addr.uinteger = &uint_value, .dflt.uinteger = NO_VALUE_VALUE},
         {"int_value", t_uinteger, .addr.integer = &int_value, .dflt.integer = NO_VALUE_VALUE},
         {"float_value", t_real, .addr.real = &double_value, .dflt.real = NO_FLOAT_VALUE},
-        {"var_value", t_string, .addr.string = string_value, .len = POOL_0_SIZE },
+        {"var_value", t_string, .addr.string = string_value, .len = MAX_STRING_SIZE },
         {NULL}
     };
 
@@ -298,7 +298,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
             switch( device_config.ccb[ i ].data_type ) {
                 case IMX_UINT32 :
                     if( uint_value != NO_VALUE_VALUE ) {
-                        cd[ i ].last_value.uint_32bit = uint_value;
+                        cd[ i ]->last_value.uint_32bit = uint_value;
                         if( imx_control_functions[ i ].update != NULL )
                             (imx_control_functions[ i ].update)( i, &uint_value );
                     } else {
@@ -308,7 +308,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     break;
                 case IMX_INT32 :
                     if( int_value != NO_VALUE_VALUE ) {
-                        cd[ i ].last_value.uint_32bit = int_value;
+                        cd[ i ]->last_value.uint_32bit = int_value;
                         if( imx_control_functions[ i ].update != NULL )
                             (imx_control_functions[ i ].update)( i, &int_value );
                     } else {
@@ -318,7 +318,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     break;
                 case IMX_FLOAT :
                     if( float_value != NO_FLOAT_VALUE ) {
-                        cd[ i ].last_value.float_32bit = float_value;
+                        cd[ i ]->last_value.float_32bit = float_value;
                         if( imx_control_functions[ i ].update != NULL )
                             (imx_control_functions[ i ].update)( i, &float_value );
                     } else {
@@ -331,17 +331,17 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     /*
                      * Free last one if present
                      */
-                    if( cd[ i ].last_value.var_data != NULL )
-                            add_var_free_pool( cd[ i ].last_value.var_data );
+                    if( cd[ i ]->last_value.var_data != NULL )
+                            imx_add_var_free_pool( cd[ i ]->last_value.var_data );
                     /*
                      * Get a buffer to save this too
                      */
-                    var_data_ptr = get_var_data( strlen( string_value ) );
+                    var_data_ptr = imx_get_var_data( strlen( string_value ) );
                     if( var_data_ptr != NULL ) {
                         var_data_ptr->header.length = strlen( string_value );
                         strcpy( (char *) var_data_ptr->data, string_value );
                     }
-                    cd[ i ].last_value.var_data = var_data_ptr;
+                    cd[ i ]->last_value.var_data = var_data_ptr;
                     break;
             }
             /*
@@ -352,8 +352,8 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                  * We just set the value of control without a sample rate so send a notification of this event, as controls/sensors with a sample rate of 0 are not uploaded
                  */
                 cli_print( "Event Notification: Writing Control %u, Value: uint32: %lu, int32: %ld, float: %f, @0x%08x: \r\n", i,
-                        cd[ i ].last_value.uint_32bit, cd[ i ].last_value.int_32bit, cd[ i ].last_value.float_32bit, (uint32_t) cd[ i ].last_value.var_data );
-                hal_event( IMX_CONTROLS, i, &cd[ i ].last_value.uint_32bit );
+                        cd[ i ]->last_value.uint_32bit, cd[ i ]->last_value.int_32bit, cd[ i ]->last_value.float_32bit, (uint32_t) cd[ i ]->last_value.var_data );
+                hal_event( IMX_CONTROLS, i, &cd[ i ]->last_value.uint_32bit );
             }
             goto done;
         }

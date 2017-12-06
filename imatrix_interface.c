@@ -56,7 +56,6 @@
  *                    Constants
  ******************************************************/
 //#define TEST_STANDALONE
-#define MIN_LED_DISPLAY_TIME        2000
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -77,11 +76,10 @@
  *               Variable Definitions
  ******************************************************/
 extern iMatrix_Control_Block_t icb;
-extern IOT_Device_Config_t device_config;
+imx_imatrix_init_config_t imx_imatrix_init_config;
 #ifdef TEST_STANDALONE
 #include "test_imatrix.h"
 #endif
-extern imx_imatrix_init_config_t imatrix_init_config;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -92,45 +90,29 @@ extern imx_imatrix_init_config_t imatrix_init_config;
   */
 imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background )
 {
+    imx_status_t result;
+
+    memset( &icb, 0x00, sizeof( iMatrix_Control_Block_t ) );
+    /*
+     * Always print status messages? - dcb is initialized to all 0s - this is for diagnostic mode - comment out when not used
+     */
+    icb.print_debugs = true;
 
     printf( "Commencing iMatrix Initialization Sequence\r\n" );
     /*
-     * Start watchdog
-     */
-
-    init_storage();     // Start clean
-    /*
      * Save user defined product information to local storage
      */
-    memcpy( &imatrix_init_config, init_config, sizeof( imx_imatrix_init_config_t ) );
+    memcpy( &imx_imatrix_init_config, init_config, sizeof( imx_imatrix_init_config_t ) );
+
     /*
-     * Load current config or factory default if none stored
-     */
-    imatrix_load_config();
-    /*
-     * Set up LEDS as we use these to tell what is going on
+     * Set up LED functions as we use these to tell what is going on
      */
     imx_init_led_functions( init_config->led_functions );
-    /*
-     * During Setup alternate GREEN/RED quickly
-     */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_BLINK_2 | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_5 );
-    /*
-     * Let the user see this
-     */
-    wiced_rtos_delay_milliseconds( MIN_LED_DISPLAY_TIME );
 
-    if( ( device_config.application_loaded == false ) || ( override_config == true ) ) {
-        /*
-         * Copy factory entries to device_config
-         */
-//        printf( "\r\nSTARTING STATUS\r\n");
-//        cli_status( 0 );
-    }
-    system_init();
-    /*
-     * Use the provided parameters to set up the system
-     */
+    result = system_init( override_config );
+    if( result != IMX_SUCCESS )
+        return result;
+
     if( run_in_background ) {
         /*
          * Spawn the imx_process as a background process

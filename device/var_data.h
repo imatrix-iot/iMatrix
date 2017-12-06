@@ -63,7 +63,7 @@
  *               Function Definitions
  ******************************************************/
 void init_var_pool(void);
-void add_var_free_pool( var_data_entry_t *var_data_ptr );
-var_data_entry_t *get_var_data( uint16_t length );
+void imx_add_var_free_pool( var_data_entry_t *var_data_ptr );
+var_data_entry_t *imx_get_var_data( uint16_t length );
 
 #endif /* VAR_DATA_H_ */

@@ -138,15 +138,6 @@ const IOT_Device_Config_t factory_default_config = {
     .log_wifi_rfnoise = false,
     // .ccb = { 0 },
     // .scb = { 0 },
-    .var_data_config = {
-            { POOL_0_SIZE, DEFAULT_NO_POOL_0 },
-            { POOL_1_SIZE, DEFAULT_NO_POOL_1 },
-            { POOL_2_SIZE, DEFAULT_NO_POOL_2 },
-            { POOL_3_SIZE, DEFAULT_NO_POOL_3 },
-            { POOL_4_SIZE, DEFAULT_NO_POOL_4 },
-            { POOL_5_SIZE, DEFAULT_NO_POOL_5 },
-            { POOL_6_SIZE, DEFAULT_NO_POOL_6 },
-        },
 };
 /******************************************************
  *               Function Definitions

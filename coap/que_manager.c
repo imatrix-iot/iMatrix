@@ -42,6 +42,7 @@
 #include <stdbool.h>
 
 #include "wiced.h"
+#include "imatrix.h"
 
 #include "../device/icb_def.h"
 #include "coap.h"
@@ -126,12 +127,12 @@ extern message_list_t list_tcp_coap_xmit;
 extern iMatrix_Control_Block_t icb;
 
 uint16_t print_msg_saved_min_bytes;
-static message_t all_messages[ TOTAL_NUM_MESSAGE_BUFFERS ];// list of all message_t structs with no data arrays added.
+static message_t *all_messages;         // list of all message_t structs with no data arrays added.
 static uint16_t message_list_empty_errors;
 static uint16_t block_not_found_errors;
 static message_size_t free_messages_by_size[ NUMBER_OF_DATA_SIZES ];// one list for each size of msg data.
 static message_data_block_t all_data_blocks[ TOTAL_NUM_MESSAGE_BUFFERS ];
-static uint8_t all_data_bytes[ TOTAL_BYTES_FOR_MESSAGE_DATA ];//static uint8_t tiny_bytes_data[ NUM_MSG_W_TINY_DATA_SIZE ][ TINY_DATA_BYTES ];
+static uint8_t *all_data_bytes;         //static uint8_t tiny_bytes_data[ NUM_MSG_W_TINY_DATA_SIZE ][ TINY_DATA_BYTES ];
 
 /******************************************************
  *               Function Definitions
@@ -352,11 +353,19 @@ message_t *list_pop_before( wiced_time_t timestamp, message_list_t *list )
  *
  * written by Eric Thelin 27 February 2016
  */
-void create_msg_lists()
+bool create_msg_lists()
 {
-	memset( all_data_bytes, 0, TOTAL_BYTES_FOR_MESSAGE_DATA );
+    /*
+     * Allocate from memory pool
+     */
+    all_data_bytes = (uint8_t *) imx_allocate_storage( TOTAL_BYTES_FOR_MESSAGE_DATA );
+    if( all_data_bytes == NULL )
+        return false;
+    all_messages = imx_allocate_storage(TOTAL_NUM_MESSAGE_BUFFERS * sizeof( message_t ) );
+    if( all_messages == NULL )
+        return false;
 
-	// Create lists of data blocks
+    // Create lists of data blocks
 
 	uint16_t s;// Index to loop over free_messages_by_size[].
 	uint16_t b = 0;// Index to all_data_blocks[].
@@ -423,10 +432,10 @@ void create_msg_lists()
     list_init( &list_tcp_coap_xmit );
 
 	for ( i = 0; i < TOTAL_NUM_MESSAGE_BUFFERS; i++ ) {
-		memset( &all_messages[ i ], 0, sizeof( message_t) );
 		list_add( &list_free, &all_messages[ i ] );
 	}
 	imx_printf("%u message_t structs added to the free list.\r\n", TOTAL_NUM_MESSAGE_BUFFERS );
+	return true;
 }
 
 /**

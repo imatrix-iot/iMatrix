@@ -79,8 +79,8 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
-extern control_sensor_data_t cd[];
-extern control_sensor_data_t sd[];
+extern control_sensor_data_t *cd[];
+extern control_sensor_data_t *sd[];
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -107,7 +107,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 		if( entry >= device_config.no_controls )    // reporting no valid device
 			return;	// Nothing to do
 		else {
-			csd = &cd[ 0 ];
+			csd = cd[ 0 ];
 			csb = &device_config.ccb[ 0 ];
 //			imx_printf( "Event Control: %u\r\n", entry );
 		}
@@ -115,7 +115,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 		if( entry >= device_config.no_sensors )
 			return;	// Nothing to do
 		else {
-			csd = &sd[ 0 ];
+			csd = sd[ 0 ];
 			csb = &device_config.scb[ 0 ];
 		}
 	}
@@ -123,9 +123,9 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     /*
      * Check for overflow - Save only the last sample values
      */
-    if( csd[ entry ].no_samples >= ( HISTORY_SIZE - 2 ) ) {
+    if( csd[ entry ].no_samples >= ( IMATRIX_HISTORY_SIZE - 2 ) ) {
         imx_printf( "History Full - dropping last sample\r\n" );
-        memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( HISTORY_SIZE - 2 ) * SAMPLE_LENGTH );
+        memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( IMATRIX_HISTORY_SIZE - 2 ) * SAMPLE_LENGTH );
         csd[ entry ].no_samples -= 2;
     }
 	/*
@@ -147,7 +147,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
             /*
              * Free the last value as it has been kept as a current value, old data has been sent to iMatrix
              */
-                add_var_free_pool( csd[ entry ].last_value.var_data );
+                imx_add_var_free_pool( csd[ entry ].last_value.var_data );
         }
     }
 

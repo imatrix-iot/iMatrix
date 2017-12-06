@@ -44,9 +44,10 @@
 #include "config.h"
 #include "hal_leds.h"
 #include "icb_def.h"
+#include "imx_leds.h"
 #include "var_data.h"
+#include "set_serial.h"
 #include "system_init.h"
-#include "device.h"
 #include "config.h"
 #include "../cli/cli.h"
 #include "../cli/interface.h"
@@ -62,6 +63,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
+#define MIN_LED_DISPLAY_TIME        2000
 
 /******************************************************
  *                   Enumerations
@@ -75,7 +77,7 @@
  *               Function Declarations
  ******************************************************/
 void mutex_init(void);
-void create_msg_lists(void);
+bool create_msg_lists(void);
 /******************************************************
  *                    Structures
  ******************************************************/
@@ -119,8 +121,9 @@ void verify_dct_and_update_if_needed(void)
   * @param  None
   * @retval : True - Success / False - Failure
   */
-bool system_init(void)
+bool system_init(bool override_config)
 {
+    imx_status_t result;
 	wiced_result_t wiced_result;
 	wiced_utc_time_t now;
 
@@ -128,19 +131,35 @@ bool system_init(void)
 
     wiced_result = wiced_init();  //wiced_core_init();
 	if ( wiced_result != WICED_SUCCESS ) {
-		imx_printf( "wiced_core_init() failed with error code: %u.\n", wiced_result );
-		return false;
+		imx_printf( "wiced_core_init() failed with error code: %u.\r\n", wiced_result );
+		return IMX_GENERAL_FAILURE;
 	}
 
-#ifdef USE_CCMRAM
-    imx_printf( " *** Using CCMRAM ***\r\n" );
-#else
     imx_printf( "\r\n" );
-#endif
-    // Ensure the DCT is valid before anything needs to access the DCT like functions that connect to the Wi-Fi.
+    /*
+     * During Setup alternate GREEN/RED quickly
+     */
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_BLINK_2 | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_5 );
+    /*
+     * Let the user see this
+     */
+    wiced_rtos_delay_milliseconds( MIN_LED_DISPLAY_TIME );
 
-    verify_dct_and_update_if_needed();
-	device_init();
+    /*
+     * Load current config from DCT or factory default if none stored, includes loading serial number from CPU data.
+     */
+    imatrix_load_config( override_config );
+    imx_printf( "Configuration Loaded\r\n" );
+    set_serial_number();
+    print_serial_number();
+    /*
+     * Initialize variable storage based on settings
+     */
+    result = init_storage();
+    if( result != IMX_SUCCESS )  {  // Failed to allocate memory
+        imx_printf( "Failed to initialize storage iMatrix Error code: %u\r\n", result );
+        return result;
+    }
     /*
      * Set up a semaphore to use for WICED accesses
      */
@@ -153,14 +172,10 @@ bool system_init(void)
 
     mutex_init();
 
-    create_msg_lists(); // Initialize CoAP message memory management lists.
-
-    /*
-     * Always print status messages? - dcb is initialized to all 0s
-     */
-#ifdef imx_printf_MSGS
-    icb.print_debugs = true;
-#endif
+    if( create_msg_lists() == false ) { // Initialize CoAP message memory management lists.
+        imx_printf( "Failed to initialize CoAP Message pools\r\n" );
+        return IMX_FAIL_COAP_SETUP;
+    }
     /*
      * Set up a random starting message ID
      */
@@ -178,12 +193,15 @@ bool system_init(void)
     imatrix_save_config();
 
     imx_printf( "Core System Initialized\r\n" );
-
-
+    /*
+     * Initialize Things UI
+     */
     telnetd_init();
 	cli_init();
-    // Ensure that it will be night time till Networking is successful.
-
+	/*
+	 * Ensure that it will be night time till Networking is successful.
+	 *
+	 */
     wiced_time_get_utc_time( &now );
     icb.sunrise = icb.sunset = now + 3600;// Make sunrise an hour after the current time.
     /*
@@ -200,21 +218,25 @@ bool system_init(void)
      * Set up variable length payload pools
      */
     init_var_pool();
-
+    /*
+     * Initialize the Controls and Sensor devices
+     */
     imx_printf( "System has %u Controls and %u Sensors\r\n", device_config.no_controls, device_config.no_sensors );
 
     imx_printf( "Initializing Controls & Sensors\r\n" );
     cs_init();
-
-    // imx_printf( "Configuring Smart Arduino\r\n" );
-    // configure_arduino();
+    /*
+     * Initialize the location system
+     */
     imx_printf( "Initializing Location System\r\n" );
 
     init_location_system();
-
+    /*
+     * Main state machine set to setup mode
+     */
     icb.wifi_state = MAIN_WIFI_SETUP;
 
     imx_printf( "Initialization Complete, Thing will run in %s mode\r\n", device_config.AP_setup_mode ? "Provisioning" : "Operational" );
 
-	return true;
+	return IMX_SUCCESS;
 }

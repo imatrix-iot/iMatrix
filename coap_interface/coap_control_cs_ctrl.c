@@ -254,7 +254,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     data_32_t value;
 
     if ( ( msg == NULL ) || ( coap_cd == NULL ) ) {
-        PRINTF( "NULL value sent to coap_post_control_param.\r\n" );
+        PRINTF( "NULL value sent to coap_post_control_cs_ctrl.\r\n" );
         return COAP_NO_RESPONSE;
     }
 
@@ -280,7 +280,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
      * Process the passed URI Query
      */
     if( strlen( coap_cd->uri_query ) > 0 ) {
-        PRINTF( "Query string sent to coap_post_control_param instead of JSON object.\r\n");
+        PRINTF( "Query string sent to coap_post_control_cs_ctrl instead of JSON object.\r\n");
         response_code = BAD_REQUEST;
         goto create_response_and_exit;
     }

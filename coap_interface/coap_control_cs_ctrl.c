@@ -299,7 +299,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
             switch( device_config.ccb[ i ].data_type ) {
                 case IMX_UINT32 :
                     if( uint_value != NO_VALUE_VALUE ) {
-                        if( imx_set_control( i, &uint_value ) == false ) {
+                        if( imx_set_control( i, &uint_value ) != IMX_SUCCESS ) {
                             response_code = BAD_REQUEST;
                             goto create_response_and_exit;
                         }
@@ -310,7 +310,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     break;
                 case IMX_INT32 :
                     if( int_value != NO_VALUE_VALUE ) {
-                        if( imx_set_control( i, &int_value ) == false ) {
+                        if( imx_set_control( i, &int_value ) != IMX_SUCCESS ) {
                             response_code = BAD_REQUEST;
                             goto create_response_and_exit;
                         }
@@ -321,7 +321,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     break;
                 case IMX_FLOAT :
                     if( float_value != NO_FLOAT_VALUE ) {
-                        if( imx_set_control( i, &float_value ) == false ) {
+                        if( imx_set_control( i, &float_value ) != IMX_SUCCESS ) {
                             response_code = BAD_REQUEST;
                             goto create_response_and_exit;
                         }
@@ -337,7 +337,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     if( value.var_data != NULL ) {
                         strcpy( (char *) value.var_data->data, string_value );
                         value.var_data->header.length = string_length;
-                        if( imx_set_control( i, &value ) == false ) {
+                        if( imx_set_control( i, &value ) != IMX_SUCCESS ) {
                             response_code = BAD_REQUEST;
                             goto create_response_and_exit;
                         }

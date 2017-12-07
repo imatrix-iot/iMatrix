@@ -193,7 +193,7 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
             cli_print( "32bit Float" );
             break;
         case IMX_VARIABLE_LENGTH :
-            cli_print( "Variable  " );
+            cli_print( "Variable   " );
             break;
     }
 
@@ -214,7 +214,7 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
                 cli_print( "%6.2f", csb[ entry ].default_value.float_32bit );
                 break;
             case IMX_VARIABLE_LENGTH :
-                cli_print( "Variable" );
+                cli_print( "Variable " );
                 break;
         }
     }

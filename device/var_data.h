@@ -65,5 +65,5 @@
 void init_var_pool(void);
 void imx_add_var_free_pool( var_data_entry_t *var_data_ptr );
 var_data_entry_t *imx_get_var_data( uint16_t length );
-
+void print_var_pools(void);
 #endif /* VAR_DATA_H_ */

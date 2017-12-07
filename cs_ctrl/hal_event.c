@@ -278,7 +278,7 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
         csd[ entry ].send_on_error = true;
     }
 
-    imx_printf( "Event Added Data History now contains: %u Samples\r\n", csd[ entry ].no_samples );
+    imx_printf( "Event Added Data History now contains: %u Event Samples\r\n", csd[ entry ].no_samples/2 );   // 2 samples per event..
     for( i = 0; i < (csd[ entry ].no_samples ); i+= 2 )
         imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ], csd[ entry ].data[ i + 1] );
 }

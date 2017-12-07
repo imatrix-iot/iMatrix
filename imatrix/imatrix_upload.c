@@ -498,12 +498,10 @@ void imatrix_upload(wiced_time_t current_time)
     */
                                             memcpy( &upload_data->data[ data_index ], data_ptr, variable_data_length );
                                             /*
-                                             * Now this data is loaded in structure, If it is not the current value free up resources
+                                             * Now this data is loaded in structure, free up resources
                                              */
-                                            if( csd[ i ].data[ var_data_index ].var_data != csd[ i ].last_value.var_data ) {
-                                                imx_printf( "About to free data\r\n" );
-                                                imx_add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
-                                            }
+                                            imx_printf( "About to free data\r\n" );
+                                            imx_add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
                                             /*
                                              * Move up the data and re calculate the last sample time
                                              */
@@ -630,6 +628,11 @@ void imatrix_upload(wiced_time_t current_time)
                                                  */
                                                 memcpy( &foo32bit, &csd[ i ].data[ j ].uint_32bit, SAMPLE_LENGTH );
                                                 upload_data->data[ j ].uint_32bit = htonl( foo32bit );
+                                                /*
+                                                 * If this entry was for a variable length entry - free the item
+                                                 */
+                                                if( csb[ i ].data_type == IMX_VARIABLE_LENGTH )
+                                                    imx_add_var_free_pool( csd[ i ].last_value.var_data );
                                             }
                                             /*
                                              * Update the structure based on how many items were used

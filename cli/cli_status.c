@@ -49,6 +49,7 @@
 #include "../device/hal_leds.h"
 #include "../device/icb_def.h"
 #include "../device/imx_LEDS.h"
+#include "../device/var_data.h"
 #include "../imatrix/imatrix.h"
 #include "../wifi/wifi.h"
 #include "cli_status.h"
@@ -178,6 +179,13 @@ void cli_status( uint16_t arg )
     }
 
     cli_print( "\r\n" );
+    /*
+     * Show Variable length pools
+     */
+    print_var_pools();
+    /*
+     * Use current time to determine next sample time
+     */
 	wiced_time_get_time( &current_time );
 	/*
 	 * Display status of controls
@@ -214,11 +222,11 @@ void cli_status( uint16_t arg )
                             cli_print( "%0.6f", csd[ i ].last_value.float_32bit );
                             break;
                         case IMX_VARIABLE_LENGTH :
-                            print_var_data( VR_DATA_MAC_ADDRESS, csd[ i ].last_value.var_data );
+                            print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
                             break;
                     }
                     cli_print( ", %s", imx_data_types[ csb[ i ].data_type ] );
-                    cli_print( ", Errors: %lu, ", cd[ i ]->errors );
+                    cli_print( ", Errors: %lu, ", csd[ i ].errors );
                     if( csb[ i ].sample_rate == 0 )
                         cli_print( "Event Driven" );
                     else {

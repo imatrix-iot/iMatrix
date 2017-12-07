@@ -94,7 +94,6 @@ void log_wifi_connection(void)
     int32_t channel, noise, rssi;
     wiced_mac_t ap_bssid;
     var_data_entry_t *var_data_ptr;
-    char bssid_string[ BSSID_STRING_LENGTH ];
 
     if( ( icb.wifi_up == false ) || ( device_config.AP_setup_mode == true ) )
         return;     // Nothing to log
@@ -111,14 +110,13 @@ void log_wifi_connection(void)
          * Add BSSID Address
          */
         hal_get_wifi_bssid( &ap_bssid );
-        var_data_ptr = imx_get_var_data( strlen( bssid_string ) );
+        var_data_ptr = imx_get_var_data( BSSID_STRING_LENGTH );
         if( var_data_ptr != NULL ) {
-            sprintf( bssid_string, "%02x:%02x:%02x:%02x:%02x:%02x", var_data_ptr->data[ 0 ], var_data_ptr->data[ 1 ], var_data_ptr->data[ 2 ], var_data_ptr->data[ 3 ],
-                                var_data_ptr->data[ 4 ], var_data_ptr->data[ 5 ] );
-            var_data_ptr->header.length = strlen( bssid_string );
-            imx_printf( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", var_data_ptr->data[ 0 ], var_data_ptr->data[ 1 ], var_data_ptr->data[ 2 ], var_data_ptr->data[ 3 ],
-                    var_data_ptr->data[ 4 ], var_data_ptr->data[ 5 ] );
-            imx_set_sensor( imx_get_wifi_bssid_scb(), (void *) var_data_ptr );
+            sprintf( (char *) var_data_ptr->data, "%02x:%02x:%02x:%02x:%02x:%02x", ap_bssid.octet[ 0 ], ap_bssid.octet[ 1 ], ap_bssid.octet[ 2 ], ap_bssid.octet[ 3 ],
+                    ap_bssid.octet[ 4 ], ap_bssid.octet[ 5 ] );
+            var_data_ptr->header.length = strlen( (char *) var_data_ptr->data + 1 );    // Include NULL in the length of this data
+            imx_printf( " BSSID: %s", var_data_ptr->data );
+            imx_set_sensor( imx_get_wifi_bssid_scb(), &var_data_ptr );
         } else
             imx_printf( "Unable to get variable length data buffer\r\n" );
     }

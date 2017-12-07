@@ -98,6 +98,7 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
  */
 imx_status_t imx_set_sensor( uint16_t entry, void *value )
 {
+    data_32_t *foo;
     // imx_printf( "Saving Sensor: %u, Value Address 0x%08x\r\n", entry, value );
     if( entry > device_config.no_sensors )
         return IMX_INVALID_ENTRY;
@@ -111,17 +112,26 @@ imx_status_t imx_set_sensor( uint16_t entry, void *value )
         /*
          * Free up last entry if there was one
          */
-        if( sd[ entry ]->last_value.var_data != NULL )
+        print_var_pools();
+        foo = (data_32_t*) value;
+        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) sd[ entry ]->last_value.var_data, (uint32_t) value, foo->var_data->header.length );
+        if( sd[ entry ]->last_value.var_data != NULL ) {
+            imx_printf( "Freeing up existing variable length entry\r\n" );
             imx_add_var_free_pool( sd[ entry ]->last_value.var_data );
+        }
+        imx_printf( "*** Getting variable length data for Sensor: %u, with from: 0x%08lx, length: %u\r\n", entry, (uint32_t) value, ((data_32_t *) value)->var_data->header.length );
         /*
          * Get a spare variable length entry to save the values in - should be available if same or < length as before
          */
         sd[ entry ]->last_value.var_data = imx_get_var_data( ((data_32_t *) value)->var_data->header.length );
         if( sd[ entry ]->last_value.var_data != NULL ) {
-            strcpy( (char *) cd[ entry ]->last_value.var_data->data, (char *) ((data_32_t *) value)->var_data->data );
+            memcpy( (char *) cd[ entry ]->last_value.var_data->data, (char *) ((data_32_t *) value)->var_data->data, ((data_32_t *) value)->var_data->header.length );
             sd[ entry ]->last_value.var_data->header.length = ((data_32_t *) value)->var_data->header.length;
-        } else
+        } else {
+            imx_printf( "Unable to save variable length sensor data - OUT OF MEMORY\r\n" );
             return IMX_OUT_OF_MEMORY;
+        }
+        print_var_pools();
     } else {
         /*
          * copy the value and do any action needed - Note this is for just raw uint, int and float data
@@ -129,6 +139,7 @@ imx_status_t imx_set_sensor( uint16_t entry, void *value )
         memcpy( &sd[ entry ]->last_value, value, SAMPLE_LENGTH );
     }
     sd[ entry ]->valid = true;  // We have a sample
+    imx_printf( "Sensor: %u Now Valid\r\n", entry );
 
     if( device_config.scb[ entry ].sample_rate == 0 )
         hal_event( IMX_SENSORS, entry, value );

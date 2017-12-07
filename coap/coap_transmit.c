@@ -129,7 +129,7 @@ void coap_transmit( uint16_t process_to_end )
                 if ( ( msg->coap.next_timestamp == 0 ) &&
                      ( ( msg->coap.my_ip_from_request.ip.v4 & 0xF0000000 ) == 0xE0000000 )) {
                     random_backoff = ms_backoff( 100 );
-                    imx_printf("MULTICAST ADDRESS %u.%u.%u.%u backoff: %u mS\r\n",
+                    PRINTF("MULTICAST ADDRESS %u.%u.%u.%u backoff: %u mS\r\n",
                             (unsigned char) ( ( msg->coap.my_ip_from_request.ip.v4  >> 24 ) & 0xff ),
                             (unsigned char) ( ( msg->coap.my_ip_from_request.ip.v4  >> 16 ) & 0xff ),
                             (unsigned char) ( ( msg->coap.my_ip_from_request.ip.v4  >>  8 ) & 0xff ),

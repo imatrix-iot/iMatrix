@@ -170,12 +170,15 @@ void cli_at( uint16_t arg )
              */
             if( token[ 1 ] == '0' ) {
                 device_config.AT_verbose = IMX_AT_VERBOSE_NONE;
+                icb.print_debugs = false;   // When enforced reset
                 imatrix_save_config();
             } else if( token[ 1 ] == '1' ) {
                 device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD;
+                icb.print_debugs = false;   // When enforced reset
                 imatrix_save_config();
             } else if( token[ 1 ] == '2' ) {
                 device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD_STATUS;
+                icb.print_debugs = false;   // When enforced reset
                 imatrix_save_config();
             } else {
                 at_print( AT_RESPONSE_ERROR );

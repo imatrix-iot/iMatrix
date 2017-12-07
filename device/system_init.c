@@ -151,7 +151,7 @@ bool system_init(bool override_config)
     imatrix_load_config( override_config );
     imx_printf( "Configuration Loaded\r\n" );
     set_serial_number();
-    print_serial_number();
+//  print_serial_number();
     /*
      * Initialize variable storage based on settings
      */

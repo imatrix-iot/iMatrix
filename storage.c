@@ -46,7 +46,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define PRINT_ALLOCATION_MSGS
+//#define PRINT_ALLOCATION_MSGS
 #define CCM_POOL_LENGTH ( 40 * 1024 )       // Variable data allocated to this space
 /******************************************************
  *                   Enumerations

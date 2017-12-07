@@ -55,6 +55,17 @@
 /******************************************************
  *                      Macros
  ******************************************************/
+#ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
+    #undef PRINTF
+	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf(__VA_ARGS__)
+#elif !defined PRINTF
+    #define PRINTF(...)
+#endif
+
+
+/******************************************************
+ *                    Constants
+ ******************************************************/
 // 8 bytes
 #define TINY_DATA_BYTES 8
 #define NUM_MSG_W_TINY_DATA_SIZE 10
@@ -89,10 +100,6 @@
 							           + NUM_MSG_W_HUGE_DATA_SIZE * HUGE_DATA_BYTES )
 
 // Total: 9960 bytes less than 10K
-
-/******************************************************
- *                    Constants
- ******************************************************/
 
 /******************************************************
  *                   Enumerations
@@ -861,23 +868,23 @@ void print_msg( message_t *msg )
     bool payload = false;
 
 
-   imx_printf( "Message Contents\r\n");
-   imx_printf( "  Next: %lu, Prev %lu\r\n", (uint32_t)msg->header.next, (uint32_t) msg->header.prev );
-   imx_printf( "  CoAP: IP Address: %u.%u.%u.%u, Port: %u\r\n", (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4 ) >> 24 ) & 0xff ),
+   PRINTF( "Message Contents\r\n");
+   PRINTF( "  Next: %lu, Prev %lu\r\n", (uint32_t)msg->header.next, (uint32_t) msg->header.prev );
+   PRINTF( "  CoAP: IP Address: %u.%u.%u.%u, Port: %u\r\n", (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4 ) >> 24 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 16 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 8 ) & 0xff ),
             (uint16_t) ( ( (uint32_t)( msg->coap.ip_addr.ip.v4) >> 0 ) & 0xff ), msg->coap.port );
-    imx_printf( "        Header: Ver: %u, Type: %u, Code: 0x%02x, Message ID: %u\r\n", msg->coap.header.ver, msg->coap.header.t, msg->coap.header.code, msg->coap.header.id );
-    imx_printf( "        Message Length: %u: ", msg->coap.msg_length );
+    PRINTF( "        Header: Ver: %u, Type: %u, Code: 0x%02x, Message ID: %u\r\n", msg->coap.header.ver, msg->coap.header.t, msg->coap.header.code, msg->coap.header.id );
+    PRINTF( "        Message Length: %u: ", msg->coap.msg_length );
     for( i = 0; i < msg->coap.msg_length; i++ ) {
         if( msg->coap.data_block->data[ i ] == 0xff )
             payload = true;
-        if ( isprint( msg->coap.data_block->data[ i ] ) && payload == false )
-            imx_printf( "%c", msg->coap.data_block->data[ i ] );
+        if( ( isprint( msg->coap.data_block->data[ i ] ) == true ) && ( payload == false ) )
+            PRINTF( "%c", msg->coap.data_block->data[ i ] );
         else
-            imx_printf( "[0x%02x]", msg->coap.data_block->data[ i ] );
+            PRINTF( "[0x%02x]", msg->coap.data_block->data[ i ] );
     }
-    imx_printf( "\r\n" );
+    PRINTF( "\r\n" );
 
 }
 

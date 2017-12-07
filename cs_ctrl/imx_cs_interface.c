@@ -99,7 +99,7 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 imx_status_t imx_set_sensor( uint16_t entry, void *value )
 {
     data_32_t *foo;
-    // imx_printf( "Saving Sensor: %u, Value Address 0x%08x\r\n", entry, value );
+    imx_printf( "Saving Sensor: %u, Value Address 0x%08x\r\n", entry, value );
     if( entry > device_config.no_sensors )
         return IMX_INVALID_ENTRY;
     if( device_config.scb[ entry ].enabled == false )
@@ -128,7 +128,7 @@ imx_status_t imx_set_sensor( uint16_t entry, void *value )
             memcpy( (char *) cd[ entry ]->last_value.var_data->data, (char *) ((data_32_t *) value)->var_data->data, ((data_32_t *) value)->var_data->header.length );
             sd[ entry ]->last_value.var_data->header.length = ((data_32_t *) value)->var_data->header.length;
         } else {
-            imx_printf( "Unable to save variable length sensor data - OUT OF MEMORY\r\n" );
+            imx_printf( "Unable to save variable length sensor data - Variable data pool empty\r\n" );
             return IMX_OUT_OF_MEMORY;
         }
         print_var_pools();
@@ -136,6 +136,7 @@ imx_status_t imx_set_sensor( uint16_t entry, void *value )
         /*
          * copy the value and do any action needed - Note this is for just raw uint, int and float data
          */
+        imx_printf( "Copying Sensor: %u to last value\r\n", entry );
         memcpy( &sd[ entry ]->last_value, value, SAMPLE_LENGTH );
     }
     sd[ entry ]->valid = true;  // We have a sample
@@ -225,8 +226,8 @@ bool imx_parse_value( peripheral_type_t type, uint16_t entry, char *string, data
     SET_CSB_VARS( type );
     UNUSED_PARAMETER( csd );
 
-    imx_printf( "Processing assignment for %s( %s ): %u, data type(%s): %s with value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
-            csb[ entry ].name, entry, csb->read_only == true ? "Read Only" : "Read/Write", imx_data_types[ csb[ entry ].data_type ], string );
+    imx_printf( "Processing assignment for %s( %s ): %u, data type(%s): %s with string value %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
+            csb[ entry ].name, entry, csb[ entry ].read_only == true ? "Read Only" : "Read/Write", imx_data_types[ csb[ entry ].data_type ], string );
     /*
      * Do some error checking
      */

@@ -186,17 +186,6 @@ typedef enum {
     IMX_WIFI_AD_HOC,
     IMX_WIFI_OFFLINE,
 } imx_wifi_mode_t;
-
-/*
- * Tsunami Warning codes
- */
-typedef enum {
-    IMX_INFORMATIONAL = 0,
-    IMX_WATCH,
-    IMX_ADVISORY,
-    IMX_WARNING,
-    IMX_WARNING_LEVELS
-} imx_tsnumai_warning_t;
 /*
  * Define Control and Sensor Errors
  */
@@ -228,7 +217,14 @@ typedef enum {
     IMX_ON_BOARD_TEMP_ERROR,
     IMX_INTERNAL_ADC_ERROR,
 } imx_result_t;
-
+/*
+ * Define Peripheral types
+ */
+typedef enum imx_peripheral_type {
+    IMX_CONTROLS = 0,
+    IMX_SENSORS,
+    IMX_NO_PERIPHERAL_TYPES,
+} imx_peripheral_type_t;
 /*
  * Define data types for Controls & Sensors
  */
@@ -239,13 +235,27 @@ typedef enum {
     IMX_VARIABLE_LENGTH,
     IMX_NO_DATA_TYPES,
 } imx_data_types_t;
-
+/*
+ * Tsunami Warning codes
+ */
+typedef enum {
+    IMX_INFORMATIONAL = 0,
+    IMX_WATCH,
+    IMX_ADVISORY,
+    IMX_WARNING,
+    IMX_WARNING_LEVELS
+} imx_tsnumai_warning_t;
+/*
+ * Define how the CLI and status messages respond
+ */
 typedef enum {
     IMX_AT_VERBOSE_NONE = 0,
     IMX_AT_VERBOSE_STANDARD,
     IMX_AT_VERBOSE_STANDARD_STATUS
 } imx_AT_versbose_mode_t;
-
+/*
+ * Define generic LED types.
+ */
 typedef enum {
     IMX_LED_ALL_OFF,
     IMX_LED_OFF,
@@ -253,7 +263,9 @@ typedef enum {
     IMX_LED_OTHER,
     IMX_LED_INIT,
 } imx_led_state_t;
-
+/*
+ * Define LED combinations
+ */
 typedef enum {
     IMX_LED_RED = 0,
     IMX_LED_GREEN,
@@ -266,21 +278,27 @@ typedef enum {
     IMX_LED_BLUE_GREEN,
     IMX_NO_LED_COMBINATIONS,
 } imx_led_t;
-
+/*
+ * Define which interface iMatrix should use
+ */
 typedef enum {
     IMX_INTERFACE_ETHERNET,
     IMX_INTERFACE_WIFI
 } imx_interface_t;
 
 typedef uint32_t imx_status_t;
-
+/*
+ * Define variable length data pools
+ */
 typedef struct var_data_header {
     unsigned int pool_id : 8;
     unsigned int reserved : 8;
     unsigned int length : 16;
     void *next;
 } var_data_header_t;
-
+/*
+ * Define a variable length data structure
+ */
 typedef struct var_data_entry {
     var_data_header_t header;
     uint8_t data[];
@@ -290,7 +308,9 @@ typedef struct var_data_block {
     var_data_entry_t *head;
     var_data_entry_t *tail;
 } var_data_block_t;
-
+/*
+ * Define generic 32 bit data or pointer to variable length record
+ */
 typedef union data_32 {
     uint32_t uint_32bit;
     int32_t int_32bit;

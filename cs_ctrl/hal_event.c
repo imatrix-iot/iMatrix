@@ -92,7 +92,7 @@ extern control_sensor_data_t *sd[];
   * @param: Type of Event, entry and value
   * @retval : None
   */
-void hal_event( peripheral_type_t type, uint16_t entry, void *value )
+void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 {
 	uint16_t i;
 	bool percent_change_detected;

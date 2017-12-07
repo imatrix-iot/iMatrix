@@ -182,12 +182,6 @@ typedef enum imatrix_version {
     IMATRIX_VERSION_7 = 7,
 } imatrix_version_t;
 
-typedef enum peripheral_type {
-    IMX_CONTROLS = 0,
-    IMX_SENSORS,
-    IMX_NO_PERIPHERAL_TYPES,
-} peripheral_type_t;
-
 typedef struct serial_number {
     uint32_t serial1;
     uint32_t serial2;

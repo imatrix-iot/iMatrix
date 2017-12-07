@@ -83,7 +83,7 @@ extern IOT_Device_Config_t device_config;   // Defined in device\config.h
 extern control_sensor_data_t *cd[];
 extern control_sensor_data_t *sd[];
 extern char *imx_data_types[ IMX_NO_DATA_TYPES ];
-extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
+extern imx_functions_t imx_control_functions[];
 
 /******************************************************
  *               Function Definitions
@@ -94,39 +94,71 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
   * @retval : result
   */
 /*
- * Set & Get Control / Sensor data
+ * Get & Set Control / Sensor data
  */
-imx_status_t imx_set_sensor( uint16_t entry, void *value )
+imx_status_t imx_get_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value )
+{
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;    // Temp pointer to control structure
+
+    SET_CSB_VARS( type );
+
+    if( ( ( type == IMX_SENSORS ) && ( entry > device_config.no_sensors ) ) ||
+        ( ( type == IMX_CONTROLS ) && ( entry > device_config.no_controls ) ) )
+        return IMX_INVALID_ENTRY;
+
+    if( csb[ entry ].enabled == false )
+        return IMX_CONTROL_DISABLED;
+    if( csd[ entry ].valid == true ) {
+        memcpy( value, &csd[ entry ].last_value, SAMPLE_LENGTH );
+        return IMX_SUCCESS;
+    } else
+        return IMX_NO_DATA;
+}
+
+imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value )
 {
     data_32_t *foo;
-    imx_printf( "Saving Sensor: %u, Value Address 0x%08x\r\n", entry, value );
-    if( entry > device_config.no_sensors )
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;    // Temp pointer to control structure
+
+    SET_CSB_VARS( type );
+
+    imx_printf( "Saving %s: %u, Value Address 0x%08x\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, value );
+    if( ( ( type == IMX_SENSORS ) && ( entry > device_config.no_sensors ) ) ||
+        ( ( type == IMX_CONTROLS ) && ( entry > device_config.no_controls ) ) )
         return IMX_INVALID_ENTRY;
-    if( device_config.scb[ entry ].enabled == false )
-        return IMX_CONTROL_DISABLED;
+
+    if( csb[ entry ].enabled == false ) {
+        if( type == IMX_CONTROLS )
+            return IMX_CONTROL_DISABLED;
+        else
+            return IMX_SENSOR_DISABLED;
+    }
 
     /*
      * If this is a variable length entry free up the save current to last value
      */
-    if( device_config.scb[ entry ].data_type == IMX_VARIABLE_LENGTH ) {
+    if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH ) {
         /*
          * Free up last entry if there was one
          */
         print_var_pools();
         foo = (data_32_t*) value;
-        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) sd[ entry ]->last_value.var_data, (uint32_t) value, foo->var_data->header.length );
-        if( sd[ entry ]->last_value.var_data != NULL ) {
+        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->header.length );
+        if( csd[ entry ].last_value.var_data != NULL ) {
             imx_printf( "Freeing up existing variable length entry\r\n" );
-            imx_add_var_free_pool( sd[ entry ]->last_value.var_data );
+            imx_add_var_free_pool( csd[ entry ].last_value.var_data );
         }
-        imx_printf( "*** Getting variable length data for Sensor: %u, with from: 0x%08lx, length: %u\r\n", entry, (uint32_t) value, ((data_32_t *) value)->var_data->header.length );
+        imx_printf( "*** Getting variable length data for %s: %u, with from: 0x%08lx, length: %u\r\n",
+                ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, (uint32_t) value, ((data_32_t *) value)->var_data->header.length );
         /*
          * Get a spare variable length entry to save the values in - should be available if same or < length as before
          */
-        sd[ entry ]->last_value.var_data = imx_get_var_data( ((data_32_t *) value)->var_data->header.length );
-        if( sd[ entry ]->last_value.var_data != NULL ) {
-            memcpy( (char *) cd[ entry ]->last_value.var_data->data, (char *) ((data_32_t *) value)->var_data->data, ((data_32_t *) value)->var_data->header.length );
-            sd[ entry ]->last_value.var_data->header.length = ((data_32_t *) value)->var_data->header.length;
+        csd[ entry ].last_value.var_data = imx_get_var_data( ((data_32_t *) value)->var_data->header.length );
+        if( csd[ entry ].last_value.var_data != NULL ) {
+            memcpy( (char *) csd[ entry ].last_value.var_data->data, (char *) ((data_32_t *) value)->var_data->data, ((data_32_t *) value)->var_data->header.length );
+            csd[ entry ].last_value.var_data->header.length = ((data_32_t *) value)->var_data->header.length;
         } else {
             imx_printf( "Unable to save variable length sensor data - Variable data pool empty\r\n" );
             return IMX_OUT_OF_MEMORY;
@@ -136,14 +168,25 @@ imx_status_t imx_set_sensor( uint16_t entry, void *value )
         /*
          * copy the value and do any action needed - Note this is for just raw uint, int and float data
          */
-        imx_printf( "Copying Sensor: %u to last value\r\n", entry );
-        memcpy( &sd[ entry ]->last_value, value, SAMPLE_LENGTH );
+        imx_printf( "Copying %s: %u to last value @ 0x%08lx\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, &csd[ entry ].last_value );
+        memcpy( &csd[ entry ].last_value, value, SAMPLE_LENGTH );
     }
-    sd[ entry ]->valid = true;  // We have a sample
-    imx_printf( "Sensor: %u Now Valid\r\n", entry );
+    csd[ entry ].valid = true;  // We have a sample
+    imx_printf( "%s: %u Now Valid\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry );
 
-    if( device_config.scb[ entry ].sample_rate == 0 )
-        hal_event( IMX_SENSORS, entry, value );
+    /*
+     * If this is a control then we might need to do some action
+     */
+    if( type == IMX_CONTROLS ) {
+        if( imx_control_functions[ entry ].update != NULL )
+            (imx_control_functions[ entry ].update)( entry, value );
+    }
+    /*
+     * Is this event driven - if so process the event into history
+     */
+    if( csb[ entry ].sample_rate == 0 ) {
+        hal_event( type, entry, value );
+    }
 
     return IMX_SUCCESS;
 }
@@ -159,6 +202,7 @@ imx_status_t imx_get_sensor( uint16_t entry, void *value )
     } else
         return IMX_NO_DATA;
 }
+
 imx_status_t imx_set_control( uint16_t entry, void *value )
 {
     if( entry > device_config.no_controls )
@@ -217,7 +261,7 @@ imx_status_t imx_get_control( uint16_t entry, void *value )
   * @param  pointer to provided string, pointer to result to pass to imx_x_set value
   * @retval : None
   */
-bool imx_parse_value( peripheral_type_t type, uint16_t entry, char *string, data_32_t *value )
+bool imx_parse_value( imx_peripheral_type_t type, uint16_t entry, char *string, data_32_t *value )
 {
     uint16_t string_length;
     control_sensor_data_t *csd;

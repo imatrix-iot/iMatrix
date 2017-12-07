@@ -105,7 +105,7 @@ void log_wifi_connection(void)
          */
         channel = hal_get_wifi_channel();
         imx_printf( " Channel: %ld", channel );
-        imx_set_sensor( imx_get_wifi_channel_scb(), &channel );
+        imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_channel_scb(), &channel );
         /*
          * Add BSSID Address
          */
@@ -116,7 +116,7 @@ void log_wifi_connection(void)
                     ap_bssid.octet[ 4 ], ap_bssid.octet[ 5 ] );
             var_data_ptr->header.length = strlen( (char *) var_data_ptr->data + 1 );    // Include NULL in the length of this data
             imx_printf( " BSSID: %s", var_data_ptr->data );
-            imx_set_sensor( imx_get_wifi_bssid_scb(), &var_data_ptr );
+            imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_bssid_scb(), &var_data_ptr );
         } else
             imx_printf( "Unable to get variable length data buffer\r\n" );
     }
@@ -124,13 +124,13 @@ void log_wifi_connection(void)
     if( device_config.log_wifi_rssi == true ) {
         rssi = hal_get_wifi_rssi();
         imx_printf( " RSSI: %ld", rssi );
-        imx_set_sensor( imx_get_wifi_rssi_scb(), (void *) &rssi );
+        imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rssi_scb(), (void *) &rssi );
     }
 
     if( device_config.log_wifi_rfnoise == true ) {
         noise = hal_get_wifi_noise();
         imx_printf( " RF Noise: %ld", noise );
-        imx_set_sensor( imx_get_wifi_rf_noise_scb(), (void *) &noise );
+        imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rf_noise_scb(), (void *) &noise );
     }
 
     imx_printf( "\r\n" );

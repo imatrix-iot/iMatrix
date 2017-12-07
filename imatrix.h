@@ -123,6 +123,9 @@ void imx_set_cli_handler( bool (*cli_handler)( char *token ) );
 /*
  * Set & Get Control / Sensor data
  */
+imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value );
+imx_status_t imx_get_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value );
+
 imx_status_t imx_set_sensor( uint16_t sensor_entry, void *value );
 imx_status_t imx_get_sensor( uint16_t sensor_entry, void *value );
 imx_status_t imx_set_control( uint16_t sensor_entry, void *value );

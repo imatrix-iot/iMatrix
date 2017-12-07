@@ -879,10 +879,11 @@ void print_msg( message_t *msg )
     for( i = 0; i < msg->coap.msg_length; i++ ) {
         if( msg->coap.data_block->data[ i ] == 0xff )
             payload = true;
-        if( ( isprint( msg->coap.data_block->data[ i ] ) == true ) && ( payload == false ) )
+        if( ( isprint( msg->coap.data_block->data[ i ] ) == true ) && ( payload == false ) ) {
             PRINTF( "%c", msg->coap.data_block->data[ i ] );
-        else
+        } else {
             PRINTF( "[0x%02x]", msg->coap.data_block->data[ i ] );
+        }
     }
     PRINTF( "\r\n" );
 

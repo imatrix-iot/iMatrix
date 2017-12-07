@@ -103,7 +103,7 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
   * @param  None
   * @retval : None
   */
-void hal_sample( peripheral_type_t type, wiced_time_t current_time )
+void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 {
 	uint16_t i, *active;
 	uint8_t status;

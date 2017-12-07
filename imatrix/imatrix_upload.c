@@ -184,7 +184,7 @@ void imatrix_upload(wiced_time_t current_time)
     uint32_t foo32bit;
     wiced_utc_time_ms_t upload_utc_ms_time;
     wiced_iso8601_time_t iso8601_time;
-    peripheral_type_t type;
+    imx_peripheral_type_t type;
     bits_t header_bits;
     upload_data_t *upload_data;
     control_sensor_data_t *csd;
@@ -867,7 +867,7 @@ void imatrix_status( uint16_t arg)
     UNUSED_PARAMETER( arg );
 	uint16_t i, j;
 	wiced_time_t current_time;
-    peripheral_type_t type;
+    imx_peripheral_type_t type;
     control_sensor_data_t *csd;
     imx_control_sensor_block_t *csb;
     uint16_t no_items;

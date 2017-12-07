@@ -190,7 +190,7 @@ void cli_status( uint16_t arg )
 	/*
 	 * Display status of controls
 	 */
-	peripheral_type_t type;
+	imx_peripheral_type_t type;
 	control_sensor_data_t *csd;
 	imx_control_sensor_block_t *csb;
 	uint16_t no_items;

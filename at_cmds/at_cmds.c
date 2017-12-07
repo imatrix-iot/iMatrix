@@ -89,7 +89,7 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-static bool print_register( peripheral_type_t type, uint16_t entry );
+static bool print_register( imx_peripheral_type_t type, uint16_t entry );
 static void at_print( char *response );
 /******************************************************
  *               Variable Definitions
@@ -118,7 +118,7 @@ void cli_at( uint16_t arg )
 	UNUSED_PARAMETER(arg);
 	bool process_ct = false;
 	uint16_t at_register, result, i, reg_width;
-	peripheral_type_t type;
+	imx_peripheral_type_t type;
 	data_32_t value;
 	char *token;
 
@@ -246,18 +246,10 @@ void cli_at( uint16_t arg )
                     at_print( AT_RESPONSE_ERROR );
                     return;
 	            }
-	            if( type == IMX_CONTROLS ) {
-	                if( imx_set_control( at_register, &value ) != IMX_SUCCESS ) {
-	                    icb.AT_command_errors += 1;
-	                    at_print( AT_RESPONSE_ERROR );
-	                    return;
-	                }
-	            } else {
-	                if( imx_set_sensor( at_register, &value ) != IMX_SUCCESS ) {
-                        icb.AT_command_errors += 1;
-                        at_print( AT_RESPONSE_ERROR );
-                        return;
-                    }
+	            if( imx_set_control_sensor( type, at_register, &value ) != IMX_SUCCESS ) {
+	                icb.AT_command_errors += 1;
+	                at_print( AT_RESPONSE_ERROR );
+	                return;
 	            }
 	        } else if( token[ 4 + reg_width ] == '?' ) {
 	            /*
@@ -292,7 +284,7 @@ void cli_at( uint16_t arg )
   * @retval : None
   */
 
-static bool print_register( peripheral_type_t type, uint16_t entry )
+static bool print_register( imx_peripheral_type_t type, uint16_t entry )
 {
 
     control_sensor_data_t *csd;

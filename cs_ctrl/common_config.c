@@ -61,7 +61,7 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry );
+static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry );
 /******************************************************
  *               Variable Definitions
  ******************************************************/
@@ -83,7 +83,7 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
   */
 void cs_reset_defaults(void)
 {
-    peripheral_type_t type;
+    imx_peripheral_type_t type;
     imx_control_sensor_block_t *csb, *config_source;
     uint16_t no_items, i;
 
@@ -112,7 +112,7 @@ void cs_reset_defaults(void)
   */
 void cs_init(void)
 {
-    peripheral_type_t type;
+    imx_peripheral_type_t type;
     control_sensor_data_t *csd;
     imx_control_sensor_block_t *csb;
     imx_functions_t *f;
@@ -167,7 +167,7 @@ void load_config_defaults_generic_ccb( uint16_t arg )
   * @param  None
   * @retval : None
   */
-void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *csb )
+void print_common_config( imx_peripheral_type_t type, imx_control_sensor_block_t *csb )
 {
     uint16_t i, no_items;
 
@@ -179,7 +179,7 @@ void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *cs
 
 }
 
-static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry )
+static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry )
 {
     cli_print( " No. %2u, %32s, ID: 0x%08lx, ", entry, csb[  entry ].name, csb[ entry ].id );
     switch( csb[ entry ].data_type ) {

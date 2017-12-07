@@ -429,7 +429,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                         /*
                          * Initialize Timer setup
                          */
-                        imx_printf( "Setting Alternate flash( %um Sec Period): Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n",
+                        imx_printf( "Setting Alternate flash( %u mSec Period): Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n",
                                 lcb[ master_led ].flash_count * 100, (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_1_count, lcb[ master_led ].blink_2_count );
                         wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) alt_flash_led, (void *) &led_options[ master_led ] );
                         start_timer = true;

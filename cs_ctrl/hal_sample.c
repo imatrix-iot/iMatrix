@@ -45,6 +45,7 @@
 #include "wiced.h"
 
 #include "../storage.h"
+#include "../common.h"
 #include "../cli/interface.h"
 #include "../device/config.h"
 #include "../time/ck_time.h"
@@ -55,14 +56,13 @@
 #define SET_CSB_VARS_F( type )    \
                 if( type == IMX_CONTROLS ) {        \
                     csb = &device_config.ccb[ 0 ];  \
-                    csd = cd[ 0 ];                 \
+                    csd = cd[ 0 ];                  \
                     f = &imx_control_functions[ 0 ];\
                 } else {                            \
                     csb = &device_config.scb[ 0 ];  \
-                    csd = sd[ 0 ];                 \
+                    csd = sd[ 0 ];                  \
                     f = &imx_sensor_functions[ 0 ]; \
-                }                                   \
-
+                }
 /******************************************************
  *                    Constants
  ******************************************************/

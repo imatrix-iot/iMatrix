@@ -237,6 +237,7 @@ typedef enum {
     IMX_INT32,
     IMX_FLOAT,
     IMX_VARIABLE_LENGTH,
+    IMX_NO_DATA_TYPES,
 } imx_data_types_t;
 
 typedef enum {

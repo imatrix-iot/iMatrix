@@ -77,6 +77,7 @@ extern IOT_Device_Config_t device_config;
 extern iMatrix_Control_Block_t icb;
 extern control_sensor_data_t *sd[];
 extern control_sensor_data_t *cd[];
+extern char *imx_data_types[ IMX_NO_DATA_TYPES ];
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -216,18 +217,7 @@ void cli_status( uint16_t arg )
                             print_var_data( VR_DATA_MAC_ADDRESS, csd[ i ].last_value.var_data );
                             break;
                     }
-                    cli_print( ", " );
-                    switch( csb[ i ].data_type ) {
-                        case IMX_UINT32 :
-                            cli_print( "32 Bit Unsigned" );
-                            break;
-                        case IMX_INT32 :
-                            cli_print( "32 Bit signed" );
-                            break;
-                        case IMX_FLOAT :
-                            cli_print( "32 Bit Float" );
-                            break;
-                    }
+                    cli_print( ", %s", imx_data_types[ csb[ i ].data_type ] );
                     cli_print( ", Errors: %lu, ", cd[ i ]->errors );
                     if( csb[ i ].sample_rate == 0 )
                         cli_print( "Event Driven" );

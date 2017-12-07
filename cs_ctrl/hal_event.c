@@ -119,12 +119,17 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
 			csb = &device_config.scb[ 0 ];
 		}
 	}
-    imx_printf( "Event - Setting %s %u Data @: 0x%08lx\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", entry, (uint32_t) &csd[ entry ] );
+//    imx_printf( "Event - Setting %s %u Data @: 0x%08lx\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", entry, (uint32_t) &csd[ entry ] );
     /*
      * Check for overflow - Save only the last sample values
      */
     if( csd[ entry ].no_samples >= ( IMATRIX_HISTORY_SIZE - 2 ) ) {
         imx_printf( "History Full - dropping last sample\r\n" );
+        /*
+         * If item is variable length - free before overwrite
+         */
+        if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH )
+            ;
         memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( IMATRIX_HISTORY_SIZE - 2 ) * SAMPLE_LENGTH );
         csd[ entry ].no_samples -= 2;
     }
@@ -137,26 +142,11 @@ void hal_event( peripheral_type_t type, uint16_t entry, void *value )
     /*
      * Add Data
      */
-    if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH ) {
-        return;     // do not process at this
-
-        var_data_entry_t *var_data_ptr;
-        var_data_ptr = (var_data_entry_t *) value;
-        imx_printf( "Adding variable length data %u Bytes\r\n", var_data_ptr->header.length );
-        if( ( csd[ entry ].no_samples == 1 ) && ( csd[ entry ].last_value.var_data != NULL ) ){
-            /*
-             * Free the last value as it has been kept as a current value, old data has been sent to iMatrix
-             */
-                imx_add_var_free_pool( csd[ entry ].last_value.var_data );
-        }
-    }
 
     /*
      * All Data is really just 32 bit - value or point to variable length
      */
     memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, SAMPLE_LENGTH );
-    memcpy( &csd[ entry ].last_value, value, SAMPLE_LENGTH );
-    csd[ entry ].valid = true;  // We have a sample
 
     /*
     if( type == CONTROLS )

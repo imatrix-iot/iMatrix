@@ -56,6 +56,8 @@
 #include "../json/mjson.h"
 #include "../coap/add_coap_option.h"
 #include "../CoAP_interface/get_uint_from_query_str.h"
+#include "../cs_ctrl/imx_cs_interface.h"
+#include "../device/var_data.h"
 #include "../wifi/wifi.h"
 #include "coap_def.h"
 #include "coap_msg_get_store.h"
@@ -97,7 +99,6 @@
 extern IOT_Device_Config_t device_config;   // Defined in device\config.h
 extern control_sensor_data_t *cd[];
 extern control_sensor_data_t *sd[];
-extern imx_functions_t *imx_control_functions;
 extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
@@ -245,12 +246,12 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     UNUSED_PARAMETER( arg );
 
     char string_value[ MAX_STRING_SIZE ];
-    uint16_t i;
+    uint16_t i, string_length;
     unsigned int id, uint_value;
     int int_value;
     double double_value;
     float  float_value;
-    var_data_entry_t *var_data_ptr;
+    data_32_t value;
 
     if ( ( msg == NULL ) || ( coap_cd == NULL ) ) {
         PRINTF( "NULL value sent to coap_post_control_param.\r\n" );
@@ -298,9 +299,10 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
             switch( device_config.ccb[ i ].data_type ) {
                 case IMX_UINT32 :
                     if( uint_value != NO_VALUE_VALUE ) {
-                        cd[ i ]->last_value.uint_32bit = uint_value;
-                        if( imx_control_functions[ i ].update != NULL )
-                            (imx_control_functions[ i ].update)( i, &uint_value );
+                        if( imx_set_control( i, &uint_value ) == false ) {
+                            response_code = BAD_REQUEST;
+                            goto create_response_and_exit;
+                        }
                     } else {
                         response_code = BAD_REQUEST;
                         goto create_response_and_exit;
@@ -308,9 +310,10 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     break;
                 case IMX_INT32 :
                     if( int_value != NO_VALUE_VALUE ) {
-                        cd[ i ]->last_value.uint_32bit = int_value;
-                        if( imx_control_functions[ i ].update != NULL )
-                            (imx_control_functions[ i ].update)( i, &int_value );
+                        if( imx_set_control( i, &int_value ) == false ) {
+                            response_code = BAD_REQUEST;
+                            goto create_response_and_exit;
+                        }
                     } else {
                         response_code = BAD_REQUEST;
                         goto create_response_and_exit;
@@ -318,9 +321,10 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     break;
                 case IMX_FLOAT :
                     if( float_value != NO_FLOAT_VALUE ) {
-                        cd[ i ]->last_value.float_32bit = float_value;
-                        if( imx_control_functions[ i ].update != NULL )
-                            (imx_control_functions[ i ].update)( i, &float_value );
+                        if( imx_set_control( i, &float_value ) == false ) {
+                            response_code = BAD_REQUEST;
+                            goto create_response_and_exit;
+                        }
                     } else {
                         response_code = BAD_REQUEST;
                         goto create_response_and_exit;
@@ -328,32 +332,22 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     }
                     break;
                 case IMX_VARIABLE_LENGTH :
-                    /*
-                     * Free last one if present
-                     */
-                    if( cd[ i ]->last_value.var_data != NULL )
-                            imx_add_var_free_pool( cd[ i ]->last_value.var_data );
-                    /*
-                     * Get a buffer to save this too
-                     */
-                    var_data_ptr = imx_get_var_data( strlen( string_value ) );
-                    if( var_data_ptr != NULL ) {
-                        var_data_ptr->header.length = strlen( string_value );
-                        strcpy( (char *) var_data_ptr->data, string_value );
+                    string_length = strlen( string_value );
+                    value.var_data = imx_get_var_data( string_length );
+                    if( value.var_data != NULL ) {
+                        strcpy( (char *) value.var_data->data, string_value );
+                        value.var_data->header.length = string_length;
+                        if( imx_set_control( i, &value ) == false ) {
+                            response_code = BAD_REQUEST;
+                            goto create_response_and_exit;
+                        }
+                    } else {
+                        response_code = BAD_REQUEST;
+                        goto create_response_and_exit;
+
                     }
-                    cd[ i ]->last_value.var_data = var_data_ptr;
+
                     break;
-            }
-            /*
-             * Do we notify the server about this or is this control just sampled?
-             */
-            if( device_config.ccb[ i ].sample_rate == 0 ) {
-                /*
-                 * We just set the value of control without a sample rate so send a notification of this event, as controls/sensors with a sample rate of 0 are not uploaded
-                 */
-                cli_print( "Event Notification: Writing Control %u, Value: uint32: %lu, int32: %ld, float: %f, @0x%08x: \r\n", i,
-                        cd[ i ]->last_value.uint_32bit, cd[ i ]->last_value.int_32bit, cd[ i ]->last_value.float_32bit, (uint32_t) cd[ i ]->last_value.var_data );
-                hal_event( IMX_CONTROLS, i, &cd[ i ]->last_value.uint_32bit );
             }
             goto done;
         }

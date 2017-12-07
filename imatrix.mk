@@ -85,7 +85,7 @@ coap_interface/get_uint_from_query_str.c coap_interface/get_uint_from_query_str.
 coap_interface/match_uri.c coap_interface/match_uri.h \
 coap_interface/token_string.c coap_interface/token_string.h \
 cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/common_config.c cs_ctrl/common_config.h cs_ctrl/imx_cs_interface.c cs_ctrl/imx_cs_interface.h \
-cs_ctrl/sensors.c cs_ctrl/sensors.h cs_ctrl/simulated.c cs_ctrl/simulated.h \
+cs_ctrl/sensors.c cs_ctrl/sensors.h \
 cs_ctrl/hal_event.c cs_ctrl/hal_event.h cs_ctrl/hal_sample.c cs_ctrl/hal_sample.h  \
 device/cert_util.c device/cert_util.h device/config.c device/config.h device/hal_leds.c device/hal_leds.h \
 device/hal_wifi.c device/hal_wifi.h device/imx_config.c device/imx_config.h \

@@ -68,20 +68,18 @@
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
+
 /*
  *  Set up standard variables based on the type of data we are using
  */
-#define SET_CSB_VARS( type )    \
+#define SET_CSB_VARS( type )                        \
                 if( type == IMX_CONTROLS ) {        \
                     csb = &device_config.ccb[ 0 ];  \
-                    csd = cd[ 0 ];                 \
+                    csd = cd[ 0 ];                  \
                 } else {                            \
                     csb = &device_config.scb[ 0 ];  \
-                    csd = sd[ 0 ];                 \
-                }                                   \
-                no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
-
-
+                    csd = sd[ 0 ];                  \
+                }
 /******************************************************
  *                    Constants
  ******************************************************/
@@ -181,7 +179,7 @@ void imatrix_upload(wiced_time_t current_time)
     const uint16_t max_options_length = 30;
 
     uint8_t options[ max_options_length ], uri_path[ URI_PATH_LENGTH ], *data_ptr;
-    uint16_t packet_length, current_option_number, options_length, remaining_data_length, no_samples, i, j, k, no_items, variable_data_length, data_index, var_data_index;
+    uint16_t packet_length, current_option_number, options_length, remaining_data_length, no_samples, i, j, k, variable_data_length, data_index, var_data_index;
     bool packet_full, entry_loaded;
     uint32_t foo32bit;
     wiced_utc_time_ms_t upload_utc_ms_time;
@@ -190,7 +188,8 @@ void imatrix_upload(wiced_time_t current_time)
     bits_t header_bits;
     upload_data_t *upload_data;
     control_sensor_data_t *csd;
-    imx_control_sensor_block_t *csb;    // Temp pointer to control structure
+    imx_control_sensor_block_t *csb;
+    uint16_t no_items;
 
     variable_data_length = 0;
 
@@ -216,6 +215,8 @@ void imatrix_upload(wiced_time_t current_time)
 //    	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
 //    	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
                 SET_CSB_VARS( type );
+                no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
+
                 for( i = 0; i < no_items; i++ ) {
         	    	if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
                         if( ( csd[ i ].warning >= device_config.send_now_on_warning_level ) &&
@@ -385,6 +386,7 @@ void imatrix_upload(wiced_time_t current_time)
         	 */
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
                 SET_CSB_VARS( type );
+                no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
     	    	/*
     	    	 * Step thru record types - Warnings first then regular
     	    	 */
@@ -877,6 +879,8 @@ void imatrix_status( uint16_t arg)
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 
                 SET_CSB_VARS( type );
+                no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
+
     	        cli_print( "%u %s: Current Status @: %lu mS (mS Timer)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
     	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;

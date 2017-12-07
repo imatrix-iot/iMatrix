@@ -46,18 +46,29 @@
 
 #include "wiced.h"
 
+#include "../common.h"
 #include "../storage.h"
-#include "../cs_ctrl/simulated.h"
 #include "../device/config.h"
 #include "../device/icb_def.h"
 #include "../cli/interface.h"
+#include "../cs_ctrl/imx_cs_interface.h"
 #include "../wifi/wifi.h"
 
 #include "at_cmds.h"
 /******************************************************
  *                      Macros
  ******************************************************/
-
+/*
+ *  Set up standard variables based on the type of data we are using
+ */
+#define SET_CSB_VARS( type )    \
+                if( type == IMX_CONTROLS ) {        \
+                    csb = &device_config.ccb[ 0 ];  \
+                    csd = cd[ 0 ];                 \
+                } else {                            \
+                    csb = &device_config.scb[ 0 ];  \
+                    csd = sd[ 0 ];                 \
+                }
 /******************************************************
  *                    Constants
  ******************************************************/
@@ -78,12 +89,22 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-void at_print( char *response );
+static bool print_register( peripheral_type_t type, uint16_t entry );
+static void at_print( char *response );
 /******************************************************
  *               Variable Definitions
  ******************************************************/
+const char *imx_data_types[ IMX_NO_DATA_TYPES ] =
+{
+        "32 Bit Unsigned",
+        "32 Bit signed",
+        "32 Bit Float",
+        "Variable Length",
+};
 extern IOT_Device_Config_t device_config;
 extern iMatrix_Control_Block_t icb;
+extern control_sensor_data_t *sd[];
+extern control_sensor_data_t *cd[];
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -98,6 +119,7 @@ void cli_at( uint16_t arg )
 	bool process_ct = false;
 	uint16_t at_register, result, i, reg_width;
 	peripheral_type_t type;
+	data_32_t value;
 	char *token;
 
 	reg_width = 0;
@@ -114,7 +136,7 @@ void cli_at( uint16_t arg )
 	    /*
 	     * Upper case string to make it easier to pass
 	     */
-	    type = 0;
+	    type = IMX_CONTROLS;
 	    i = 0;
 	    while( token[ i ] != 0x00 ) {
 	        token[ i ] = (char) toupper( (int) token[ i ] );
@@ -216,7 +238,24 @@ void cli_at( uint16_t arg )
 	            /*
 	             * Save value
 	             */
-	            result = set_register( type, at_register, &token[ 5 + reg_width ] );
+	            if( imx_parse_value( type, at_register, &token[ 5 + reg_width ], &value ) == false ) {
+                    icb.AT_command_errors += 1;
+                    at_print( AT_RESPONSE_ERROR );
+                    return;
+	            }
+	            if( type == IMX_CONTROLS ) {
+	                if( imx_set_control( at_register, &value ) != IMX_SUCCESS ) {
+	                    icb.AT_command_errors += 1;
+	                    at_print( AT_RESPONSE_ERROR );
+	                    return;
+	                }
+	            } else {
+	                if( imx_set_sensor( at_register, &value ) != IMX_SUCCESS ) {
+                        icb.AT_command_errors += 1;
+                        at_print( AT_RESPONSE_ERROR );
+                        return;
+                    }
+	            }
 	        } else if( token[ 4 + reg_width ] == '?' ) {
 	            /*
 	             * Display value
@@ -244,8 +283,49 @@ void cli_at( uint16_t arg )
 	 */
 	at_print( AT_RESPONSE_OK );
 }
+/**
+  * @brief  print a register managed by AT commands
+  * @param  None
+  * @retval : None
+  */
 
-void at_print( char *response )
+static bool print_register( peripheral_type_t type, uint16_t entry )
+{
+
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;
+
+    SET_CSB_VARS( type );
+
+    if( type == IMX_CONTROLS ) {
+        if( entry >= device_config.no_controls )
+            return false;
+        csd = cd[ 0 ];
+        csb = &device_config.ccb[ 0 ];
+    } else {
+        if( entry >= device_config.no_sensors )
+            return false;
+        csd = sd[ 0 ];
+        csb = &device_config.scb[ 0 ];
+    }
+    switch( csb[ entry].data_type ) {
+        case IMX_INT32 :
+            cli_print( "%d", csd[ entry].last_value.int_32bit );
+            break;
+        case IMX_FLOAT :
+            cli_print( "%f", csd[ entry].last_value.float_32bit );
+            break;
+        case IMX_UINT32 :
+        default :
+            cli_print( "%u", csd[ entry].last_value.uint_32bit );
+            break;
+    }
+
+    cli_print( "\r\n" );
+    return true;
+}
+
+static void at_print( char *response )
 {
     if( device_config.AT_verbose != IMX_AT_VERBOSE_NONE )
         cli_print( response );

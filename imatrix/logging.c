@@ -95,7 +95,7 @@ void log_iMatrix( char *msg )
              * Add message
              */
             strcpy( (char *) var_data_ptr->data, msg );
-            var_data_ptr->header.length = strlen( msg );
+            var_data_ptr->length = strlen( msg ) + 1;
             /*
              * Add to queue to send
              */

@@ -209,8 +209,8 @@ typedef struct control_sensor_data {
     uint32_t errors;
     wiced_utc_time_ms_t last_sample_time;
     wiced_time_t last_poll_time;
-    data_32_t last_value;
-    data_32_t *data;
+    imx_data_32_t last_value;
+    imx_data_32_t *data;
 } control_sensor_data_t;
 
 typedef union __attribute__((__packed__)) { // Bits
@@ -235,7 +235,7 @@ typedef struct __attribute__((__packed__)) {        // Bytes
 
 typedef struct __attribute__((__packed__)) {
     header_t header;
-    data_32_t data[ IMATRIX_HISTORY_SIZE ];
+    imx_data_32_t data[ IMATRIX_HISTORY_SIZE ];
 } upload_data_t;
 
 typedef struct IOT_Device_Config {

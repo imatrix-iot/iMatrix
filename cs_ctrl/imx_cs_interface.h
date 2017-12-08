@@ -63,5 +63,5 @@
  ******************************************************/
 imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value );
 imx_status_t imx_get_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value );
-bool imx_parse_value( imx_peripheral_type_t type, uint16_t entry, char *string, data_32_t *value );
+bool imx_parse_value( imx_peripheral_type_t type, uint16_t entry, char *string, imx_data_32_t *value );
 #endif /* IMX_INTERFCE_H_ */

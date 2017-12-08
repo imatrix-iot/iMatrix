@@ -119,7 +119,7 @@ void cli_at( uint16_t arg )
 	bool process_ct = false;
 	uint16_t at_register, result, i, reg_width;
 	imx_peripheral_type_t type;
-	data_32_t value;
+	imx_data_32_t value;
 	char *token;
 
 	reg_width = 0;

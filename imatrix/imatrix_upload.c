@@ -424,7 +424,7 @@ void imatrix_upload(wiced_time_t current_time)
                                              var_data_index = 0;
                                          }
 
-                                        variable_data_length = csd[ i ].data[ var_data_index ].var_data->header.length; // Events have timestamp / Value pairs
+                                        variable_data_length = csd[ i ].data[ var_data_index ].var_data->length; // Events have timestamp / Value pairs
     //                                    imx_printf( "Trying to add variable length data record, ptr @ 0x%08x of: %u bytes\r\n", csd[ i ].data[ var_data_index ].uint_32bit, variable_data_length );
                                         if( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) {
                                             /*

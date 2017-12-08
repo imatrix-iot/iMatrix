@@ -74,7 +74,7 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-static var_data_block_t var_data_block[ IMX_MAX_VAR_LENGTH_POOLS ];
+static imx_var_data_block_t var_data_block[ IMX_MAX_VAR_LENGTH_POOLS ];
 extern IOT_Device_Config_t device_config;
 extern uint8_t *var_pool_data;
 extern iMatrix_Control_Block_t icb;
@@ -106,9 +106,9 @@ void init_var_pool(void)
     pool_index = 0;
     for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
         if( ( pool_index +
-              sizeof( var_data_header_t ) +
+              sizeof( imx_var_data_header_t ) +
               ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries ) ) > icb.var_pool_size ) {
-            printf( "Out of Variable length Free space, terminating initialization early\r\n" );
+            imx_printf( "Out of Variable length Free space, terminating initialization early\r\n" );
             return;
         }
         for( j = 0; j < device_config.var_data_config[ i ].no_entries; j++ ) {
@@ -117,12 +117,15 @@ void init_var_pool(void)
              */
             var_data_ptr = ( var_data_entry_t *) &var_pool_data[ pool_index ];
             var_data_ptr->header.pool_id = i;
-            var_data_ptr->header.length = 0;
             var_data_ptr->header.next = NULL;
+            var_data_ptr->length = 0;           // Length field indicates length of actual data in item
+            var_data_ptr->data = &var_pool_data[ pool_index ] + sizeof( var_data_entry_t );
             imx_add_var_free_pool( var_data_ptr );
+            pool_index += + sizeof( var_data_entry_t ) + device_config.var_data_config[ i ].size;
         }
-        pool_index += sizeof( var_data_header_t )  + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
+        pool_index += sizeof( imx_var_data_header_t )  + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
     }
+    print_var_pools();
 }
 /**
   * @brief  return / add this var data to the free lists
@@ -140,12 +143,13 @@ void imx_add_var_free_pool( var_data_entry_t *var_data_ptr )
      */
     memset( var_data_ptr->data, 0x00, device_config.var_data_config[ var_data_ptr->header.pool_id ].size );
 
-    if( var_data_block[ var_data_ptr->header.pool_id ].head == NULL || var_data_block[ var_data_ptr->header.pool_id ].tail == NULL ) {
+    if( var_data_block[ var_data_ptr->header.pool_id ].head == NULL ) {
         /*
          * This is first entry - set this as the head and tail.
          */
         var_data_block[ var_data_ptr->header.pool_id ].head = var_data_ptr;
         var_data_block[ var_data_ptr->header.pool_id ].tail = var_data_ptr;
+        var_data_ptr->header.next = NULL;
     } else {
         /*
          * Extend the list
@@ -153,7 +157,6 @@ void imx_add_var_free_pool( var_data_entry_t *var_data_ptr )
         temp_ptr = var_data_block[ var_data_ptr->header.pool_id ].tail;
         temp_ptr->header.next = var_data_ptr;
         var_data_ptr->header.next = NULL;
-        var_data_ptr->header.length = 0;
         var_data_block[ var_data_ptr->header.pool_id ].tail = var_data_ptr;
     }
 }
@@ -181,6 +184,10 @@ var_data_entry_t *imx_get_var_data( uint16_t length )
                  * Set Head to next element down
                  */
                 var_data_block[ i ].head = var_data_ptr->header.next;
+                /*
+                 * Make sure data is clear before returning
+                 */
+                memset( var_data_ptr->data, 0x00, device_config.var_data_config[ i ].size );
                 return( var_data_ptr );
             }
         }

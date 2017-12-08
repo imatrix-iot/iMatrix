@@ -129,7 +129,7 @@ imx_status_t init_storage(void)
             return IMX_OUT_OF_MEMORY;
         for( i = 0; i < device_config.no_controls; i++ ) {
             memory_requested = ( device_config.history_size * SAMPLE_LENGTH  );
-            cd[ i ].data = (data_32_t*) imx_allocate_storage( memory_requested );
+            cd[ i ].data = (imx_data_32_t*) imx_allocate_storage( memory_requested );
             if( cd[ i ].data == NULL )
                 return IMX_OUT_OF_MEMORY;
         }
@@ -156,7 +156,7 @@ imx_status_t init_storage(void)
             return IMX_OUT_OF_MEMORY;
         for( i = 0; i < device_config.no_sensors; i++ ) {
             memory_requested = ( device_config.history_size * SAMPLE_LENGTH  );
-            sd[ i ].data = (data_32_t *) imx_allocate_storage( memory_requested );
+            sd[ i ].data = (imx_data_32_t *) imx_allocate_storage( memory_requested );
             if( sd[ i ].data == NULL )
                 return IMX_OUT_OF_MEMORY;
         }
@@ -180,7 +180,7 @@ imx_status_t init_storage(void)
         if( ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries ) > 0 )
             imx_printf( "  Pool size: %u, %u entries\r\n", device_config.var_data_config[ i ].size, device_config.var_data_config[ i ].no_entries );
 #endif
-        memory_requested += sizeof( var_data_header_t ) + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
+        memory_requested += sizeof( imx_var_data_header_t ) + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
     }
 
     if( memory_requested != 0 ) {

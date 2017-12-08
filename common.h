@@ -180,7 +180,7 @@
 /*
  * iMatrix Wi Fi Mode
  */
-typedef enum {
+typedef enum imx_wifi_mode {
     IMX_WIFI_ACCESS_POINT = 0,
     IMX_WIFI_STATION,
     IMX_WIFI_AD_HOC,
@@ -189,7 +189,7 @@ typedef enum {
 /*
  * Define Control and Sensor Errors
  */
-typedef enum {
+typedef enum imx_result {
     IMX_SUCCESS = 0,
     IMX_INVALID_ENTRY,
     IMX_CONTROL_DISABLED,
@@ -291,23 +291,23 @@ typedef uint32_t imx_status_t;
  * Define variable length data pools
  */
 typedef struct var_data_header {
-    unsigned int pool_id : 8;
-    unsigned int reserved : 8;
-    unsigned int length : 16;
+    unsigned int pool_id    : 8;
+    unsigned int reserved   : 24;
     void *next;
-} var_data_header_t;
+} imx_var_data_header_t;
 /*
  * Define a variable length data structure
  */
 typedef struct var_data_entry {
-    var_data_header_t header;
-    uint8_t data[];
+    imx_var_data_header_t header;
+    uint16_t length;
+    uint8_t *data;
 } var_data_entry_t;
 
 typedef struct var_data_block {
     var_data_entry_t *head;
     var_data_entry_t *tail;
-} var_data_block_t;
+} imx_var_data_block_t;
 /*
  * Define generic 32 bit data or pointer to variable length record
  */
@@ -316,7 +316,7 @@ typedef union data_32 {
     int32_t int_32bit;
     float float_32bit;
     var_data_entry_t *var_data;
-} data_32_t;
+} imx_data_32_t;
 
 typedef struct imx_var_data_config {
     uint16_t size;
@@ -390,9 +390,9 @@ typedef struct control_sensor_block {
     unsigned int set_default            : 1;    // 9    Does the system set the default value
     unsigned int send_imatrix           : 1;    // 10   Does the system send this entry to iMatrix
     unsigned int reserved               : 21;   // 11-31
-    data_32_t default_value;
-    data_32_t warning_level_low[ WARNING_LEVELS ];
-    data_32_t warning_level_high[ WARNING_LEVELS ];
+    imx_data_32_t default_value;
+    imx_data_32_t warning_level_low[ WARNING_LEVELS ];
+    imx_data_32_t warning_level_high[ WARNING_LEVELS ];
 } imx_control_sensor_block_t;
 
 typedef struct functions {

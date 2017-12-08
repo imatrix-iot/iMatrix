@@ -108,7 +108,7 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 	uint16_t i, *active;
 	uint8_t status;
 	bool percent_change_detected;
-    data_32_t sampled_value;
+    imx_data_32_t sampled_value;
 	control_sensor_data_t *csd;
 	imx_control_sensor_block_t *csb;
 	imx_functions_t *f;

@@ -118,7 +118,7 @@ imx_status_t imx_get_control_sensor( imx_peripheral_type_t type, uint16_t entry,
 
 imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value )
 {
-    data_32_t *foo;
+    imx_data_32_t *foo;
     control_sensor_data_t *csd;
     imx_control_sensor_block_t *csb;    // Temp pointer to control structure
 
@@ -144,21 +144,21 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
          * Free up last entry if there was one
          */
         print_var_pools();
-        foo = (data_32_t*) value;
-        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->header.length );
+        foo = (imx_data_32_t*) value;
+        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->length );
         if( csd[ entry ].last_value.var_data != NULL ) {
             imx_printf( "Freeing up existing variable length entry\r\n" );
             imx_add_var_free_pool( csd[ entry ].last_value.var_data );
         }
         imx_printf( "*** Getting variable length data for %s: %u, with from: 0x%08lx, length: %u\r\n",
-                ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, (uint32_t) value, ((data_32_t *) value)->var_data->header.length );
+                ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, (uint32_t) value, ((imx_data_32_t *) value)->var_data->length );
         /*
          * Get a spare variable length entry to save the values in - should be available if same or < length as before
          */
-        csd[ entry ].last_value.var_data = imx_get_var_data( ((data_32_t *) value)->var_data->header.length );
+        csd[ entry ].last_value.var_data = imx_get_var_data( ((imx_data_32_t *) value)->var_data->length );
         if( csd[ entry ].last_value.var_data != NULL ) {
-            memcpy( (char *) csd[ entry ].last_value.var_data->data, (char *) ((data_32_t *) value)->var_data->data, ((data_32_t *) value)->var_data->header.length );
-            csd[ entry ].last_value.var_data->header.length = ((data_32_t *) value)->var_data->header.length;
+            memcpy( (char *) csd[ entry ].last_value.var_data->data, (char *) ((imx_data_32_t *) value)->var_data->data, ((imx_data_32_t *) value)->var_data->length );
+            csd[ entry ].last_value.var_data->length = ((imx_data_32_t *) value)->var_data->length;
         } else {
             imx_printf( "Unable to save variable length sensor data - Variable data pool empty\r\n" );
             return IMX_OUT_OF_MEMORY;
@@ -195,7 +195,7 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
   * @param  pointer to provided string, pointer to result to pass to imx_x_set value
   * @retval : None
   */
-bool imx_parse_value( imx_peripheral_type_t type, uint16_t entry, char *string, data_32_t *value )
+bool imx_parse_value( imx_peripheral_type_t type, uint16_t entry, char *string, imx_data_32_t *value )
 {
     uint16_t string_length;
     control_sensor_data_t *csd;
@@ -235,11 +235,11 @@ bool imx_parse_value( imx_peripheral_type_t type, uint16_t entry, char *string, 
             /*
              * Get a data variable length block for this item
              */
-            string_length = strlen( string );
+            string_length = strlen( string ) + 1;
             value->var_data = imx_get_var_data( string_length );
             if( value->var_data != NULL ) {
                 strcpy( (char *) value->var_data->data, string );
-                value->var_data->header.length = string_length;
+                value->var_data->length = string_length;
             } else
                 return false;
             break;

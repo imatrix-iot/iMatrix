@@ -105,7 +105,8 @@ void init_var_pool(void)
 
     pool_index = 0;
     for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
-        if( ( pool_index +
+        if( ( device_config.var_data_config[ i ].no_entries != 0 ) &&
+            ( pool_index +
               sizeof( imx_var_data_header_t ) +
               ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries ) ) > icb.var_pool_size ) {
             imx_printf( "Out of Variable length Free space, terminating initialization early\r\n" );
@@ -213,6 +214,7 @@ void print_var_pools(void)
         cli_print( " %u Bytes", device_config.var_data_config[ i ].size );
         j = 0;
         if( var_data_block[ i ].head != NULL ) {
+            j = 1;  // At least one
             var_data_ptr = var_data_block[ i ].head;
             while( var_data_ptr->header.next != NULL ) {
                 j ++;

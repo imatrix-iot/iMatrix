@@ -56,11 +56,11 @@
 #define SET_CSB_VARS_F( type )    \
                 if( type == IMX_CONTROLS ) {        \
                     csb = &device_config.ccb[ 0 ];  \
-                    csd = cd[ 0 ];                  \
+                    csd = &cd[ 0 ];                  \
                     f = &imx_control_functions[ 0 ];\
                 } else {                            \
                     csb = &device_config.scb[ 0 ];  \
-                    csd = sd[ 0 ];                  \
+                    csd = &sd[ 0 ];                  \
                     f = &imx_sensor_functions[ 0 ]; \
                 }
 /******************************************************
@@ -92,8 +92,8 @@ bool check_float_percent( float current_value, float last_value, uint16_t percen
 uint16_t active_sensor = 0;
 uint16_t active_control = 0;
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
-extern control_sensor_data_t *cd[];
-extern control_sensor_data_t *sd[];
+extern control_sensor_data_t *cd;
+extern control_sensor_data_t *sd;
 extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 /******************************************************
  *               Function Definitions

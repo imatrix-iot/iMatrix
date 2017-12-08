@@ -66,8 +66,8 @@ static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_bloc
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-extern control_sensor_data_t *cd[];
-extern control_sensor_data_t *sd[];
+extern control_sensor_data_t *cd;
+extern control_sensor_data_t *sd;
 extern imx_control_sensor_block_t imx_controls_defaults[], imx_sensors_defaults[];
 extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 
@@ -126,11 +126,11 @@ void cs_init(void)
 
     for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
         if( type == IMX_CONTROLS ) {
-            csd = cd[ 0 ];
+            csd = &cd[ 0 ];
             csb = &device_config.ccb[ 0 ];
             f = &imx_control_functions[ 0 ];
         } else {
-            csd = sd[ 0 ];
+            csd = &sd[ 0 ];
             csb = &device_config.scb[ 0 ];
             f = &imx_sensor_functions[ 0 ];
         }

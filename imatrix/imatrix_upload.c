@@ -75,10 +75,10 @@
 #define SET_CSB_VARS( type )                        \
                 if( type == IMX_CONTROLS ) {        \
                     csb = &device_config.ccb[ 0 ];  \
-                    csd = cd[ 0 ];                  \
+                    csd = &cd[ 0 ];                  \
                 } else {                            \
                     csb = &device_config.scb[ 0 ];  \
-                    csd = sd[ 0 ];                  \
+                    csd = &sd[ 0 ];                  \
                 }
 /******************************************************
  *                    Constants
@@ -129,8 +129,8 @@ extern uint16_t message_id;
 extern uint32_t request_id;
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
 extern iMatrix_Control_Block_t icb;
-extern control_sensor_data_t *cd[];
-extern control_sensor_data_t *sd[];
+extern control_sensor_data_t *cd;
+extern control_sensor_data_t *sd;
 
 static imatrix_data_t imatrix;
 /******************************************************

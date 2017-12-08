@@ -79,8 +79,8 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
-extern control_sensor_data_t *cd[];
-extern control_sensor_data_t *sd[];
+extern control_sensor_data_t *cd;
+extern control_sensor_data_t *sd;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -107,7 +107,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 		if( entry >= device_config.no_controls )    // reporting no valid device
 			return;	// Nothing to do
 		else {
-			csd = cd[ 0 ];
+			csd = &cd[ 0 ];
 			csb = &device_config.ccb[ 0 ];
 //			imx_printf( "Event Control: %u\r\n", entry );
 		}
@@ -115,7 +115,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 		if( entry >= device_config.no_sensors )
 			return;	// Nothing to do
 		else {
-			csd = sd[ 0 ];
+			csd = &sd[ 0 ];
 			csb = &device_config.scb[ 0 ];
 		}
 	}

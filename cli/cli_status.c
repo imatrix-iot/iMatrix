@@ -76,8 +76,8 @@
  ******************************************************/
 extern IOT_Device_Config_t device_config;
 extern iMatrix_Control_Block_t icb;
-extern control_sensor_data_t *sd[];
-extern control_sensor_data_t *cd[];
+extern control_sensor_data_t *sd;
+extern control_sensor_data_t *cd;
 extern char *imx_data_types[ IMX_NO_DATA_TYPES ];
 /******************************************************
  *               Function Declarations
@@ -198,10 +198,10 @@ void cli_status( uint16_t arg )
 	for( type = 0; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 	    if( type == IMX_CONTROLS ) {
 	        csb = &device_config.ccb[ 0 ];
-	        csd = cd[ 0 ];
+	        csd = &cd[ 0 ];
 	    } else {
 	        csb = &device_config.scb[ 0 ];
-            csd = sd[ 0 ];
+            csd = &sd[ 0 ];
 	    }
         cli_print( "%u %s: Current Status @: %lu mSec\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors, ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
         no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;

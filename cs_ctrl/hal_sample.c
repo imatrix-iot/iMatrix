@@ -45,6 +45,7 @@
 #include "wiced.h"
 
 #include "../storage.h"
+#include "../common.h"
 #include "../cli/interface.h"
 #include "../device/config.h"
 #include "../time/ck_time.h"
@@ -55,14 +56,13 @@
 #define SET_CSB_VARS_F( type )    \
                 if( type == IMX_CONTROLS ) {        \
                     csb = &device_config.ccb[ 0 ];  \
-                    csd = &cd[ 0 ];                 \
+                    csd = &cd[ 0 ];                  \
                     f = &imx_control_functions[ 0 ];\
                 } else {                            \
                     csb = &device_config.scb[ 0 ];  \
-                    csd = &sd[ 0 ];                 \
+                    csd = &sd[ 0 ];                  \
                     f = &imx_sensor_functions[ 0 ]; \
-                }                                   \
-
+                }
 /******************************************************
  *                    Constants
  ******************************************************/
@@ -92,8 +92,8 @@ bool check_float_percent( float current_value, float last_value, uint16_t percen
 uint16_t active_sensor = 0;
 uint16_t active_control = 0;
 extern IOT_Device_Config_t device_config;	// Defined in device\config.h
-extern control_sensor_data_t cd[];
-extern control_sensor_data_t sd[];
+extern control_sensor_data_t *cd;
+extern control_sensor_data_t *sd;
 extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 /******************************************************
  *               Function Definitions
@@ -103,12 +103,12 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
   * @param  None
   * @retval : None
   */
-void hal_sample( peripheral_type_t type, wiced_time_t current_time )
+void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 {
 	uint16_t i, *active;
 	uint8_t status;
 	bool percent_change_detected;
-    data_32_t sampled_value;
+    imx_data_32_t sampled_value;
 	control_sensor_data_t *csd;
 	imx_control_sensor_block_t *csb;
 	imx_functions_t *f;
@@ -280,8 +280,8 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
             /*
              * Check for overflow - Save only the last sample values
              */
-            if( csd[ *active ].no_samples >= ( HISTORY_SIZE - 1 ) ) {
-                memmove( &csd[ *active ].data[ 0 ], &csd[ *active ].data[ 1 ], ( HISTORY_SIZE - 1 ) * SAMPLE_LENGTH );
+            if( csd[ *active ].no_samples >= ( IMATRIX_HISTORY_SIZE - 1 ) ) {
+                memmove( &csd[ *active ].data[ 0 ], &csd[ *active ].data[ 1 ], ( IMATRIX_HISTORY_SIZE - 1 ) * SAMPLE_LENGTH );
             } else
                 csd[ *active ].no_samples += 1;
             csd[ *active ].last_sample_time = current_time;
@@ -290,7 +290,7 @@ void hal_sample( peripheral_type_t type, wiced_time_t current_time )
              */
             if( ( csd[ *active ].warning != csd[ *active ].last_warning ) ||
                 ( csd[ *active ].no_samples >= device_config.scb[ *active ].sample_batch_size ) ||
-                ( csd[ *active ].no_samples >= ( HISTORY_SIZE - 1  ) ) || // We can't get any more in to this record
+                ( csd[ *active ].no_samples >= ( IMATRIX_HISTORY_SIZE - 1  ) ) || // We can't get any more in to this record
                 ( csd[ *active ].update_now == true ) ||
                 ( percent_change_detected == true ) ) {
 /*

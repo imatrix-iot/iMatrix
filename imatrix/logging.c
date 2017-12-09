@@ -89,19 +89,19 @@ void log_iMatrix( char *msg )
 
     if( device_config.send_logs_to_imatrix == true ) {
         log_msg_length = strlen( msg );
-        var_data_ptr = get_var_data( log_msg_length );
+        var_data_ptr = imx_get_var_data( log_msg_length );
         if( var_data_ptr != NULL ) {
             /*
              * Add message
              */
             strcpy( (char *) var_data_ptr->data, msg );
-            var_data_ptr->header.length = strlen( msg );
+            var_data_ptr->length = strlen( msg ) + 1;
             /*
              * Add to queue to send
              */
             imx_printf( "Adding log Message: %s\r\n", msg );
             // Need to do this for now just free
-            add_var_free_pool( var_data_ptr );
+            imx_add_var_free_pool( var_data_ptr );
         }
     }
 }

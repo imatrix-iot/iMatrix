@@ -63,8 +63,9 @@
 #define IMX_AT_VAR_DATA_TIMEOUT             ( 10000 )   // 10 Seconds total for packet
 
 #define IMX_MAX_CONNECTION_RETRY_COUNT      2
-
-#define HISTORY_SIZE                        16
+#define IMX_MAX_NO_CONTROLS                 16
+#define IMX_MAX_NO_SENSORS                  32
+#define IMATRIX_HISTORY_SIZE                16
 
 /*
  * Common characters and strings
@@ -85,48 +86,11 @@
  *
  */
 #define SAMPLE_LENGTH                       4
-#define MAX_NO_CONTROLS                     ( 10 )      // 0 Integrated Controls
-#define MAX_NO_SENSORS                      ( 20 )      // 3 Integrated Wi Fi Channel, RSSI, Noise
-/*
- *  Define the number of Smart Arduino controls and sensors in the system
- *
- */
-#define MAX_ARDUINO_CONTROLS                8
-#define MAX_ARDUINO_SENSORS                 8
-
-#define IMATRIX_HISTORY_SIZE                ( 60 )
 
 #define USE_WARNING_LEVEL_1                 ( 0x01 )    // Bit Masks
 #define USE_WARNING_LEVEL_2                 ( 0x02 )
 #define USE_WARNING_LEVEL_3                 ( 0x04 )
 
-#define NO_VAR_POOLS                        ( 7 )
-
-#define POOL_0_SIZE                         ( 256 )
-#define POOL_1_SIZE                         ( 512 )
-#define POOL_2_SIZE                         ( 1024 )
-#define POOL_3_SIZE                         ( 2048 )
-#define POOL_4_SIZE                         ( 4096 )
-#define POOL_5_SIZE                         ( 8192 )
-#define POOL_6_SIZE                         ( 16384 )
-
-#ifdef USE_CCMRAM
-#define DEFAULT_NO_POOL_0                   ( 2 )
-#define DEFAULT_NO_POOL_1                   ( 0 )
-#define DEFAULT_NO_POOL_2                   ( 0 )
-#define DEFAULT_NO_POOL_3                   ( 0 )
-#define DEFAULT_NO_POOL_4                   ( 0 )
-#define DEFAULT_NO_POOL_5                   ( 0 )
-#define DEFAULT_NO_POOL_6                   ( 2 )
-#else
-#define DEFAULT_NO_POOL_0                   ( 2 )
-#define DEFAULT_NO_POOL_1                   ( 0 )
-#define DEFAULT_NO_POOL_2                   ( 0 )
-#define DEFAULT_NO_POOL_3                   ( 0 )
-#define DEFAULT_NO_POOL_4                   ( 0 )
-#define DEFAULT_NO_POOL_5                   ( 0 )
-#define DEFAULT_NO_POOL_6                   ( 0 )
-#endif
 
 /******************************************************
  *                   Enumerations
@@ -218,28 +182,17 @@ typedef enum imatrix_version {
     IMATRIX_VERSION_7 = 7,
 } imatrix_version_t;
 
-typedef enum peripheral_type {
-    IMX_CONTROLS = 0,
-    IMX_SENSORS,
-    IMX_NO_PERIPHERAL_TYPES,
-} peripheral_type_t;
-
 typedef struct serial_number {
     uint32_t serial1;
     uint32_t serial2;
     uint32_t serial3;
 } serial_number_t;
 
-typedef struct var_data_t {
+typedef struct var_data {
     var_data_entry_t *entry;
     var_data_entry_t *next;
 } var_data_t;
 
-
-typedef struct var_data_config {
-    uint16_t size;
-    uint16_t no_entries;
-} var_data_config_t;
 
 typedef struct control_sensor_data {
     unsigned int update_now             : 1;    // 0
@@ -256,8 +209,8 @@ typedef struct control_sensor_data {
     uint32_t errors;
     wiced_utc_time_ms_t last_sample_time;
     wiced_time_t last_poll_time;
-    data_32_t last_value;
-    data_32_t data[ IMATRIX_HISTORY_SIZE ];
+    imx_data_32_t last_value;
+    imx_data_32_t *data;
 } control_sensor_data_t;
 
 typedef union __attribute__((__packed__)) { // Bits
@@ -282,69 +235,8 @@ typedef struct __attribute__((__packed__)) {        // Bytes
 
 typedef struct __attribute__((__packed__)) {
     header_t header;
-    data_32_t data[ IMATRIX_HISTORY_SIZE ];
+    imx_data_32_t data[ IMATRIX_HISTORY_SIZE ];
 } upload_data_t;
-
-/*
- * Smart Arduino Structures
- */
-typedef struct device_configuration {
-    unsigned int cfg            : 1;
-    unsigned int reserved       : 7;
-    unsigned int arduino_code   : 16;
-    unsigned int no_controls    : 4;
-    unsigned int no_sensors     : 4;
-} device_configuration_t;
-
-typedef struct arduino_config {
-    device_configuration_t config;
-    uint32_t system_status_code;
-    uint32_t arduino_status_code;
-    union {
-        struct {
-            unsigned int cs7        : 2;
-            unsigned int cs6        : 2;
-            unsigned int cs5        : 2;
-            unsigned int cs4        : 2;
-            unsigned int cs3        : 2;
-            unsigned int cs2        : 2;
-            unsigned int cs1        : 2;
-            unsigned int cs0        : 2;
-            unsigned int ss7        : 2;
-            unsigned int ss6        : 2;
-            unsigned int ss5        : 2;
-            unsigned int ss4        : 2;
-            unsigned int ss3        : 2;
-            unsigned int ss2        : 2;
-            unsigned int ss1        : 2;
-            unsigned int ss0        : 2;
-        } bits;
-        uint32_t status;
-    } master;
-    union {
-        struct {
-            unsigned int cs7        : 2;
-            unsigned int cs6        : 2;
-            unsigned int cs5        : 2;
-            unsigned int cs4        : 2;
-            unsigned int cs3        : 2;
-            unsigned int cs2        : 2;
-            unsigned int cs1        : 2;
-            unsigned int cs0        : 2;
-            unsigned int ss7        : 2;
-            unsigned int ss6        : 2;
-            unsigned int ss5        : 2;
-            unsigned int ss4        : 2;
-            unsigned int ss3        : 2;
-            unsigned int ss2        : 2;
-            unsigned int ss1        : 2;
-            unsigned int ss0        : 2;
-        } bits;
-        uint32_t status;
-    } slave;
-    data_32_t data_controls[ MAX_ARDUINO_CONTROLS ];
-    data_32_t data_sensors[ MAX_ARDUINO_SENSORS ];
-} arduino_config_t;
 
 typedef struct IOT_Device_Config {
     char product_name[ IMX_PRODUCT_NAME_LENGTH + 1 ];
@@ -367,8 +259,8 @@ typedef struct IOT_Device_Config {
     uint16_t reboots;// Space for a reboot counter if we want it for Known Good Configuration Logic that involves the bootloader.
     uint16_t no_sensors;
     uint16_t no_controls;
-    uint16_t no_arduino_sensors;
-    uint16_t no_arduino_controls;
+    uint16_t history_size;
+    uint16_t no_variable_length_pools;
     uint16_t AT_variable_data_timeout;      // Duration for time for data to load a packet
     uint16_t default_ap_channel;
     uint16_t default_ap_eap_mode;
@@ -396,10 +288,9 @@ typedef struct IOT_Device_Config {
     float longitude, latitude, elevation;
     wiced_security_t ap_security;
     wiced_utc_time_ms_t last_ntp_updated_time;
-    imx_control_sensor_block_t ccb[ MAX_NO_CONTROLS ];
-    imx_control_sensor_block_t scb[ MAX_NO_SENSORS ];
-    var_data_config_t var_data_config[ NO_VAR_POOLS ];
-    arduino_config_t acb;
+    imx_control_sensor_block_t ccb[ IMX_MAX_NO_CONTROLS ];
+    imx_control_sensor_block_t scb[ IMX_MAX_NO_SENSORS ];
+    imx_var_data_config_t var_data_config[ IMX_MAX_VAR_LENGTH_POOLS ];
     unsigned int log_wifi_AP                : 1;    // Log Wi Fi Events and levels
     unsigned int log_wifi_rssi              : 1;
     unsigned int log_wifi_rfnoise           : 1;
@@ -441,6 +332,6 @@ typedef struct IOT_Device_Config {
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void init_storage(void);
-
+imx_status_t init_storage(void);
+void *imx_allocate_storage( uint16_t size );
 #endif /* STORAGE_H_ */

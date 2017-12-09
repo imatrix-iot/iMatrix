@@ -75,7 +75,7 @@ void list_add( message_list_t *list, message_t *entry  );
 void list_add_at( wiced_time_t timestamp, message_list_t *list, message_t *new_entry, uint8_t retry );
 message_t *list_pop( message_list_t  *list );
 message_t *list_pop_before( wiced_time_t timestamp, message_list_t *list);
-void create_msg_lists(void);
+bool create_msg_lists(void);
 void list_release_all( message_list_t *list );
 message_t *msg_get( uint16_t min_bytes );
 wiced_result_t msg_release( message_t *msg );

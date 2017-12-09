@@ -67,6 +67,6 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-bool system_init(void);
+bool system_init(bool override_config);
 
 #endif /* SYSTEM_INIT_H_ */

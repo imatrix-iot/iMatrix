@@ -46,23 +46,35 @@
 
 #include "wiced.h"
 
+#include "../common.h"
 #include "../storage.h"
-#include "../cs_ctrl/simulated.h"
 #include "../device/config.h"
 #include "../device/icb_def.h"
 #include "../cli/interface.h"
+#include "../cs_ctrl/imx_cs_interface.h"
 #include "../wifi/wifi.h"
 
 #include "at_cmds.h"
 /******************************************************
  *                      Macros
  ******************************************************/
-
+/*
+ *  Set up standard variables based on the type of data we are using
+ */
+#define SET_CSB_VARS( type )    \
+                if( type == IMX_CONTROLS ) {        \
+                    csb = &device_config.ccb[ 0 ];  \
+                    csd = &cd[ 0 ];                 \
+                } else {                            \
+                    csb = &device_config.scb[ 0 ];  \
+                    csd = &sd[ 0 ];                 \
+                }
 /******************************************************
  *                    Constants
  ******************************************************/
-#define AT_RESPONSE_OK      "OK\r\n"
-#define AT_RESPONSE_ERROR   "ERROR\r\n"
+#define AT_RESPONSE_OK                  "OK\r\n"
+#define AT_RESPONSE_ERROR               "ERROR\r\n"
+#define MAX_VARIABLE_DATA_LENGTH        256
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -78,12 +90,25 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-void at_print( char *response );
+static bool print_register( imx_peripheral_type_t type, uint16_t entry );
+static void at_print( char *response );
+static bool get_data_type( imx_peripheral_type_t type, uint16_t at_register, imx_data_types_t *data_type );
+static bool get_user_input( char *variable_length_data_buffer, uint16_t max_length );
+
 /******************************************************
  *               Variable Definitions
  ******************************************************/
+const char *imx_data_types[ IMX_NO_DATA_TYPES ] =
+{
+        "32 Bit Unsigned",
+        "32 Bit signed",
+        "32 Bit Float",
+        "Variable Length",
+};
 extern IOT_Device_Config_t device_config;
 extern iMatrix_Control_Block_t icb;
+extern control_sensor_data_t *sd;
+extern control_sensor_data_t *cd;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -95,10 +120,15 @@ extern iMatrix_Control_Block_t icb;
 void cli_at( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
+	char variable_length_data_buffer[ MAX_VARIABLE_DATA_LENGTH ];
 	bool process_ct = false;
-	uint16_t at_register, result, i, reg_width;
-	peripheral_type_t type;
+	uint16_t at_register, result, i, reg_width, var_length_count;
+	imx_peripheral_type_t type;
+	imx_data_types_t data_type;
+	imx_data_32_t value;
 	char *token;
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;
 
 	reg_width = 0;
 	/*
@@ -114,7 +144,7 @@ void cli_at( uint16_t arg )
 	    /*
 	     * Upper case string to make it easier to pass
 	     */
-	    type = 0;
+	    type = IMX_CONTROLS;
 	    i = 0;
 	    while( token[ i ] != 0x00 ) {
 	        token[ i ] = (char) toupper( (int) token[ i ] );
@@ -148,12 +178,15 @@ void cli_at( uint16_t arg )
              */
             if( token[ 1 ] == '0' ) {
                 device_config.AT_verbose = IMX_AT_VERBOSE_NONE;
+                icb.print_debugs = false;   // When enforced reset
                 imatrix_save_config();
             } else if( token[ 1 ] == '1' ) {
                 device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD;
+                icb.print_debugs = false;   // When enforced reset
                 imatrix_save_config();
             } else if( token[ 1 ] == '2' ) {
                 device_config.AT_verbose = IMX_AT_VERBOSE_STANDARD_STATUS;
+                icb.print_debugs = false;   // When enforced reset
                 imatrix_save_config();
             } else {
                 at_print( AT_RESPONSE_ERROR );
@@ -214,9 +247,46 @@ void cli_at( uint16_t arg )
 	        }
 	        if( token[ 4 + reg_width ] == '=' ) {
 	            /*
-	             * Save value
+	             * Find the data type for this entry
 	             */
-	            result = set_register( type, at_register, &token[ 5 + reg_width ] );
+	            if( get_data_type( type, at_register, &data_type ) == false ) {
+	                if( get_data_type( type, at_register, &data_type ) == false ) {
+	                    icb.AT_command_errors += 1;
+	                    at_print( AT_RESPONSE_ERROR );
+	                    return;
+	                }
+	            }
+                SET_CSB_VARS( type );
+	            if( data_type == IMX_VARIABLE_LENGTH ) {
+	                /*
+	                 * This is a variable length item - the assignment is the next input of the value number of bytes
+	                 */
+	                var_length_count = (uint16_t) atol( &token[ 5 + reg_width ] );
+	                if( get_user_input( variable_length_data_buffer, MAX_VARIABLE_DATA_LENGTH ) == false ) {
+	                    icb.AT_command_errors += 1;
+	                    at_print( AT_RESPONSE_ERROR );
+	                    return;
+	                }
+                    if( imx_parse_value( type, at_register, variable_length_data_buffer, &value ) == false ) {
+                        icb.AT_command_errors += 1;
+                        at_print( AT_RESPONSE_ERROR );
+                        return;
+                    }
+	            } else {
+	                if( imx_parse_value( type, at_register, &token[ 5 + reg_width ], &value ) == false ) {
+	                    icb.AT_command_errors += 1;
+	                    at_print( AT_RESPONSE_ERROR );
+	                    return;
+	                }
+	            }
+                /*
+                 * Save value
+                 */
+	            if( imx_set_control_sensor( type, at_register, &value ) != IMX_SUCCESS ) {
+	                icb.AT_command_errors += 1;
+	                at_print( AT_RESPONSE_ERROR );
+	                return;
+	            }
 	        } else if( token[ 4 + reg_width ] == '?' ) {
 	            /*
 	             * Display value
@@ -244,9 +314,58 @@ void cli_at( uint16_t arg )
 	 */
 	at_print( AT_RESPONSE_OK );
 }
+/**
+  * @brief  print a register managed by AT commands
+  * @param  None
+  * @retval : None
+  */
 
-void at_print( char *response )
+static bool print_register( imx_peripheral_type_t type, uint16_t entry )
+{
+
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;
+
+    SET_CSB_VARS( type );
+
+    if( type == IMX_CONTROLS ) {
+        if( entry >= device_config.no_controls )
+            return false;
+        csd = &cd[ 0 ];
+        csb = &device_config.ccb[ 0 ];
+    } else {
+        if( entry >= device_config.no_sensors )
+            return false;
+        csd = &sd[ 0 ];
+        csb = &device_config.scb[ 0 ];
+    }
+    switch( csb[ entry].data_type ) {
+        case IMX_INT32 :
+            cli_print( "%d", csd[ entry].last_value.int_32bit );
+            break;
+        case IMX_FLOAT :
+            cli_print( "%f", csd[ entry].last_value.float_32bit );
+            break;
+        case IMX_UINT32 :
+        default :
+            cli_print( "%u", csd[ entry].last_value.uint_32bit );
+            break;
+    }
+
+    cli_print( "\r\n" );
+    return true;
+}
+
+static void at_print( char *response )
 {
     if( device_config.AT_verbose != IMX_AT_VERBOSE_NONE )
         cli_print( response );
+}
+static bool get_data_type( imx_peripheral_type_t type, uint16_t at_register, imx_data_types_t *data_type )
+{
+    return false;
+}
+static bool get_user_input( char *variable_length_data_buffer, uint16_t max_length )
+{
+    return false;
 }

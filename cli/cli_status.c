@@ -49,6 +49,7 @@
 #include "../device/hal_leds.h"
 #include "../device/icb_def.h"
 #include "../device/imx_LEDS.h"
+#include "../device/var_data.h"
 #include "../imatrix/imatrix.h"
 #include "../wifi/wifi.h"
 #include "cli_status.h"
@@ -75,8 +76,9 @@
  ******************************************************/
 extern IOT_Device_Config_t device_config;
 extern iMatrix_Control_Block_t icb;
-extern control_sensor_data_t sd[ MAX_NO_SENSORS ];
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ];
+extern control_sensor_data_t *sd;
+extern control_sensor_data_t *cd;
+extern char *imx_data_types[ IMX_NO_DATA_TYPES ];
 /******************************************************
  *               Function Declarations
  ******************************************************/
@@ -182,11 +184,18 @@ void cli_status( uint16_t arg )
     }
 
     cli_print( "\r\n" );
+    /*
+     * Show Variable length pools
+     */
+    print_var_pools();
+    /*
+     * Use current time to determine next sample time
+     */
 	wiced_time_get_time( &current_time );
 	/*
 	 * Display status of controls
 	 */
-	peripheral_type_t type;
+	imx_peripheral_type_t type;
 	control_sensor_data_t *csd;
 	imx_control_sensor_block_t *csb;
 	uint16_t no_items;
@@ -207,6 +216,7 @@ void cli_status( uint16_t arg )
                 cli_print( "  No: %2u(%s), %32s, ID: 0x%08lx, ", i, csb[ i ].read_only == true ? "R  " : "R/W", csb[ i ].name, csb[ i ].id );
                 if( csd[ i ].valid == true ) {
                     cli_print( "Current setting: " );
+                    cli_print( "(%s) ", imx_data_types[ csb[ i ].data_type ] );
                     switch( csb[ i ].data_type ) {
                         case IMX_UINT32 :
                             cli_print( "0x%08lx - %lu", csd[ i ].last_value.uint_32bit, csd[ i ].last_value.uint_32bit );
@@ -218,22 +228,10 @@ void cli_status( uint16_t arg )
                             cli_print( "%0.6f", csd[ i ].last_value.float_32bit );
                             break;
                         case IMX_VARIABLE_LENGTH :
-                            print_var_data( VR_DATA_MAC_ADDRESS, csd[ i ].last_value.var_data );
+                            print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
                             break;
                     }
-                    cli_print( ", " );
-                    switch( csb[ i ].data_type ) {
-                        case IMX_UINT32 :
-                            cli_print( "32 Bit Unsigned" );
-                            break;
-                        case IMX_INT32 :
-                            cli_print( "32 Bit signed" );
-                            break;
-                        case IMX_FLOAT :
-                            cli_print( "32 Bit Float" );
-                            break;
-                    }
-                    cli_print( ", Errors: %lu, ", cd[ i ].errors );
+                    cli_print( ", Errors: %lu, ", csd[ i ].errors );
                     if( csb[ i ].sample_rate == 0 )
                         cli_print( "Event Driven" );
                     else {
@@ -269,7 +267,7 @@ void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
 
     switch( data_type ) {
         case VR_DATA_STRING :
-            cli_print( " String: %s", (char *) var_data->data );
+            cli_print( "String: %s", (char *) var_data->data );
             break;
         case VR_DATA_MAC_ADDRESS :
             bssid = ( wiced_mac_t *) var_data->data;
@@ -280,10 +278,10 @@ void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
             /*
              * Just print up to the first 16 Characters as Hex and Char
              */
-            for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->header.length ) ); i++ )
+            for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->length ) ); i++ )
                 cli_print( " 0x%02X", var_data->data[ i ] );
             cli_print( "  " );
-            for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->header.length ) ); i++ )
+            for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->length ) ); i++ )
                 cli_print( " %c", ( isprint( (int) var_data->data[ i ] ) == true ) ? (char) var_data->data[ i ] : '*' );
             break;
     }

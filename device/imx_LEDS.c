@@ -173,7 +173,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
     wiced_result_t wiced_result;
     imx_led_t master_led, slave_led;
 
-    imx_printf( "Setting Led: %u, to state: %u, Mode: 0x%04x\r\n", (uint16_t) led, (uint16_t) state, mode_details );
+//    imx_printf( "Setting Led: %u, to state: %u, Mode: 0x%04x\r\n", (uint16_t) led, (uint16_t) state, mode_details );
     /*
      * If blinking/flashing - stop it first
      */
@@ -412,7 +412,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                         /*
                          * Initialize Timer setup
                          */
-                        imx_printf( "Setting Alternate blinking: Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n", (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_1_count, lcb[ master_led ].blink_2_count );
+//                        imx_printf( "Setting Alternate blinking: Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n", (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_1_count, lcb[ master_led ].blink_2_count );
                         wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) alt_blink_led, (void *) &led_options[ master_led ] );
                         start_timer = true;
                     } else if( ( mode_details & IMX_LED_FLASH ) == IMX_LED_FLASH ) {
@@ -429,8 +429,8 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                         /*
                          * Initialize Timer setup
                          */
-                        imx_printf( "Setting Alternate flash( %uSec): Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n",
-                                lcb[ master_led ].flash_count, (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_1_count, lcb[ master_led ].blink_2_count );
+//                        imx_printf( "Setting Alternate flash( %u mSec Period): Master: %u & Slave: %u @%u00 mSec master, %u00 mSec slave\r\n",
+//                                lcb[ master_led ].flash_count * 100, (uint16_t) master_led, (uint16_t) slave_led, lcb[ master_led ].blink_1_count, lcb[ master_led ].blink_2_count );
                         wiced_rtos_init_timer( &lcb[ master_led ].led_timer_data, (uint32_t) LED_TIMER_100MS, (timer_handler_t) alt_flash_led, (void *) &led_options[ master_led ] );
                         start_timer = true;
                     }
@@ -450,7 +450,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
             /*
              * Start Off
              */
-            imx_printf( "Initializing Product LEDs\r\n" );
+//            imx_printf( "Initializing Product LEDs\r\n" );
             for( i = 0; i < IMX_NO_LEDS; i++ )
                 if( lcb[ i ].init_led != NULL )
                     (*lcb[ i ].init_led)();

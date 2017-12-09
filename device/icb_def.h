@@ -119,6 +119,11 @@ typedef struct {
 	wiced_utc_time_t boot_time;
 	wiced_utc_time_t sunrise;
 	wiced_utc_time_t sunset;
+	uint32_t var_pool_size;
+	void *ccm_heap_start;
+	void *ccm_heap_end;
+	void *ccm_next_entry;
+	unsigned int using_ccmsram              : 1;
 	unsigned int running_in_background      : 1;
 	unsigned int comm_mode                  : 4;
 	unsigned int dns_lookup			        : 1;

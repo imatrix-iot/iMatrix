@@ -44,18 +44,12 @@
 
 #include "../storage.h"
 #include "../cli/interface.h"
+#include "../device/icb_def.h"
 #include "var_data.h"
 
 /******************************************************
  *                      Macros
  ******************************************************/
-#define VAR_POOL_SIZE   ( ( ( POOL_0_SIZE + sizeof( var_data_header_t ) ) * DEFAULT_NO_POOL_0 ) + \
-                          ( ( POOL_1_SIZE + sizeof( var_data_header_t ) ) * DEFAULT_NO_POOL_1 ) + \
-                          ( ( POOL_2_SIZE + sizeof( var_data_header_t ) ) * DEFAULT_NO_POOL_2 ) + \
-                          ( ( POOL_3_SIZE + sizeof( var_data_header_t ) ) * DEFAULT_NO_POOL_3 ) + \
-                          ( ( POOL_4_SIZE + sizeof( var_data_header_t ) ) * DEFAULT_NO_POOL_4 ) + \
-                          ( ( POOL_5_SIZE + sizeof( var_data_header_t ) ) * DEFAULT_NO_POOL_5 ) + \
-                          ( ( POOL_6_SIZE + sizeof( var_data_header_t ) ) * DEFAULT_NO_POOL_6 ) )
 
 /******************************************************
  *                    Constants
@@ -80,11 +74,10 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-static uint8_t var_pool_data[ VAR_POOL_SIZE ] CCMSRAM;
-static var_data_block_t var_data_block[ NO_VAR_POOLS ] CCMSRAM;
-
+static imx_var_data_block_t var_data_block[ IMX_MAX_VAR_LENGTH_POOLS ];
 extern IOT_Device_Config_t device_config;
-
+extern uint8_t *var_pool_data;
+extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -107,30 +100,33 @@ void init_var_pool(void)
      * Assign space for the variable length data pools from the space defined in the above storage for them. Structure as per configuration.
      * Note: Configuration can be changed and pools reinitialized.
      */
-    imx_printf( "Initializing Variable length data pool, pool size: %u Bytes\r\n", VAR_POOL_SIZE );
-    memset( var_pool_data, 0x00, sizeof( var_pool_data ) );
-    memset( var_data_block, 0x00, sizeof( var_data_block ) );
+    imx_printf( "Initializing Variable length data pool, pool size: %u Bytes\r\n", icb.var_pool_size );
+    memset( var_pool_data, 0x00, icb.var_pool_size );
 
     pool_index = 0;
-    for( i = 0; i < NO_VAR_POOLS; i++ ) {
+    for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
+        if( ( device_config.var_data_config[ i ].no_entries != 0 ) &&
+            ( pool_index +
+              sizeof( imx_var_data_header_t ) +
+              ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries ) ) > icb.var_pool_size ) {
+            imx_printf( "Out of Variable length Free space, terminating initialization early\r\n" );
+            return;
+        }
         for( j = 0; j < device_config.var_data_config[ i ].no_entries; j++ ) {
-            if( ( pool_index + sizeof( var_data_header_t )  + device_config.var_data_config[ i ].size ) > VAR_POOL_SIZE ) {
-                printf( "Out of Variable length Free space, terminating initialization early\r\n" );
-                return;
-            }
             /*
              * Set up an entry
              */
             var_data_ptr = ( var_data_entry_t *) &var_pool_data[ pool_index ];
             var_data_ptr->header.pool_id = i;
-            var_data_ptr->header.length = 0;
             var_data_ptr->header.next = NULL;
-            add_var_free_pool( var_data_ptr );
-            pool_index += sizeof( var_data_header_t )  + device_config.var_data_config[ i ].size;
+            var_data_ptr->length = 0;           // Length field indicates length of actual data in item
+            var_data_ptr->data = &var_pool_data[ pool_index ] + sizeof( var_data_entry_t );
+            imx_add_var_free_pool( var_data_ptr );
+            pool_index += + sizeof( var_data_entry_t ) + device_config.var_data_config[ i ].size;
         }
-
+        pool_index += sizeof( imx_var_data_header_t )  + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
     }
-
+    print_var_pools();
 }
 /**
   * @brief  return / add this var data to the free lists
@@ -138,7 +134,7 @@ void init_var_pool(void)
   * @retval : None
   */
 
-void add_var_free_pool( var_data_entry_t *var_data_ptr )
+void imx_add_var_free_pool( var_data_entry_t *var_data_ptr )
 {
     var_data_entry_t *temp_ptr;
 
@@ -148,12 +144,13 @@ void add_var_free_pool( var_data_entry_t *var_data_ptr )
      */
     memset( var_data_ptr->data, 0x00, device_config.var_data_config[ var_data_ptr->header.pool_id ].size );
 
-    if( var_data_block[ var_data_ptr->header.pool_id ].head == NULL || var_data_block[ var_data_ptr->header.pool_id ].tail == NULL ) {
+    if( var_data_block[ var_data_ptr->header.pool_id ].head == NULL ) {
         /*
          * This is first entry - set this as the head and tail.
          */
         var_data_block[ var_data_ptr->header.pool_id ].head = var_data_ptr;
         var_data_block[ var_data_ptr->header.pool_id ].tail = var_data_ptr;
+        var_data_ptr->header.next = NULL;
     } else {
         /*
          * Extend the list
@@ -161,7 +158,6 @@ void add_var_free_pool( var_data_entry_t *var_data_ptr )
         temp_ptr = var_data_block[ var_data_ptr->header.pool_id ].tail;
         temp_ptr->header.next = var_data_ptr;
         var_data_ptr->header.next = NULL;
-        var_data_ptr->header.length = 0;
         var_data_block[ var_data_ptr->header.pool_id ].tail = var_data_ptr;
     }
 }
@@ -170,7 +166,7 @@ void add_var_free_pool( var_data_entry_t *var_data_ptr )
   * @param  length required
   * @retval : pointer to structure - NULL if not available.
   */
-var_data_entry_t *get_var_data( uint16_t length )
+var_data_entry_t *imx_get_var_data( uint16_t length )
 {
     uint16_t i;
     var_data_entry_t *var_data_ptr;
@@ -178,7 +174,7 @@ var_data_entry_t *get_var_data( uint16_t length )
     /*
      * Check to find a free buffer capable of handling the requirement.
      */
-    for( i = 0; i < NO_VAR_POOLS; i++ ) {
+    for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
         if( device_config.var_data_config[ i ].size >= length ) {   // This one will do
             if( var_data_block[ i ].head != NULL ) {
                 /*
@@ -189,6 +185,10 @@ var_data_entry_t *get_var_data( uint16_t length )
                  * Set Head to next element down
                  */
                 var_data_block[ i ].head = var_data_ptr->header.next;
+                /*
+                 * Make sure data is clear before returning
+                 */
+                memset( var_data_ptr->data, 0x00, device_config.var_data_config[ i ].size );
                 return( var_data_ptr );
             }
         }
@@ -198,4 +198,30 @@ var_data_entry_t *get_var_data( uint16_t length )
      */
     imx_printf( "No free variable length data available, (requesting: %u Bytes)\r\n", length );
     return NULL;
+}
+/**
+  * @brief  print out status of variable length pools
+  * @param  none
+  * @retval : Output of pools status
+  */
+void print_var_pools(void)
+{
+    uint16_t i, j;
+    var_data_entry_t *var_data_ptr;
+
+    cli_print( "Variable Length Pools: " );
+    for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
+        cli_print( " %u Bytes", device_config.var_data_config[ i ].size );
+        j = 0;
+        if( var_data_block[ i ].head != NULL ) {
+            j = 1;  // At least one
+            var_data_ptr = var_data_block[ i ].head;
+            while( var_data_ptr->header.next != NULL ) {
+                j ++;
+                var_data_ptr = var_data_ptr->header.next;
+            }
+        }
+        cli_print( "[ %u ]", j );
+    }
+    cli_print( "\r\n" );
 }

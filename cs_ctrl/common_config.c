@@ -61,12 +61,13 @@
 /******************************************************
  *               Function Declarations
  ******************************************************/
-static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry );
+static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry );
 /******************************************************
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;
-extern control_sensor_data_t cd[ MAX_NO_CONTROLS ], sd[ MAX_NO_SENSORS ];
+extern control_sensor_data_t *cd;
+extern control_sensor_data_t *sd;
 extern imx_control_sensor_block_t imx_controls_defaults[], imx_sensors_defaults[];
 extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
 
@@ -82,7 +83,7 @@ extern imx_functions_t imx_control_functions[], imx_sensor_functions[];
   */
 void cs_reset_defaults(void)
 {
-    peripheral_type_t type;
+    imx_peripheral_type_t type;
     imx_control_sensor_block_t *csb, *config_source;
     uint16_t no_items, i;
 
@@ -111,18 +112,13 @@ void cs_reset_defaults(void)
   */
 void cs_init(void)
 {
-    peripheral_type_t type;
+    imx_peripheral_type_t type;
     control_sensor_data_t *csd;
     imx_control_sensor_block_t *csb;
     imx_functions_t *f;
     uint16_t no_items, i;
     wiced_time_t current_time;
 
-    /*
-     * This data is in CCMSRAM - Initialize to zeros
-     */
-    memset( &cd, 0x00, sizeof( cd ) );
-    memset( &sd, 0x00, sizeof( sd ) );
     /*
      * Set last update time as now
      */
@@ -171,7 +167,7 @@ void load_config_defaults_generic_ccb( uint16_t arg )
   * @param  None
   * @retval : None
   */
-void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *csb )
+void print_common_config( imx_peripheral_type_t type, imx_control_sensor_block_t *csb )
 {
     uint16_t i, no_items;
 
@@ -183,13 +179,10 @@ void print_common_config( peripheral_type_t type, imx_control_sensor_block_t *cs
 
 }
 
-static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry )
+static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_block_t *csb, uint16_t entry )
 {
     cli_print( " No. %2u, %32s, ID: 0x%08lx, ", entry, csb[  entry ].name, csb[ entry ].id );
     switch( csb[ entry ].data_type ) {
-        case IMX_UINT32 :
-            cli_print( "32bit UINT " );
-            break;
         case IMX_INT32 :
             cli_print( "32bit INT  " );
             break;
@@ -197,7 +190,11 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
             cli_print( "32bit Float" );
             break;
         case IMX_VARIABLE_LENGTH :
-            cli_print( "Variable  " );
+            cli_print( "Variable   " );
+            break;
+        case IMX_UINT32 :
+        default :
+            cli_print( "32bit UINT " );
             break;
     }
 
@@ -218,7 +215,7 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
                 cli_print( "%6.2f", csb[ entry ].default_value.float_32bit );
                 break;
             case IMX_VARIABLE_LENGTH :
-                cli_print( "Variable" );
+                cli_print( "Variable " );
                 break;
         }
     }
@@ -228,9 +225,9 @@ static void print_csb_entry( peripheral_type_t type, imx_control_sensor_block_t 
         cli_print( "          Event Driven" );
     else {
         if( csb[ entry ].sample_rate >= 1000 )
-            cli_print( "Sample Every: %3.1f Sec", ( (float) csb[ entry ].sample_rate ) / 1000.0 );
+            cli_print( "Sample Every: %03.1f Sec", ( (float) csb[ entry ].sample_rate ) / 1000.0 );
         else
-            cli_print( "Sample Every: %3u mSec", csb[ entry ].sample_rate );
+            cli_print( "Sample Every: %04u mSec", csb[ entry ].sample_rate );
     }
     cli_print( ", Batch size: %2u", csb[ entry ].sample_batch_size );
 

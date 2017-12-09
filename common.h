@@ -83,7 +83,7 @@
 #define IMX_NO_RF_SCAN_RECORDS          ( 20 )
 #define IMX_ORGANIZATION_ID_LENGTH      ( 10 )
 #define IMX_PRODUCT_ID_LENGTH           ( 10 )
-
+#define IMX_MAX_VAR_LENGTH_POOLS        ( 8 )
 /*
  * Wi-Fi Credentials length
  */
@@ -182,13 +182,61 @@
 /*
  * iMatrix Wi Fi Mode
  */
-typedef enum {
+typedef enum imx_wifi_mode {
     IMX_WIFI_ACCESS_POINT = 0,
     IMX_WIFI_STATION,
     IMX_WIFI_AD_HOC,
     IMX_WIFI_OFFLINE,
 } imx_wifi_mode_t;
-
+/*
+ * Define Control and Sensor Errors
+ */
+typedef enum imx_result {
+    IMX_SUCCESS = 0,
+    IMX_INVALID_ENTRY,
+    IMX_CONTROL_DISABLED,
+    IMX_SENSOR_DISABLED,
+    IMX_SENSOR_ERROR,
+    IMX_GENERAL_FAILURE,
+    IMX_INIT_ERROR,
+    IMX_I2C_ERROR,
+    IMX_SPI_ERROR,
+    IMX_INVALID_READING,
+    IMX_FAIL_CRC,
+    IMX_FAIL_COAP_SETUP,
+    IMX_OUT_OF_MEMORY,
+    IMX_MAXIMUM_CONTROLS_EXCEEDED,
+    IMX_MAXIMUM_SENSORS_EXCEEDED,
+    IMX_MAXIMUM_HISTORY_EXCEEDED,
+    IMX_MAXIMUM_VARIBALE_DATA_EXCEEDED,
+    IMX_MUST_SUPPLY_DEFAULTS,
+    IMX_MUST_SUPPLY_CONTROL,
+    IMX_MUST_SUPPLY_SAMPLE,
+    /*
+     * Following are Result/Error Conditions for Sensor Sampling
+     */
+    IMX_NO_DATA,
+    IMX_ON_BOARD_TEMP_ERROR,
+    IMX_INTERNAL_ADC_ERROR,
+} imx_result_t;
+/*
+ * Define Peripheral types
+ */
+typedef enum imx_peripheral_type {
+    IMX_CONTROLS = 0,
+    IMX_SENSORS,
+    IMX_NO_PERIPHERAL_TYPES,
+} imx_peripheral_type_t;
+/*
+ * Define data types for Controls & Sensors
+ */
+typedef enum {
+    IMX_UINT32 = 0,
+    IMX_INT32,
+    IMX_FLOAT,
+    IMX_VARIABLE_LENGTH,
+    IMX_NO_DATA_TYPES,
+} imx_data_types_t;
 /*
  * Tsunami Warning codes
  */
@@ -200,51 +248,16 @@ typedef enum {
     IMX_WARNING_LEVELS
 } imx_tsnumai_warning_t;
 /*
- * Define Control and Sensor Errors
+ * Define how the CLI and status messages respond
  */
-typedef enum {
-    IMX_SUCCESS = 0,
-    IMX_INVALID_ENTRY,
-    IMX_CONTROL_DISABLED,
-    IMX_SENSOR_DISABLED,
-    IMX_GENERAL_FAILURE,
-    IMX_INIT_ERROR,
-    IMX_I2C_ERROR,
-    IMX_SPI_ERROR,
-    IMX_INVALID_READING,
-    IMX_FAIL_CRC,
-    IMX_BAD_ARDUINO,
-    IMX_UNKNOWN_ARDUINO_CONTROL,
-    IMX_UNKNOWN_ARDUINO_SENSOR,
-    IMX_MUST_SUPPLY_DEFAULTS,
-    IMX_MAXIMUM_CONTROLS_EXCEEDED,
-    IMX_MUST_SUPPLY_CONTROL,
-    IMX_MAXIMUM_SENSORS_EXCEEDED,
-    IMX_MUST_SUPPLY_SAMPLE,
-    /*
-     * Following are Result/Error Conditions for Sensor Sampling
-     */
-    IMX_NO_DATA,
-    IMX_ON_BOARD_TEMP_ERROR,
-    IMX_INTERNAL_ADC_ERROR,
-} imx_result_t;
-
-/*
- * Define data types for Controls & Sensors
- */
-typedef enum {
-    IMX_UINT32 = 0,
-    IMX_INT32,
-    IMX_FLOAT,
-    IMX_VARIABLE_LENGTH,
-} imx_data_types_t;
-
 typedef enum {
     IMX_AT_VERBOSE_NONE = 0,
     IMX_AT_VERBOSE_STANDARD,
     IMX_AT_VERBOSE_STANDARD_STATUS
 } imx_AT_versbose_mode_t;
-
+/*
+ * Define generic LED types.
+ */
 typedef enum {
     IMX_LED_ALL_OFF,
     IMX_LED_OFF,
@@ -252,7 +265,9 @@ typedef enum {
     IMX_LED_OTHER,
     IMX_LED_INIT,
 } imx_led_state_t;
-
+/*
+ * Define LED combinations
+ */
 typedef enum {
     IMX_LED_RED = 0,
     IMX_LED_GREEN,
@@ -265,37 +280,50 @@ typedef enum {
     IMX_LED_BLUE_GREEN,
     IMX_NO_LED_COMBINATIONS,
 } imx_led_t;
-
+/*
+ * Define which interface iMatrix should use
+ */
 typedef enum {
     IMX_INTERFACE_ETHERNET,
     IMX_INTERFACE_WIFI
 } imx_interface_t;
 
 typedef uint32_t imx_status_t;
-
+/*
+ * Define variable length data pools
+ */
 typedef struct var_data_header {
-    unsigned int pool_id : 8;
-    unsigned int reserved : 8;
-    unsigned int length : 16;
+    unsigned int pool_id    : 8;
+    unsigned int reserved   : 24;
     void *next;
-} var_data_header_t;
-
+} imx_var_data_header_t;
+/*
+ * Define a variable length data structure
+ */
 typedef struct var_data_entry {
-    var_data_header_t header;
-    uint8_t data[];
+    imx_var_data_header_t header;
+    uint16_t length;
+    uint8_t *data;
 } var_data_entry_t;
 
 typedef struct var_data_block {
     var_data_entry_t *head;
     var_data_entry_t *tail;
-} var_data_block_t;
-
+} imx_var_data_block_t;
+/*
+ * Define generic 32 bit data or pointer to variable length record
+ */
 typedef union data_32 {
     uint32_t uint_32bit;
     int32_t int_32bit;
     float float_32bit;
     var_data_entry_t *var_data;
-} data_32_t;
+} imx_data_32_t;
+
+typedef struct imx_var_data_config {
+    uint16_t size;
+    uint16_t no_entries;
+} imx_var_data_config_t;
 
 typedef struct imx_led_functions {
     void (*init_led)(void);
@@ -320,8 +348,6 @@ typedef struct {
     uint32_t default_st_security_mode;
     uint16_t no_sensors;
     uint16_t no_controls;
-    uint16_t no_arduino_sensors;
-    uint16_t no_arduino_controls;
     uint32_t product_capabilities;
     uint32_t product_id;
     uint32_t manufactuer_id;
@@ -332,6 +358,15 @@ typedef struct {
     float longitude;
     float latitude;
     float elevation;
+    /*
+     * Following items determine memory model setup
+     */
+    uint16_t history_size;
+    uint16_t no_variable_length_pools;
+    imx_var_data_config_t var_data_config[ IMX_MAX_VAR_LENGTH_POOLS ];
+    /*
+     * Following items are flags
+     */
     unsigned int start_in_station_mode  : 1;                // Start Client with default Station Settings - Use for Development only
     unsigned int at_command_mode        : 1;                // What type of command interface is used
     unsigned int log_wifi_AP            : 1;
@@ -358,9 +393,9 @@ typedef struct control_sensor_block {
     unsigned int set_default            : 1;    // 9    Does the system set the default value
     unsigned int send_imatrix           : 1;    // 10   Does the system send this entry to iMatrix
     unsigned int reserved               : 21;   // 11-31
-    data_32_t default_value;
-    data_32_t warning_level_low[ WARNING_LEVELS ];
-    data_32_t warning_level_high[ WARNING_LEVELS ];
+    imx_data_32_t default_value;
+    imx_data_32_t warning_level_low[ WARNING_LEVELS ];
+    imx_data_32_t warning_level_high[ WARNING_LEVELS ];
 } imx_control_sensor_block_t;
 
 typedef struct functions {

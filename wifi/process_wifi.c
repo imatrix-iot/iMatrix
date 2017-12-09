@@ -150,7 +150,7 @@ void process_wifi(wiced_time_t current_time )
 			}
 			break;
 		case MAIN_WIFI :
-			if ( device_config.AP_setup_mode == false ) {
+			if( device_config.AP_setup_mode == false ) {
 
 				start_stopped_auto_time_sync_if_random_delay_is_finished();
 

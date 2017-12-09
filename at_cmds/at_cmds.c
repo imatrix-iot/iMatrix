@@ -72,8 +72,9 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define AT_RESPONSE_OK      "OK\r\n"
-#define AT_RESPONSE_ERROR   "ERROR\r\n"
+#define AT_RESPONSE_OK                  "OK\r\n"
+#define AT_RESPONSE_ERROR               "ERROR\r\n"
+#define MAX_VARIABLE_DATA_LENGTH        256
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -91,6 +92,9 @@
  ******************************************************/
 static bool print_register( imx_peripheral_type_t type, uint16_t entry );
 static void at_print( char *response );
+static bool get_data_type( imx_peripheral_type_t type, uint16_t at_register, imx_data_types_t *data_type );
+static bool get_user_input( char *variable_length_data_buffer, uint16_t max_length );
+
 /******************************************************
  *               Variable Definitions
  ******************************************************/
@@ -116,9 +120,11 @@ extern control_sensor_data_t *cd;
 void cli_at( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
+	char variable_length_data_buffer[ MAX_VARIABLE_DATA_LENGTH ];
 	bool process_ct = false;
-	uint16_t at_register, result, i, reg_width;
+	uint16_t at_register, result, i, reg_width, var_length_count;
 	imx_peripheral_type_t type;
+	imx_data_types_t data_type;
 	imx_data_32_t value;
 	char *token;
     control_sensor_data_t *csd;
@@ -241,18 +247,41 @@ void cli_at( uint16_t arg )
 	        }
 	        if( token[ 4 + reg_width ] == '=' ) {
 	            /*
-	             * Save value
+	             * Find the data type for this entry
 	             */
-	            if( imx_parse_value( type, at_register, &token[ 5 + reg_width ], &value ) == false ) {
-                    icb.AT_command_errors += 1;
-                    at_print( AT_RESPONSE_ERROR );
-                    return;
+	            if( get_data_type( type, at_register, &data_type ) == false ) {
+	                if( get_data_type( type, at_register, &data_type ) == false ) {
+	                    icb.AT_command_errors += 1;
+	                    at_print( AT_RESPONSE_ERROR );
+	                    return;
+	                }
 	            }
-	            /*
-	             * If this a variable length item
-	             */
-	            SET_CSB_VARS( type );
-	            if( csb[ at])
+                SET_CSB_VARS( type );
+	            if( data_type == IMX_VARIABLE_LENGTH ) {
+	                /*
+	                 * This is a variable length item - the assignment is the next input of the value number of bytes
+	                 */
+	                var_length_count = (uint16_t) atol( &token[ 5 + reg_width ] );
+	                if( get_user_input( variable_length_data_buffer, MAX_VARIABLE_DATA_LENGTH ) == false ) {
+	                    icb.AT_command_errors += 1;
+	                    at_print( AT_RESPONSE_ERROR );
+	                    return;
+	                }
+                    if( imx_parse_value( type, at_register, variable_length_data_buffer, &value ) == false ) {
+                        icb.AT_command_errors += 1;
+                        at_print( AT_RESPONSE_ERROR );
+                        return;
+                    }
+	            } else {
+	                if( imx_parse_value( type, at_register, &token[ 5 + reg_width ], &value ) == false ) {
+	                    icb.AT_command_errors += 1;
+	                    at_print( AT_RESPONSE_ERROR );
+	                    return;
+	                }
+	            }
+                /*
+                 * Save value
+                 */
 	            if( imx_set_control_sensor( type, at_register, &value ) != IMX_SUCCESS ) {
 	                icb.AT_command_errors += 1;
 	                at_print( AT_RESPONSE_ERROR );
@@ -331,4 +360,12 @@ static void at_print( char *response )
 {
     if( device_config.AT_verbose != IMX_AT_VERBOSE_NONE )
         cli_print( response );
+}
+static bool get_data_type( imx_peripheral_type_t type, uint16_t at_register, imx_data_types_t *data_type )
+{
+    return false;
+}
+static bool get_user_input( char *variable_length_data_buffer, uint16_t max_length )
+{
+    return false;
 }

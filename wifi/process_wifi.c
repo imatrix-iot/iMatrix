@@ -164,7 +164,7 @@ void process_wifi(wiced_time_t current_time )
 					icb.boot_time = utc_time - sec_since_boot - ( time_difference( time, start_time_synch )/1000 );
 			    }
 
-				// Start keep alive when backoff expires.
+				// Start keep alive when back off expires.
 
 				if ( ( keep_alive_backoff != KEEP_ALIVE_ALREADY_STARTED ) && ( imx_is_later( current_time, wifi_up_time + keep_alive_backoff ) ) ) {
 				    start_keep_alive( KEEP_ALIVE_PERIOD_MSEC );

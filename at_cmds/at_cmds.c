@@ -121,6 +121,8 @@ void cli_at( uint16_t arg )
 	imx_peripheral_type_t type;
 	imx_data_32_t value;
 	char *token;
+    control_sensor_data_t *csd;
+    imx_control_sensor_block_t *csb;
 
 	reg_width = 0;
 	/*
@@ -246,6 +248,11 @@ void cli_at( uint16_t arg )
                     at_print( AT_RESPONSE_ERROR );
                     return;
 	            }
+	            /*
+	             * If this a variable length item
+	             */
+	            SET_CSB_VARS( type );
+	            if( csb[ at])
 	            if( imx_set_control_sensor( type, at_register, &value ) != IMX_SUCCESS ) {
 	                icb.AT_command_errors += 1;
 	                at_print( AT_RESPONSE_ERROR );

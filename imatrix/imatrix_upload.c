@@ -245,10 +245,10 @@ void imatrix_upload(wiced_time_t current_time)
                                  * Only need one
                                  */
                                 if( csd[ i ].send_batch == true ) {
-    /*
+    ///*
                                     imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
                                             type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].no_samples, csd[ i ].send_batch == true ? "true" : "false" );
-    */
+    //*/
                                 } else {
                                     imx_printf( "Found %s: %u with error\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i );
                                 }
@@ -280,7 +280,7 @@ void imatrix_upload(wiced_time_t current_time)
     	            } else
     	                imatrix.state = IMATRIX_LOAD_PACKET;
     	        } else {
-//    	        	imx_printf( "No packet available for iMatrix upload\r\n" );
+    	        	imx_printf( "No packet available for iMatrix upload\r\n" );
     	        	/*
     	        	 * Wait a bit before checking again
     	        	 */

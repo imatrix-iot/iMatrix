@@ -183,9 +183,6 @@ static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_bloc
 {
     cli_print( " No. %2u, %32s, ID: 0x%08lx, ", entry, csb[  entry ].name, csb[ entry ].id );
     switch( csb[ entry ].data_type ) {
-        case IMX_UINT32 :
-            cli_print( "32bit UINT " );
-            break;
         case IMX_INT32 :
             cli_print( "32bit INT  " );
             break;
@@ -194,6 +191,10 @@ static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_bloc
             break;
         case IMX_VARIABLE_LENGTH :
             cli_print( "Variable   " );
+            break;
+        case IMX_UINT32 :
+        default :
+            cli_print( "32bit UINT " );
             break;
     }
 
@@ -224,9 +225,9 @@ static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_bloc
         cli_print( "          Event Driven" );
     else {
         if( csb[ entry ].sample_rate >= 1000 )
-            cli_print( "Sample Every: %3.1f Sec", ( (float) csb[ entry ].sample_rate ) / 1000.0 );
+            cli_print( "Sample Every: %03.1f Sec", ( (float) csb[ entry ].sample_rate ) / 1000.0 );
         else
-            cli_print( "Sample Every: %3u mSec", csb[ entry ].sample_rate );
+            cli_print( "Sample Every: %04u mSec", csb[ entry ].sample_rate );
     }
     cli_print( ", Batch size: %2u", csb[ entry ].sample_batch_size );
 

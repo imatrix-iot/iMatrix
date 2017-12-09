@@ -35,6 +35,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "wiced_apps_common.h"
+
 /*
  *	Defines for common structures and defines with iMatrix system and Interface used by host App
  *
@@ -337,6 +339,7 @@ typedef struct {
     unsigned int log_wifi_rfnoise       : 1;
     imx_interface_t interface;
     imx_led_functions_t led_functions[ IMX_NO_LEDS ];   // Red, Green, Blue
+    app_header_t lut[8];                                // The sflash lookup table.
 } imx_imatrix_init_config_t;
 
 typedef struct control_sensor_block {

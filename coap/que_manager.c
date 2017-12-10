@@ -45,6 +45,7 @@
 #include "imatrix.h"
 
 #include "../device/icb_def.h"
+#include "../storage.h"
 #include "coap.h"
 #include "../cli/messages.h"
 #include "../cli/interface.h"
@@ -57,7 +58,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf(__VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -132,6 +133,7 @@ extern message_list_t list_udp_coap_xmit;
 extern message_list_t list_tcp_coap_recv;
 extern message_list_t list_tcp_coap_xmit;
 extern iMatrix_Control_Block_t icb;
+extern IOT_Device_Config_t device_config;   // Defined in device/storage.h
 
 uint16_t print_msg_saved_min_bytes;
 static message_t *all_messages;         // list of all message_t structs with no data arrays added.
@@ -994,7 +996,22 @@ static uint16_t blocks_remaining_in_free_messages_by_size( uint16_t index )
 	}
 	return count;
 }
+/**
+ * Print failed attempts with blocks
+ *
+ * written by Eric Thelin March 2016
+ */void print_msg_errors(void)
+{
+    uint16_t s, block_size, smallest_freelist_size, errors;
 
+    s = 0;
+    cli_print( "Details on Each Size of Data Block, Total Errors: %u\r\n", get_messaging_list_empty_errors() );
+    while ( 0 < ( block_size = get_block_list_details( s, &smallest_freelist_size, &errors ) ) ) {// 0 block size is invalid.
+        cli_print( "  Block Size: %4u, Unused Blocks: %2u, Required Larger Block When Out of This Size: %u\r\n", block_size, smallest_freelist_size, errors );
+        s++;
+    }
+
+}
 /**
  * List the number of available data blocks for each possible size of data block.
  *
@@ -1003,7 +1020,8 @@ static uint16_t blocks_remaining_in_free_messages_by_size( uint16_t index )
 void print_free_msg_sizes()
 {
 	uint16_t s;
-	cli_print( "Free Sizes: ");
+
+	cli_print( "Free message packet sizes: ");
 	for ( s = 0; s < NUMBER_OF_DATA_SIZES; s++ ) {
 /*
 		uint16_t count = 0;
@@ -1013,7 +1031,7 @@ void print_free_msg_sizes()
 			block = block->next;
 		}
 */
-		cli_print("%u[ %u ] ", free_messages_by_size[ s ].data_size, blocks_remaining_in_free_messages_by_size( s ) );
+		cli_print("%u Bytes[ %u ] ", free_messages_by_size[ s ].data_size, blocks_remaining_in_free_messages_by_size( s ) );
 	}
 	cli_print( "\r\n" );
 }

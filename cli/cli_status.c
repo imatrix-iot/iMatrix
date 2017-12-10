@@ -44,6 +44,7 @@
 #include "../storage.h"
 #include "interface.h"
 #include "./ble/ble_manager.h"
+#include "../coap/que_manager.h"
 #include "../device/config.h"
 #include "../device/hal_wifi.h"
 #include "../device/hal_leds.h"
@@ -185,6 +186,14 @@ void cli_status( uint16_t arg )
 
     cli_print( "\r\n" );
     /*
+     * Show free message pools
+     */
+    print_msg_errors();
+
+    if( icb.imatrix_no_packet_avail == true )
+        cli_print( "*** iMatrix Out of Packets: " );
+    print_free_msg_sizes();
+    /*
      * Show Variable length pools
      */
     print_var_pools();
@@ -257,7 +266,7 @@ void cli_status( uint16_t arg )
 
 void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
 {
-    uint16_t i;
+    uint16_t i, string_length;
     wiced_mac_t *bssid;
 
     if( var_data == NULL ) {
@@ -265,6 +274,18 @@ void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
         return;
     }
 
+
+    if( data_type == VR_DATA_STRING ) {
+        /*
+         * Verify it is only printable
+         */
+        string_length = strlen( (char * ) var_data->data );
+        for( i = 0; i < string_length; i++ )
+            if( !isprint( (int) var_data->data[ i ] ) ) {
+                data_type = VR_DATA_BINARY;
+                break;  // No its not a string
+            }
+    }
     switch( data_type ) {
         case VR_DATA_STRING :
             cli_print( "String: %s", (char *) var_data->data );
@@ -274,15 +295,18 @@ void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
             cli_print( " BSSID: %02x:%02x:%02x:%02x:%02x:%02x", bssid->octet[ 0 ], bssid->octet[ 1 ], bssid->octet[ 2 ], bssid->octet[ 3 ],
                             bssid->octet[ 4 ], bssid->octet[ 5 ] );
             break;
+        case VR_DATA_BINARY :
         default :
             /*
              * Just print up to the first 16 Characters as Hex and Char
              */
+            cli_print( "Binary: " );
             for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->length ) ); i++ )
                 cli_print( " 0x%02X", var_data->data[ i ] );
-            cli_print( "  " );
+            cli_print( "  \"" );
             for( i = 0; ( ( i < VAR_PRINT_LENGTH ) && ( i < var_data->length ) ); i++ )
-                cli_print( " %c", ( isprint( (int) var_data->data[ i ] ) == true ) ? (char) var_data->data[ i ] : '*' );
+                cli_print( " %c", ( isprint( (int) var_data->data[ i ] ) == false ) ? '*' : (char) var_data->data[ i ] );
+            cli_print( "\"" );
             break;
     }
 

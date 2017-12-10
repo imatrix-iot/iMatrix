@@ -123,14 +123,14 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
     /*
      * Check for overflow - Save only the last sample values
      */
-    if( csd[ entry ].no_samples >= ( IMATRIX_HISTORY_SIZE - 2 ) ) {
+    if( csd[ entry ].no_samples >= ( device_config.history_size - 2 ) ) {
         imx_printf( "History Full - dropping last sample\r\n" );
         /*
          * If item is variable length - free before overwrite
          */
         if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH )
             ;
-        memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( IMATRIX_HISTORY_SIZE - 2 ) * SAMPLE_LENGTH );
+        memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( device_config.history_size - 2 ) * SAMPLE_LENGTH );
         csd[ entry ].no_samples -= 2;
     }
 	/*

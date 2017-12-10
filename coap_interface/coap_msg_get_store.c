@@ -47,14 +47,14 @@
 #include "coap_msg_get_store.h"
 #include "../cli/interface.h"
 #include "../cli/messages.h"
-#include "../device/icb_def.h"
+#include "../storage.h"
 
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_BASIC_MESSAGING
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_BASIC_MESSAGING ) != 0x00 ) imx_log_printf(__VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_BASIC_MESSAGING ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -62,7 +62,8 @@
  *               Variable Declarations
  ******************************************************/
 extern uint16_t message_id; // See coap_setup.c for variable definition
-extern iMatrix_Control_Block_t icb;
+extern IOT_Device_Config_t device_config;   // Defined in storage.h
+
 /******************************************************
  *               Function Definitions
  ******************************************************/

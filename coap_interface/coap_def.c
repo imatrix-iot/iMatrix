@@ -68,13 +68,13 @@
 #include "coap_sensor_rssi.h"
 #include "token_string.h"
 #include "../cli/messages.h"
-#include "../device/icb_def.h"
+#include "../storage.h"
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf(__VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -111,8 +111,7 @@
 /******************************************************
  *               Variable Declarations
  ******************************************************/
-extern iMatrix_Control_Block_t icb;
-extern iMatrix_Control_Block_t icb;
+extern IOT_Device_Config_t device_config;   // Defined in storage.h
 /******************************************************
  *               Variable Definitions
  ******************************************************/

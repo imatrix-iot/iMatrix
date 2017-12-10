@@ -51,6 +51,7 @@
 #include "../cli/messages.h"
 #include "../device/config.h"
 #include "../wifi/wifi.h"
+#include "../storage.h"
 #include "tcp_transport.h"
 #include "coap_transmit.h"
 /******************************************************
@@ -58,7 +59,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_XMIT
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) imx_log_printf( __VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) imx_log_printf( __VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -90,6 +91,7 @@ extern wiced_udp_socket_t udp_coap_socket;
 extern iMatrix_Control_Block_t icb;
 extern tcp_t tcp;
 extern wiced_mutex_t udp_xmit_reset_mutex; // variable defined in que_manager.c
+extern IOT_Device_Config_t device_config;   // Defined in device/storage.h
 
 
 /******************************************************

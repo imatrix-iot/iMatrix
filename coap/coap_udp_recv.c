@@ -58,7 +58,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_RECV
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_RECV ) != 0x00 ) st_log_print_status( __VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_RECV ) != 0x00 ) st_log_print_status( __VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif

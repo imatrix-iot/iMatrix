@@ -65,7 +65,6 @@
 #define IMX_MAX_CONNECTION_RETRY_COUNT      2
 #define IMX_MAX_NO_CONTROLS                 16
 #define IMX_MAX_NO_SENSORS                  32
-#define IMATRIX_HISTORY_SIZE                16
 
 /*
  * Common characters and strings
@@ -108,6 +107,7 @@
 typedef enum var_data_types {
     VR_DATA_STRING,
     VR_DATA_MAC_ADDRESS,
+    VR_DATA_BINARY,
     NO_VR_DATA_TYPES
 } var_data_types_t;
 
@@ -235,7 +235,7 @@ typedef struct __attribute__((__packed__)) {        // Bytes
 
 typedef struct __attribute__((__packed__)) {
     header_t header;
-    imx_data_32_t data[ IMATRIX_HISTORY_SIZE ];
+    imx_data_32_t data[];
 } upload_data_t;
 
 typedef struct IOT_Device_Config {
@@ -291,6 +291,7 @@ typedef struct IOT_Device_Config {
     imx_control_sensor_block_t ccb[ IMX_MAX_NO_CONTROLS ];
     imx_control_sensor_block_t scb[ IMX_MAX_NO_SENSORS ];
     imx_var_data_config_t var_data_config[ IMX_MAX_VAR_LENGTH_POOLS ];
+    unsigned int print_debugs               : 1;
     unsigned int log_wifi_AP                : 1;    // Log Wi Fi Events and levels
     unsigned int log_wifi_rssi              : 1;
     unsigned int log_wifi_rfnoise           : 1;

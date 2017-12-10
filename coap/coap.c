@@ -45,14 +45,14 @@
 #include "coap_udp_recv.h"
 #include "../CoAP_interface/coap_msg_get_store.h"
 #include "../cli/interface.h"
-#include "../device/icb_def.h"
+#include "../storage.h"
 #include "../cli/messages.h"
 /******************************************************
  *                      Macros
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_COAP_DEFINES
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf( __VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_COAP_DEFINES ) != 0x00 ) imx_log_printf( __VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -85,9 +85,9 @@ message_list_t list_udp_coap_xmit;
 message_list_t list_tcp_coap_recv;
 message_list_t list_tcp_coap_xmit;
 wiced_thread_t coap_rx_thread;
+extern IOT_Device_Config_t device_config;   // Defined in device/storage.h
 
 wiced_udp_socket_t udp_coap_socket;
-extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/

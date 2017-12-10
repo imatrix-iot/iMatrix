@@ -126,7 +126,7 @@ void init_var_pool(void)
         }
         pool_index += sizeof( imx_var_data_header_t )  + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
     }
-    print_var_pools();
+//    print_var_pools();
 }
 /**
   * @brief  return / add this var data to the free lists
@@ -138,7 +138,7 @@ void imx_add_var_free_pool( var_data_entry_t *var_data_ptr )
 {
     var_data_entry_t *temp_ptr;
 
-    imx_printf( "Adding entry to Pool: %u (%u Byte pool)\r\n", var_data_ptr->header.pool_id, device_config.var_data_config[ var_data_ptr->header.pool_id ].size );
+//    imx_printf( "Adding entry to Pool: %u (%u Byte pool)\r\n", var_data_ptr->header.pool_id, device_config.var_data_config[ var_data_ptr->header.pool_id ].size );
     /*
      * Clear all data from entry
      */

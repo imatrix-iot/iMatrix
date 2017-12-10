@@ -55,7 +55,7 @@
 #define DEBUGS_FOR_RECV                 (0x00000010)
 #define DEBUGS_FOR_COAP_DEFINES         (0x00000020)
 #define DEBUGS_FOR_HAL                  (0x00000040)
-#define DEBUGS_FOR_HISTORY              (0x00000080)
+#define DEBUGS_FOR_IMX_UPLOAD           (0x00000080)
 #define DEBUGS_FOR_INIT                 (0x00000010)
 #define DEBUGS_FOR_SFLASH               (0x00000100)
 #define DEBUGS_FOR_APPLICATION_START    (0x00000200)

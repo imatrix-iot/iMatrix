@@ -131,7 +131,7 @@ void imx_printf( char *format, ... )
      *
      * This is only valid if this system is not using AT commands or in set up mode
      */
-    if( ( device_config.AT_verbose == IMX_AT_VERBOSE_STANDARD_STATUS ) || ( device_config.AP_setup_mode == true ) || ( icb.print_debugs == true ) ) {
+    if( ( device_config.AT_verbose == IMX_AT_VERBOSE_STANDARD_STATUS ) || ( device_config.AP_setup_mode == true ) || ( device_config.print_debugs == true ) ) {
         va_list args;// Arguments from the expanded elipsis "..."
         va_start( args, format );// Initialize list of arguments.
         vprintf( format, args );
@@ -171,13 +171,14 @@ void cli_print( char *format, ... )
 
 int imx_log_printf( char *format, ... )
 {
-	if ( ( icb.print_debugs != 0 ) ) {
+	if ( ( device_config.print_debugs == true) ) {
 		char buffer[ SPRINTF_BUFFER_LENGTH ];
 		va_list args;// Arguments from the expanded elipsis "..."
 		wiced_utc_time_t utc_time = 0;
 
 		wiced_time_get_utc_time( &utc_time );
 
+		printf( "Log Message\r\n" );
 	    va_start( args, format );// Initialize list of arguments.
 
     	uint16_t size = vsnprintf( NULL, 0, format, args ) + 1;	// Get length with room for null terminator.
@@ -205,7 +206,7 @@ int imx_log_printf( char *format, ... )
 	    	}
 //
 //
-//	    	if( ( icb.log_messages & DEBUG_LOG_TO_IMATRIX ) != 0 ) {
+//	    	if( ( device_config.log_messages & DEBUG_LOG_TO_IMATRIX ) != 0 ) {
 //	        	/*
 //	        	 * Send log message to iMatrix
 //	        	 */

@@ -45,7 +45,7 @@
 #include "spi_flash.h"
 #include "../cli/interface.h"
 #include "../cli/messages.h"
-#include "../device/icb_def.h"
+#include "../storage.h"
 //#include "../fixture/certificates.h"
 #include "../common.h"
 
@@ -56,7 +56,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_SFLASH
     #undef PRINTF
-	#define PRINTF(...) if( ( icb.log_messages & DEBUGS_FOR_SFLASH ) != 0x00 ) imx_log_printf(__VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_SFLASH ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif

@@ -367,6 +367,7 @@ typedef struct {
     /*
      * Following items are flags
      */
+    unsigned int print_debugs           : 1;                // Do we print the set debug messages.
     unsigned int start_in_station_mode  : 1;                // Start Client with default Station Settings - Use for Development only
     unsigned int at_command_mode        : 1;                // What type of command interface is used
     unsigned int log_wifi_AP            : 1;

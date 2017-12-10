@@ -96,7 +96,7 @@ imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_con
     /*
      * Always print status messages? - dcb is initialized to all 0s - this is for diagnostic mode - comment out when not used
      */
-    icb.print_debugs = true;
+    device_config.print_debugs = true;
 
     printf( "Commencing iMatrix Initialization Sequence\r\n" );
     /*

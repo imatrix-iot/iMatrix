@@ -183,6 +183,10 @@ uint16_t wifi_init(void)
         imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_5 );
 
 	} else {
+	    /*
+	     *  Clear counters and add values at end
+	     */
+	    wiced_reset_wifi_event_counters( WICED_SUCCESSFUL_WIFI_JOIN_EVENT_COUNTER | WICED_FAILED_WIFI_JOIN_EVENT_COUNTER );
 
 		// Normal Operating Mode - connect to a remote AP and use that connection for all communications.
 	    // Bring up the STA (client) interface
@@ -203,6 +207,11 @@ uint16_t wifi_init(void)
 	    	    break;
 	    }
 	    log_wifi_join_event_results();
+	    /*
+	     * Update the counters
+	     */
+	    icb.wifi_success_connect_count += wiced_successful_wifi_joins();
+	    icb.wifi_failed_connect_count += wiced_failed_wifi_joins();
 	    /*
 	     * See if the network came up.
 	     */

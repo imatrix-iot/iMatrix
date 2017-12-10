@@ -54,6 +54,7 @@
 #include "../coap/add_coap_option.h"
 #include "../cli/interface.h"
 #include "../cli/cli_status.h"
+#include "../cli/messages.h"
 #include "../networking/utility.h"
 #include "../time/ck_time.h"
 #include "add_internal.h"
@@ -62,9 +63,9 @@
 /******************************************************
  *                      Macros
  ******************************************************/
-#ifdef PRINT_DEBUGS_FOR_HISTORY
+#ifdef PRINT_DEBUGS_FOR_IMX_UPLOAD
     #undef PRINTF
-	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_HISTORY ) != 0x00 ) st_log_imx_printf(__VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_IMX_UPLOAD ) != 0x00 ) imx_log_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -127,7 +128,7 @@ typedef struct {
 extern message_list_t list_udp_coap_xmit;
 extern uint16_t message_id;
 extern uint32_t request_id;
-extern IOT_Device_Config_t device_config;	// Defined in device\config.h
+extern IOT_Device_Config_t device_config;	// Defined in device/storage.h
 extern iMatrix_Control_Block_t icb;
 extern control_sensor_data_t *cd;
 extern control_sensor_data_t *sd;
@@ -163,7 +164,7 @@ void start_imatrix(void)
 			return;
 		}
 	}
-	imx_printf( "Starting iMatrix Upload\r\n" );
+	PRINTF( "Starting iMatrix Upload\r\n" );
 
 	imatrix.state = IMATRIX_GET_PACKET;
 }
@@ -204,7 +205,7 @@ void imatrix_upload(wiced_time_t current_time)
     	    }
     	    imatrix.tusnami_warning = false;
             if( icb.send_registration == true ) {   // Are we registering?
-                imx_printf( "iMatrix Send Registration data\r\n" );
+                PRINTF( "iMatrix Send Registration data\r\n" );
                 imatrix.state = IMATRIX_GET_PACKET;
                 break;
             }
@@ -226,7 +227,7 @@ void imatrix_upload(wiced_time_t current_time)
                              * Only need one
                              */
                             imatrix.tusnami_warning = true;
-    //                      imx_printf( "Found %s: %u in Warning State: %u\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].warning );
+                            PRINTF( "Found %s: %u in Warning State: %u\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].warning );
                             imatrix.state = IMATRIX_GET_PACKET;
                             break;
                         }
@@ -245,12 +246,12 @@ void imatrix_upload(wiced_time_t current_time)
                                  * Only need one
                                  */
                                 if( csd[ i ].send_batch == true ) {
-    ///*
-                                    imx_printf( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
+///*
+                                    PRINTF( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
                                             type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].no_samples, csd[ i ].send_batch == true ? "true" : "false" );
-    //*/
+//*/
                                 } else {
-                                    imx_printf( "Found %s: %u with error\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i );
+                                    PRINTF( "Found %s: %u with error\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i );
                                 }
                                 imatrix.state = IMATRIX_GET_PACKET;
                                 break;
@@ -272,6 +273,7 @@ void imatrix_upload(wiced_time_t current_time)
     		else {
     	        imatrix.msg = msg_get( packet_length );
     	        if( imatrix.msg != NULL ) {		// Got one lets fill it
+    	            icb.imatrix_no_packet_avail = false;
     	            if ( ( imatrix.msg->coap.data_block == NULL ) || ( imatrix.msg->coap.data_block->data == NULL ) ||
     	                 ( imatrix.msg->coap.data_block->release_list_for_data_size == NULL ) ) {
     	                imx_printf( "Created invalid message data block in imatrix_history_upload function - Memory Leak.\r\n" );
@@ -280,7 +282,13 @@ void imatrix_upload(wiced_time_t current_time)
     	            } else
     	                imatrix.state = IMATRIX_LOAD_PACKET;
     	        } else {
-    	        	imx_printf( "No packet available for iMatrix upload\r\n" );
+    	            if( icb.imatrix_no_packet_avail == false ) {
+    	                /*
+    	                 * Just output message once
+    	                 */
+    	                imx_printf( "No packet available for iMatrix upload (%u Bytes)\r\n", packet_length );
+    	                icb.imatrix_no_packet_avail = true;
+    	            }
     	        	/*
     	        	 * Wait a bit before checking again
     	        	 */
@@ -293,21 +301,20 @@ void imatrix_upload(wiced_time_t current_time)
     	     * There is something to do here. First build the packet
     	     */
     	    imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
-/*
- *
-    	    imx_printf( "Sending History to iMatrix Server: %03u.%03u.%03u.%03u ",
+///*
+    	    PRINTF( "Sending History to iMatrix Server: %03u.%03u.%03u.%03u ",
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x00ff0000 ) >> 16 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x0000ff00 ) >> 8 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x000000ff ) ) );
-*/
+//*/
     	    if( icb.time_set_with_NTP == true ) {
     	        wiced_time_get_utc_time_ms( &upload_utc_ms_time );
     	    	wiced_time_get_iso8601_time( &iso8601_time );
-//    	    	imx_printf( "System UTC time is: %.26s\r\n", (char*)&iso8601_time );
+    	    	PRINTF( "System UTC time is: %.26s\r\n", (char*)&iso8601_time );
     	    	icb.imatrix_upload_count += 1;
     	    } else {
-//    	    	imx_printf( "System does not have NTP - Sending with 0 for time stamp\r\n" );
+    	    	PRINTF( "System does not have NTP - Sending with 0 for time stamp\r\n" );
     	    	upload_utc_ms_time = 0;
     	    }
     		imatrix.sensor_no = 0;
@@ -391,13 +398,13 @@ void imatrix_upload(wiced_time_t current_time)
     	    	 * Step thru record types - Warnings first then regular
     	    	 */
             	for( k = CHECK_WARNING; ( k < NO_TYPE_OF_RECORDS ) && ( packet_full == false ); k++ ) {
-//            	    imx_printf( "Checking: %s, Type: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
+            	    PRINTF( "Checking: %s, Type: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
         	        for( i = 0; ( i < no_items ) && ( packet_full == false ); i++ )  {
                         if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
-                            /*
-                            imx_printf( "Checking %s for %s, No Samples: %u, Warning Level: %u\r\n",
-                                    k == CHECK_WARNING ? "Warning" : "Regular", type == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, csd[ i ]->no_samples, csd[ i ]->warning );
-                            */
+///*
+                            PRINTF( "Checking %s for %s, No Samples: %u, Warning Level: %u\r\n",
+                                    k == CHECK_WARNING ? "Warning" : "Regular", type == IMX_CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, csd[ i ].no_samples, csd[ i ].warning );
+//*/
                             /*
                              * Look first for critical records or errors
                              *
@@ -410,7 +417,7 @@ void imatrix_upload(wiced_time_t current_time)
                                 do {
                                     csd[ i ].last_warning = csd[ i ].warning; // Save last warning
                                     csd[ i ].send_on_error = false;        // Not after this send
- //                                   imx_printf( "%s - %s: %u - Data type: %u ", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", csb[ i ].name, i, csb[ i ].data_type );
+                                    PRINTF( "%s - %s: %u - Data type: %u ", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", csb[ i ].name, i, csb[ i ].data_type );
                                     if( csb[ i ].data_type == IMX_VARIABLE_LENGTH ) {
                                         /*
                                          * Process Variable Length record
@@ -425,7 +432,7 @@ void imatrix_upload(wiced_time_t current_time)
                                          }
 
                                         variable_data_length = csd[ i ].data[ var_data_index ].var_data->length; // Events have timestamp / Value pairs
-    //                                    imx_printf( "Trying to add variable length data record, ptr @ 0x%08x of: %u bytes\r\n", csd[ i ].data[ var_data_index ].uint_32bit, variable_data_length );
+                                        PRINTF( "Trying to add variable length data record, ptr @ 0x%08x of: %u bytes\r\n", csd[ i ].data[ var_data_index ].uint_32bit, variable_data_length );
                                         if( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) {
                                             /*
                                              * Load data into packet
@@ -433,7 +440,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * Load first variable length record
                                              */
-    //                                        imx_printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx ", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
+                                            PRINTF( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx ", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
                                             /*
                                              * Set up the header and copy in the data
                                              */
@@ -450,7 +457,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                  * These are a set of Events
                                                  */
                                                 header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_EVENT_CONTROL : IMX_BLOCK_EVENT_SENSOR;
-    //                                            imx_printf( "- Sending Event Block" );
+                                                PRINTF( "- Sending Event Block" );
                                             }
                                             header_bits.bits.no_samples = 1;            // Limit to 1 sample - enhance later
                                             header_bits.bits.version = IMATRIX_VERSION_1;
@@ -458,13 +465,13 @@ void imatrix_upload(wiced_time_t current_time)
                                             if( csd[ i ].errors > 0 ) {
                                                 header_bits.bits.sensor_error = csd[ i ].error;
                                                 csd[ i ].errors = 0;
-    //                                            imx_printf( " --- Errors detected with this entry: %u", (uint16_t) csd[ i ].error );
+                                                PRINTF( " --- Errors detected with this entry: %u", (uint16_t) csd[ i ].error );
                                             } else
                                                 header_bits.bits.sensor_error = 0;
-    //                                        imx_printf( "\r\n" );
+                                            PRINTF( "\r\n" );
                                             header_bits.bits.reserved = 0;
                                             upload_data->header.bits.bit_data = htonl( header_bits.bit_data );
-    //                                        imx_printf( "Header bits: 0x%08lx\r\n", upload_data->header.bits.bit_data );
+                                            PRINTF( "Header bits: 0x%08lx\r\n", upload_data->header.bits.bit_data );
                                             upload_data->header.last_utc_ms_sample_time = 0;
                                             if( icb.time_set_with_NTP == true )
                                                 upload_data->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
@@ -490,17 +497,17 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * Copy Data
                                              */
-    /*                                      imx_printf( "Variable length data: " );
+    /*                                      PRINTF( "Variable length data: " );
                                             uint16_t l;
                                             for( l = 0; l < variable_data_length; l++ )
-                                                imx_printf( "[0x%02x]", data_ptr[ l ] );
-                                            imx_printf( "\r\n" );
+                                                PRINTF( "[0x%02x]", data_ptr[ l ] );
+                                            PRINTF( "\r\n" );
     */
                                             memcpy( &upload_data->data[ data_index ], data_ptr, variable_data_length );
                                             /*
                                              * Now this data is loaded in structure, free up resources
                                              */
-                                            imx_printf( "About to free data\r\n" );
+                                            PRINTF( "About to free data\r\n" );
                                             imx_add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
                                             /*
                                              * Move up the data and re calculate the last sample time
@@ -529,7 +536,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             upload_data = ( upload_data_t *) ( uint32_t) ( upload_data ) + foo32bit;
                                             remaining_data_length -= foo32bit;
                                             entry_loaded = true;
-                                            imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
+                                            PRINTF( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
                                         } else {
                                             /*
                                              *  Can not fit in this packet
@@ -544,7 +551,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                  * If it is not the current value free up resources
                                                  */
                                                 if( csd[ i ].last_value.var_data != csd[ i ].data[ var_data_index ].var_data ) {
-                                                    imx_printf( "About to free data\r\n" );
+                                                    PRINTF( "About to free data\r\n" );
                                                     imx_add_var_free_pool( csd[ i ].data[ var_data_index ].var_data );
                                                     /*
                                                      * Move data up in history
@@ -571,21 +578,21 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * See how many we can fit
                                              */
-    //                                        imx_printf( "Checking to see if %u samples can fit in %u", csd[ i ].no_samples, remaining_data_length );
+                                            PRINTF( "Checking to see if %u samples can fit in %u", csd[ i ].no_samples, remaining_data_length );
                                             if( remaining_data_length >= ( sizeof( header_t ) + ( SAMPLE_LENGTH * csd[ i ].no_samples ) ) ) {
                                                 /*
                                                  * They can all fit
                                                  */
                                                 no_samples = csd[ i ].no_samples;
-    //                                            imx_printf( " *** - ALL Can Fit: %u\r\n", no_samples );
+                                                PRINTF( " *** - ALL Can Fit: %u\r\n", no_samples );
                                             } else {
                                                 /*
                                                  * Calculate how many will fit
                                                  */
                                                 no_samples = ( remaining_data_length - sizeof( header_t ) ) / ( SAMPLE_LENGTH );
-    //                                            imx_printf( " *** - Can Can Fit: %u\r\n", no_samples );
+                                                PRINTF( " *** - Can Can Fit: %u\r\n", no_samples );
                                             }
-    //                                        imx_printf( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ]id );
+                                            PRINTF( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
                                             /*
                                              * Set up the header and copy in the samples that will fit
                                              */
@@ -602,7 +609,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                  * These are a set of Events
                                                  */
                                                 header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_EVENT_CONTROL : IMX_BLOCK_EVENT_SENSOR;
-    //                                            imx_printf( "- Sending Event Block" );
+                                                PRINTF( "- Sending Event Block" );
                                             }
 
                                             header_bits.bits.no_samples = no_samples;
@@ -614,7 +621,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                 imx_printf( " --- Errors detected with this entry: %u", (uint16_t) csd[ i ].error );
                                             } else
                                                 header_bits.bits.sensor_error = 0;
-    //                                        imx_printf( "\r\n" );
+                                            PRINTF( "\r\n" );
                                             header_bits.bits.reserved = 0;
                                             upload_data->header.bits.bit_data = htonl( header_bits.bit_data );
 
@@ -655,14 +662,14 @@ void imatrix_upload(wiced_time_t current_time)
                                             foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH * no_samples );
                                             upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
                                             remaining_data_length -= foo32bit;
-    //                                        imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
+                                            PRINTF( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
                                         } else {
                                             packet_full = true;
                                         }
                                         entry_loaded = true;
                                     }
-    //                                if( packet_full == true )
-    //                                    imx_printf( "\r\niMatrix Packet FULL\r\n" );
+                                    if( packet_full == true )
+                                        PRINTF( "\r\niMatrix Packet FULL\r\n" );
                                 } while( ( packet_full == false ) && (entry_loaded == false ) );   /* Add logic for multiple variable length data processing */
                             } else {
                                 /*
@@ -670,9 +677,9 @@ void imatrix_upload(wiced_time_t current_time)
                                  */
                                 /*
                                 if( k == CHECK_WARNING )
-                                    imx_printf( "No Warning Data for %s: %u\r\n", type == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
+                                    PRINTF( "No Warning Data for %s: %u\r\n", type == IMX_CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
                                 else
-                                    imx_printf( "No History Data for %s: %u\r\n", type == CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
+                                    PRINTF( "No History Data for %s: %u\r\n", type == IMX_CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, i );
                                 */
                             }
                         }
@@ -696,7 +703,7 @@ void imatrix_upload(wiced_time_t current_time)
 	         */
 	        print_msg( imatrix.msg );
 	        list_add( &list_udp_coap_xmit, imatrix.msg );
-//    	    imx_printf( "Time Series Data message added to queue\r\n" );
+    	    PRINTF( "Time Series Data message added to queue\r\n" );
 	        imatrix.state = IMATRIX_UPLOAD_COMPLETE;
     		break;
     	case IMATRIX_UPLOAD_COMPLETE :
@@ -874,10 +881,10 @@ void imatrix_status( uint16_t arg)
 
     wiced_time_get_time( &current_time );
 
-	cli_print( "iMatrix state: " );
+	cli_print( "iMatrix Max Batch Buffer length: %u entries, iMatrix state: ", device_config.history_size );
     switch( imatrix.state ) {
     	case IMATRIX_INIT :
-    		cli_print( "Initializing - checking for ready to upload @%lu", (uint32_t) current_time );
+    		cli_print( "Initializing - checking for ready to upload @%lu, ", (uint32_t) current_time );
     		cli_print( "Current Control/Sensor Data pending upload:\r\n" );
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 
@@ -904,7 +911,7 @@ void imatrix_status( uint16_t arg)
     	                                cli_print( "%f ", csd[ i ].data[ j ].float_32bit );
     	                                break;
     	                            case IMX_VARIABLE_LENGTH :
-    	                                print_var_data( VR_DATA_MAC_ADDRESS, csd[ i ].last_value.var_data );
+    	                                print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
     	                                break;
     	                        }
     	                    }
@@ -913,7 +920,7 @@ void imatrix_status( uint16_t arg)
     	                    if( csb[ i ].sample_rate == 0 )
     	                        cli_print( "Event Driven" );
     	                    else
-    	                        cli_print( "next sample due @ %lu mSec", ( csd[ i ].last_sample_time + (wiced_time_t) ( csb[ i ].sample_rate ) ) - current_time );
+    	                        cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
     	                }
     	                cli_print( "\r\n" );
     	            }

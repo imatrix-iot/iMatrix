@@ -43,7 +43,8 @@
 #include "interface.h"
 #include "cli_debug.h"
 #include "messages.h"
-#include "../device/icb_def.h"
+#include "../device/config.h"
+#include "../storage.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -60,7 +61,7 @@ const char *debug_flags_description[] =
         "Debugs For CoAP Recv",                 // 0x00000010
         "Debugs For CoAP Support Routines",     // 0x00000020
         "Debugs For Hal",                       // 0x00000040
-        "Debugs For History",                   // 0x00000080
+        "Debugs For iMatrix Upload",            // 0x00000080
         "Debugs For Serial Flash",              // 0x00000100
         "Debugs For Application Start",         // 0x00000200
         "Debugs For Log messages to iMatrix",   // 0x00000400
@@ -81,8 +82,7 @@ const char *debug_flags_description[] =
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern iMatrix_Control_Block_t icb;
-
+extern IOT_Device_Config_t device_config;
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -104,33 +104,34 @@ void cli_debug(uint16_t mode)
 	token = strtok(NULL, " " );	// Get argument
 	if( token ) {
 		if( strcmp( token, "on" ) == 0 ) {
-			icb.print_debugs = true;
+		    device_config.print_debugs = true;
 			print_flags = true;
 		} else if( strcmp( token, "off" ) == 0 )
-            icb.print_debugs = false;
+		    device_config.print_debugs = false;
 		else if( strncmp( token, "?", 1 ) == 0 ) {
 	        for( i = 0; i < 11; i++ )
 	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
 		    print_flags = true;
 		} else {
 		    if( strncmp( token, "0x", 2 ) == 0 )
-		        icb.log_messages = strtoul( &token[ 2 ], &foo, 16 );
+		        device_config.log_messages = strtoul( &token[ 2 ], &foo, 16 );
 		    else
-		        icb.log_messages = strtoul( token, &foo, 10 );
+		        device_config.log_messages = strtoul( token, &foo, 10 );
 
-		    if( ( icb.log_messages & DEBUGS_LOG_TO_IMATRIX ) != 0x00 ) {
+		    if( ( device_config.log_messages & DEBUGS_LOG_TO_IMATRIX ) != 0x00 ) {
 		        cli_print( "Turning of CoAP Debug messages - recursive calls would result\r\n" );
-		        icb.log_messages &= ~( (uint32_t) ( DEBUGS_FOR_BASIC_MESSAGING | DEBUGS_FOR_XMIT | DEBUGS_FOR_RECV | DEBUGS_FOR_COAP_DEFINES ) );
+		        device_config.log_messages &= ~( (uint32_t) ( DEBUGS_FOR_BASIC_MESSAGING | DEBUGS_FOR_XMIT | DEBUGS_FOR_RECV | DEBUGS_FOR_COAP_DEFINES ) );
 		    }
 		}
 	} else
 	    cli_print( "Invalid option, debug <on|off|?|flags>\r\n" );
 
 	if( print_flags == true ) {
-	    cli_print( "Debug: %s, Current debug flags: 0x%08lx\r\n", ( icb.print_debugs == true ) ? "On" : "Off", icb.log_messages );
+	    cli_print( "Debug: %s, Current debug flags: 0x%08lx\r\n", ( device_config.print_debugs == true ) ? "On" : "Off", device_config.log_messages );
 	    for( i = 0; i < 11; i++ )
-	        if( icb.log_messages & ( 1 << i ) )
+	        if( device_config.log_messages & ( 1 << i ) )
 	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
 	}
+	imatrix_save_config();
 
 }

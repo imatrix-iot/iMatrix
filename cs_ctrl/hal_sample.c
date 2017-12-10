@@ -280,8 +280,8 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
             /*
              * Check for overflow - Save only the last sample values
              */
-            if( csd[ *active ].no_samples >= ( IMATRIX_HISTORY_SIZE - 1 ) ) {
-                memmove( &csd[ *active ].data[ 0 ], &csd[ *active ].data[ 1 ], ( IMATRIX_HISTORY_SIZE - 1 ) * SAMPLE_LENGTH );
+            if( csd[ *active ].no_samples >= ( device_config.history_size - 1 ) ) {
+                memmove( &csd[ *active ].data[ 0 ], &csd[ *active ].data[ 1 ], ( device_config.history_size - 1 ) * SAMPLE_LENGTH );
             } else
                 csd[ *active ].no_samples += 1;
             csd[ *active ].last_sample_time = current_time;
@@ -290,7 +290,7 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
              */
             if( ( csd[ *active ].warning != csd[ *active ].last_warning ) ||
                 ( csd[ *active ].no_samples >= device_config.scb[ *active ].sample_batch_size ) ||
-                ( csd[ *active ].no_samples >= ( IMATRIX_HISTORY_SIZE - 1  ) ) || // We can't get any more in to this record
+                ( csd[ *active ].no_samples >= ( device_config.history_size - 1  ) ) || // We can't get any more in to this record
                 ( csd[ *active ].update_now == true ) ||
                 ( percent_change_detected == true ) ) {
 /*

@@ -90,7 +90,6 @@ typedef struct {
 	uint16_t wifi_state;
 	uint16_t no_ble_updates;
 	uint16_t no_ble_devices;
-	uint32_t log_messages;
 	uint32_t print_msg;
 	uint32_t print_telnet_msg;
 	uint32_t boot_count;
@@ -123,6 +122,7 @@ typedef struct {
 	void *ccm_heap_start;
 	void *ccm_heap_end;
 	void *ccm_next_entry;
+	unsigned int imatrix_no_packet_avail    : 1;
 	unsigned int using_ccmsram              : 1;
 	unsigned int running_in_background      : 1;
 	unsigned int comm_mode                  : 4;
@@ -141,7 +141,6 @@ typedef struct {
 	unsigned int ota_loader_active          : 1;
 	unsigned int reboot				        : 1;
 	unsigned int wifi_up			        : 1;
-	unsigned int print_debugs		        : 1;
     unsigned int time_set_with_NTP	        : 1;	// Time was set with real NTP
 } iMatrix_Control_Block_t;
 /******************************************************

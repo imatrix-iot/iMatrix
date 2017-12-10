@@ -43,6 +43,7 @@
  * que_manager.h
  *
  */
+#include "../coap/coap.h"
 
 /******************************************************
  *                      Macros
@@ -93,6 +94,7 @@ uint16_t get_block_not_found_errors();
 uint16_t get_block_list_details( uint16_t index, uint16_t *smallest_freelist_size, uint16_t *errors );
 int list_size( message_list_t *list );
 void dump_lists(void);
+void print_msg_errors(void);
 void print_free_msg_sizes();
 uint16_t max_packet_size(void);
 

@@ -912,6 +912,7 @@ void imatrix_status( uint16_t arg)
     	                                break;
     	                            case IMX_VARIABLE_LENGTH :
     	                                print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
+    	                                cli_print( " " );
     	                                break;
     	                        }
     	                    }
@@ -919,6 +920,9 @@ void imatrix_status( uint16_t arg)
     	                    cli_print( "No Samples stored, " );
     	                    if( csb[ i ].sample_rate == 0 )
     	                        cli_print( "Event Driven" );
+    	                    else {
+    	                        if( csd[ i ].valid == true )
+    	                            cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
     	                    else
     	                        cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
     	                }

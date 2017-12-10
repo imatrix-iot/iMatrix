@@ -65,7 +65,7 @@
  ******************************************************/
 #ifdef PRINT_DEBUGS_FOR_IMX_UPLOAD
     #undef PRINTF
-	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_IMX_UPLOAD ) != 0x00 ) imx_log_printf(__VA_ARGS__)
+	#define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_IMX_UPLOAD ) != 0x00 ) imx_printf(__VA_ARGS__)
 #elif !defined PRINTF
     #define PRINTF(...)
 #endif
@@ -899,23 +899,46 @@ void imatrix_status( uint16_t arg)
     	            if( ( csb[ i ].enabled == true ) && ( csb[ i ].send_imatrix == true ) ) {
     	                cli_print( "No: %u: 0x%08lx: %32s ", i, csb[ i ].id, csb[ i ].name );
     	                if( csd[ i ].no_samples > 0 ) {
-    	                    for( j = 0; j < csd[ i ].no_samples; j++ ) {
-    	                        switch( csb[ i ].data_type ) {
-    	                            case IMX_UINT32 :
-    	                                cli_print( "%lu ", csd[ i ].data[ j ].uint_32bit );
-    	                                break;
-    	                            case IMX_INT32 :
-    	                                cli_print( "%ld ", csd[ i ].data[ j ].int_32bit );
-    	                                break;
-    	                            case IMX_FLOAT :
-    	                                cli_print( "%f ", csd[ i ].data[ j ].float_32bit );
-    	                                break;
-    	                            case IMX_VARIABLE_LENGTH :
-    	                                print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
-    	                                cli_print( " " );
-    	                                break;
-    	                        }
-    	                    }
+                            if( csb[ i ].sample_rate == 0 ) {
+                                cli_print( "Event Driven: " );
+                                for( j = 0; j < csd[ i ].no_samples; j += 2 ) {
+                                    cli_print( "@ %lu, ", csd[ i ].data[ j ].uint_32bit );
+                                    switch( csb[ i ].data_type ) {
+                                        case IMX_UINT32 :
+                                            cli_print( "%lu ", csd[ i ].data[ j + 1 ].uint_32bit );
+                                            break;
+                                        case IMX_INT32 :
+                                            cli_print( "%ld ", csd[ i ].data[ j + 1 ].int_32bit );
+                                            break;
+                                        case IMX_FLOAT :
+                                            cli_print( "%f ", csd[ i ].data[ j + 1 ].float_32bit );
+                                            break;
+                                        case IMX_VARIABLE_LENGTH :
+                                            print_var_data( VR_DATA_STRING, csd[ i ].data[ j + 1 ].var_data );
+                                            cli_print( " " );
+                                            break;
+                                    }
+                                }
+                            } else {
+                                for( j = 0; j < csd[ i ].no_samples; j++ ) {
+                                    switch( csb[ i ].data_type ) {
+                                        case IMX_UINT32 :
+                                            cli_print( "%lu ", csd[ i ].data[ j ].uint_32bit );
+                                            break;
+                                        case IMX_INT32 :
+                                            cli_print( "%ld ", csd[ i ].data[ j ].int_32bit );
+                                            break;
+                                        case IMX_FLOAT :
+                                            cli_print( "%f ", csd[ i ].data[ j ].float_32bit );
+                                            break;
+                                        case IMX_VARIABLE_LENGTH :
+                                            print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
+                                            cli_print( " " );
+                                            break;
+                                    }
+                                }
+
+                            }
     	                } else {
     	                    cli_print( "No Samples stored, " );
     	                    if( csb[ i ].sample_rate == 0 )
@@ -924,7 +947,7 @@ void imatrix_status( uint16_t arg)
     	                        if( csd[ i ].valid == true )
     	                            cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
     	                        else
-    	                            cli_print( "Waiting for first sample\r\n" );
+    	                            cli_print( "Waiting for first sample" );
     	                    }
     	                }
     	                cli_print( "\r\n" );

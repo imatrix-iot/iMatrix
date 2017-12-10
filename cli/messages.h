@@ -59,7 +59,7 @@
 #define DEBUGS_FOR_INIT                 (0x00000010)
 #define DEBUGS_FOR_SFLASH               (0x00000100)
 #define DEBUGS_FOR_APPLICATION_START    (0x00000200)
-#define DEBUGS_LOG_TO_IMATRIX           (0x00000400)
+#define DEBUGS_FOR_EVENTS_DRIVEN        (0x00000400)
 /*
  * Background (callback) messages to print in main loop
  */

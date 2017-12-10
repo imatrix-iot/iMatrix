@@ -64,7 +64,7 @@ const char *debug_flags_description[] =
         "Debugs For iMatrix Upload",            // 0x00000080
         "Debugs For Serial Flash",              // 0x00000100
         "Debugs For Application Start",         // 0x00000200
-        "Debugs For Log messages to iMatrix",   // 0x00000400
+        "Debugs For Event Driven Entries",      // 0x00000400
 };
 
 /******************************************************
@@ -117,11 +117,6 @@ void cli_debug(uint16_t mode)
 		        device_config.log_messages = strtoul( &token[ 2 ], &foo, 16 );
 		    else
 		        device_config.log_messages = strtoul( token, &foo, 10 );
-
-		    if( ( device_config.log_messages & DEBUGS_LOG_TO_IMATRIX ) != 0x00 ) {
-		        cli_print( "Turning of CoAP Debug messages - recursive calls would result\r\n" );
-		        device_config.log_messages &= ~( (uint32_t) ( DEBUGS_FOR_BASIC_MESSAGING | DEBUGS_FOR_XMIT | DEBUGS_FOR_RECV | DEBUGS_FOR_COAP_DEFINES ) );
-		    }
 		}
 	} else
 	    cli_print( "Invalid option, debug <on|off|?|flags>\r\n" );

@@ -46,6 +46,7 @@
 
 #include "../storage.h"
 #include "../cli/interface.h"
+#include "../cli/messages.h"
 #include "../device/config.h"
 #include "../device/var_data.h"
 #include "../time/ck_time.h"
@@ -54,6 +55,12 @@
 /******************************************************
  *                      Macros
  ******************************************************/
+#ifdef PRINT_DEBUGS_FOR_EVENTS_DRIVEN
+    #undef PRINTF
+    #define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_EVENTS_DRIVEN ) != 0x00 ) imx_printf(__VA_ARGS__)
+#elif !defined PRINTF
+    #define PRINTF(...)
+#endif
 
 /******************************************************
  *                    Constants
@@ -78,7 +85,7 @@
 /******************************************************
  *               Variable Definitions
  ******************************************************/
-extern IOT_Device_Config_t device_config;	// Defined in device\config.h
+extern IOT_Device_Config_t device_config;	// Defined in storage.h
 extern control_sensor_data_t *cd;
 extern control_sensor_data_t *sd;
 /******************************************************
@@ -109,7 +116,6 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 		else {
 			csd = &cd[ 0 ];
 			csb = &device_config.ccb[ 0 ];
-//			imx_printf( "Event Control: %u\r\n", entry );
 		}
 	} else {
 		if( entry >= device_config.no_sensors )
@@ -119,17 +125,17 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 			csb = &device_config.scb[ 0 ];
 		}
 	}
-//    imx_printf( "Event - Setting %s %u Data @: 0x%08lx\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", entry, (uint32_t) &csd[ entry ] );
+	PRINTF( "Event - Setting %s %u Data @: 0x%08lx\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", entry, (uint32_t) &csd[ entry ] );
     /*
      * Check for overflow - Save only the last sample values
      */
     if( csd[ entry ].no_samples >= ( device_config.history_size - 2 ) ) {
-        imx_printf( "History Full - dropping last sample\r\n" );
+        PRINTF( "History Full - dropping last sample\r\n" );
         /*
          * If item is variable length - free before overwrite
          */
         if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH )
-            ;
+            imx_add_var_free_pool( csd[ entry ].data[ 0 ].var_data );
         memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( device_config.history_size - 2 ) * SAMPLE_LENGTH );
         csd[ entry ].no_samples -= 2;
     }
@@ -148,26 +154,6 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
      */
     memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, SAMPLE_LENGTH );
 
-    /*
-    if( type == CONTROLS )
-        imx_printf( "Sampled Control: %u, result: %u", entry, status );
-    else
-        imx_printf( "Sampled Sensor: %u, result: %u", entry, status );
-    imx_printf( ", Value: " );
-    switch( csb[ entry ].data_type ) {
-        case DI_INT32 :
-            imx_printf( "%ld", csd[ entry ].data[ csd[ entry ].no_samples ].int_32bit );
-            break;
-        case AI_FLOAT :
-            imx_printf( "%f", csd[ entry ].data[ csd[ entry ].no_samples ].float_32bit );
-            break;
-        case DI_UINT32 :
-        default :
-            imx_printf( "%lu", csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit );
-            break;
-    }
-    imx_printf( "\r\n" );
-    */
     /*
      * Check if the data is in warning levels for the sensor
      */
@@ -259,7 +245,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
         ( csd[ entry ].update_now == true ) ||
         ( percent_change_detected == true ) ) {
 
-        imx_printf( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
+        PRINTF( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
                 entry, type == IMX_CONTROLS ? device_config.ccb[ entry ].id : device_config.scb[ entry ].id, csd[ entry ].no_samples, csb[ entry ].sample_batch_size, csd[ entry ].update_now ? "true" : "false",
                 csd[ entry ].warning, csd[ entry ].last_warning, percent_change_detected ? "true" : "false" );
 
@@ -272,14 +258,17 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
      */
     if( ( csd[ entry ].error != csd[ entry ].last_error ) ||
         ( imx_is_later( current_time, csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) ) == true ) ) {
-    //              imx_printf( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ entry ].error, csd[ entry ].last_error, csd[ entry ].last_sample_time, ( csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) - (uint32_t) current_time )  );
+        imx_printf( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ entry ].error, csd[ entry ].last_error, csd[ entry ].last_sample_time, ( csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) - (uint32_t) current_time )  );
         csd[ entry ].last_sample_time = current_time;
         csd[ entry ].last_error = csd[ entry ].error;
         csd[ entry ].send_on_error = true;
     }
-
-    imx_printf( "Event Added Data History now contains: %u Event Samples\r\n", csd[ entry ].no_samples/2 );   // 2 samples per event..
-    for( i = 0; i < (csd[ entry ].no_samples ); i+= 2 )
-        imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ], csd[ entry ].data[ i + 1] );
+#ifdef PRINT_DEBUGS_FOR_EVENTS_DRIVEN
+    if( ( device_config.log_messages & DEBUGS_FOR_EVENTS_DRIVEN ) != 0x00 ) {
+        imx_printf( "Event Added Data History now contains: %u Event Samples\r\n", csd[ entry ].no_samples/2 );   // 2 samples per event..
+        for( i = 0; i < (csd[ entry ].no_samples ); i+= 2 )
+            imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ], csd[ entry ].data[ i + 1] );
+    }
+#endif
 }
 

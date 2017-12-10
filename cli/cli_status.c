@@ -280,6 +280,10 @@ void print_var_data( var_data_types_t data_type, var_data_entry_t *var_data )
          * Verify it is only printable
          */
         string_length = strlen( (char * ) var_data->data );
+        if( string_length == 0 ) {
+            cli_print( "<Empty String>" );
+            return;
+        }
         for( i = 0; i < string_length; i++ )
             if( !isprint( (int) var_data->data[ i ] ) ) {
                 data_type = VR_DATA_BINARY;

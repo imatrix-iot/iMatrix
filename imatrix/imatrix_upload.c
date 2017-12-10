@@ -923,8 +923,9 @@ void imatrix_status( uint16_t arg)
     	                    else {
     	                        if( csd[ i ].valid == true )
     	                            cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
-    	                    else
-    	                        cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
+    	                        else
+    	                            cli_print( "Waiting for first sample\r\n" );
+    	                    }
     	                }
     	                cli_print( "\r\n" );
     	            }

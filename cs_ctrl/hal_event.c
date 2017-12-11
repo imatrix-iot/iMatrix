@@ -149,10 +149,28 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
      * Add Data
      */
 
-    /*
-     * All Data is really just 32 bit - value or point to variable length
-     */
-    memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, SAMPLE_LENGTH );
+    if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH ) {
+        /*
+         * Get a buffer and transfer this data to the entry
+         */
+        csd[ entry ].data[ csd[ entry ].no_samples ].var_data = imx_get_var_data( ((imx_data_32_t *) value)->var_data->length );
+        if( csd[ entry ].data[ csd[ entry ].no_samples ].var_data == NULL ) {
+            /*
+             * No entry available, just drop this
+             */
+            return;
+        }
+        /*
+         * Copy the data from the passed variable data
+         */
+        memcpy( csd[ entry ].data[ csd[ entry ].no_samples ].var_data->data, (char *) ((imx_data_32_t *) value)->var_data->data, ((imx_data_32_t *) value)->var_data->length );
+        csd[ entry ].last_value.var_data->length = ((imx_data_32_t *) value)->var_data->length;
+    } else {
+        /*
+         * All Other Data is really just 32 bit
+         */
+        memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, SAMPLE_LENGTH );
+    }
 
     /*
      * Check if the data is in warning levels for the sensor

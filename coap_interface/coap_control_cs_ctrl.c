@@ -46,6 +46,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "wiced.h"
+#include "base64.h"
 
 #include "../storage.h"
 #include "../cli/interface.h"
@@ -76,7 +77,9 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define MAX_STRING_SIZE     256     // for now - change this
+#define MAX_STRING_SIZE     1024     // for now - change this
+#define BASE64_MAX_LENGTH   ( 4 * ( MAX_STRING_SIZE + 2 ) / 3 )
+#define JSON_MAX_SIZE       ( 34 + IMX_CONTROL_SENSOR_NAME_LENGTH + BASE64_MAX_LENGTH )
 /******************************************************
  *                   Enumerations
  ******************************************************/
@@ -129,7 +132,9 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
 {
     UNUSED_PARAMETER( arg );
     // Respond with value for ID.
-    char json_out[ 100 ];
+    char json_out[ JSON_MAX_SIZE ];     // Allocate this from heap later
+    char base64_output[ BASE64_MAX_LENGTH ];
+    int32_t result;
     uint16_t type, i;
     uint32_t id = 0;
     uint16_t response_type = NON_CONFIRMABLE; // Unless the request type is Confirmable.
@@ -155,8 +160,7 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
             PRINTF( "Failed to create response - invalid type.\r\n" );
             return COAP_NO_RESPONSE;
         }
-    }
-    else {// type is OK.
+    }  else {// type is OK.
 
         if ( WICED_SUCCESS == get_uint32_from_query_str( "id", &id, coap_cd->uri_query ) ) {
 
@@ -181,8 +185,21 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.ccb[ i ].name, cd[ i ].last_value.float_32bit );
                                 break;
                             case IMX_VARIABLE_LENGTH :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
-                                        device_config.ccb[ i ].name, ( cd[ i ].last_value.var_data == NULL ? "" : (char* ) cd[ i ].last_value.var_data->data ) );
+                                result = base64_encode( (unsigned char* ) cd[ i ].last_value.var_data->data, cd[ i ].last_value.var_data->length,
+                                        (unsigned char*) base64_output, BASE64_MAX_LENGTH, BASE64_STANDARD );
+                                if( result < 0 ) {
+                                    /*
+                                     * Error
+                                     */
+                                    if( coap_store_response_header( msg, REQUEST_ENTITY_TOO_BIG, response_type, NULL )  != WICED_SUCCESS ) {
+                                        PRINTF( "Failed to create response.\r\n" );
+                                        return COAP_NO_RESPONSE;
+                                    }
+                                } else {
+                                    sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
+                                            device_config.ccb[ i ].name, ( cd[ i ].last_value.var_data == NULL ? "" : (char* ) base64_output ) );
+
+                                }
                                 break;
                         }
                         goto done;
@@ -201,8 +218,21 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.scb[ i ].name, sd[ i ].last_value.float_32bit );
                                 break;
                             case IMX_VARIABLE_LENGTH :
-                                sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
-                                        device_config.scb[ i ].name, ( sd[ i ].last_value.var_data == NULL ? "" : (char *) sd[ i ].last_value.var_data->data ) );
+                                result = base64_encode( (unsigned char* ) sd[ i ].last_value.var_data->data, sd[ i ].last_value.var_data->length,
+                                        (unsigned char*) base64_output, BASE64_MAX_LENGTH, BASE64_STANDARD );
+                                if( result < 0 ) {
+                                    /*
+                                     * Error
+                                     */
+                                    if( coap_store_response_header( msg, REQUEST_ENTITY_TOO_BIG, response_type, NULL )  != WICED_SUCCESS ) {
+                                        PRINTF( "Failed to create response.\r\n" );
+                                        return COAP_NO_RESPONSE;
+                                    }
+                                } else {
+                                    sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
+                                            device_config.scb[ i ].name, ( sd[ i ].last_value.var_data == NULL ? "" : (char* ) base64_output ) );
+
+                                }
                                 break;
                         }
                         goto done;
@@ -245,7 +275,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
 {
     UNUSED_PARAMETER( arg );
 
-    char string_value[ MAX_STRING_SIZE ];
+    char string_value[ BASE64_MAX_LENGTH ];
     uint16_t i, string_length;
     unsigned int id, uint_value;
     int int_value;

@@ -276,8 +276,8 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     UNUSED_PARAMETER( arg );
 
     char string_value[ BASE64_MAX_LENGTH ];
-    uint16_t i, string_length;
     char base64_result[ BASE64_MAX_LENGTH ];
+    uint16_t i;
     unsigned int id, uint_value;
     int int_value, result;
     double double_value;

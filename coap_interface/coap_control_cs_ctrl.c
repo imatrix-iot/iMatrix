@@ -277,8 +277,9 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
 
     char string_value[ BASE64_MAX_LENGTH ];
     uint16_t i, string_length;
+    char base64_result[ BASE64_MAX_LENGTH ];
     unsigned int id, uint_value;
-    int int_value;
+    int int_value, result;
     double double_value;
     float  float_value;
     imx_data_32_t value;
@@ -362,11 +363,23 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     }
                     break;
                 case IMX_VARIABLE_LENGTH :
-                    string_length = strlen( string_value );
-                    value.var_data = imx_get_var_data( string_length );
+                    /*
+                     * Convert base 64 to binary
+                     */
+                    result = base64_decode( (unsigned char* ) string_value, strlen( string_value ), (unsigned char* ) base64_result, BASE64_MAX_LENGTH, BASE64_STANDARD );
+                    if( result < 0 ) {
+                        /*
+                         * Error
+                         */
+                        if( coap_store_response_header( msg, REQUEST_ENTITY_TOO_BIG, response_type, NULL )  != WICED_SUCCESS ) {
+                            PRINTF( "Failed to create response.\r\n" );
+                            return COAP_NO_RESPONSE;
+                        }
+                    }
+                    value.var_data = imx_get_var_data( result );
                     if( value.var_data != NULL ) {
-                        strcpy( (char *) value.var_data->data, string_value );
-                        value.var_data->length = string_length + 1; // Add space for the NULL - all data is returned 0 from allocation routine
+                        memcpy( value.var_data->data, string_value, result );
+                        value.var_data->length = result; // Add space for the NULL - all data is returned 0 from allocation routine
                         if( imx_set_control_sensor( IMX_CONTROLS,  i, &value ) != IMX_SUCCESS ) {
                             response_code = BAD_REQUEST;
                             goto create_response_and_exit;

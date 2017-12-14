@@ -107,7 +107,11 @@ time/ck_time.c time/ck_time.h time/ntp_success.c time/ntp_success.h time/sntp.c 
 wifi/enterprise_80211.c wifi/enterprise_80211.h wifi/imx_wifi.c wifi/wifi_logging.c wifi/wifi_logging.h wifi/process_wifi.c wifi/process_wifi.h \
 wifi/wifi.c wifi/wifi.h
 
-$(NAME)_DEFINES += IMATRIX_CLIENT
+$(NAME)_DEFINES += IMATRIX_CLIENT \
+                   SFLASH_SUPPORT_SST_PARTS \
+                   SFLASH_SUPPORT_MACRONIX_PARTS \
+                   SFLASH_SUPPORT_EON_PARTS \
+                   SFLASH_SUPPORT_MICRON_PARTS
 
 GLOBAL_INCLUDES := .
 

@@ -52,6 +52,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
+#define NO_DEBUG_MSGS   12
 const char *debug_flags_description[] =
 {
         "General Debugging ",                   // 0x00000001
@@ -65,6 +66,7 @@ const char *debug_flags_description[] =
         "Debugs For Serial Flash",              // 0x00000100
         "Debugs For Application Start",         // 0x00000200
         "Debugs For Event Driven Entries",      // 0x00000400
+        "Debugs for Sample Driven Entries",     // 0x00000800
 };
 
 /******************************************************
@@ -123,7 +125,7 @@ void cli_debug(uint16_t mode)
 
 	if( print_flags == true ) {
 	    cli_print( "Debug: %s, Current debug flags: 0x%08lx\r\n", ( device_config.print_debugs == true ) ? "On" : "Off", device_config.log_messages );
-	    for( i = 0; i < 11; i++ )
+	    for( i = 0; i < NO_DEBUG_MSGS; i++ )
 	        if( device_config.log_messages & ( 1 << i ) )
 	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
 	}

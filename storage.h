@@ -286,6 +286,7 @@ typedef struct IOT_Device_Config {
     int32_t local_seconds_offset_from_utc;
     uint32_t log_messages;
     float longitude, latitude, elevation;
+    uint32_t sflash_size;
     wiced_security_t ap_security;
     wiced_utc_time_ms_t last_ntp_updated_time;
     imx_control_sensor_block_t ccb[ IMX_MAX_NO_CONTROLS ];

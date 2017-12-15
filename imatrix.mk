@@ -48,7 +48,8 @@ GLOBAL_DEFINES += PRINT_DEBUGS_FOR_RECV 				#includes coap_recv.c coap_get.c coa
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_COAP_DEFINES 		#includes coap_def.c coap_config.c coap_provisioning.c coap_remote.c 
                   										# above includes coap_psoc.c coap_sensor_rssi.c coap.c
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_BASIC_MESSAGING 		#includes add_coap_option.c coap_msg_get_store.c
-GLOBAL_DEFINES += PRINT_DEBUGS_FOR_EVENTS_DRIVEN		#includes hal_sample.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_EVENTS_DRIVEN		#includes hal_event.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_SAMPLING				#includes hal_sample.c
 
 NAME := iMatix_Library_$(PLATFORM)
 

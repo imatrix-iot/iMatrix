@@ -129,6 +129,7 @@ bool system_init(bool override_config)
 
     imx_printf( "Preparing WICED...");
 
+    result = IMX_SUCCESS;
     wiced_result = wiced_init();  //wiced_core_init();
 	if ( wiced_result != WICED_SUCCESS ) {
 		imx_printf( "wiced_core_init() failed with error code: %u.\r\n", wiced_result );

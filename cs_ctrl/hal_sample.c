@@ -47,6 +47,7 @@
 #include "../storage.h"
 #include "../common.h"
 #include "../cli/interface.h"
+#include "../cli/messages.h"
 #include "../device/config.h"
 #include "../time/ck_time.h"
 #include "hal_sample.h"
@@ -63,6 +64,13 @@
                     csd = &sd[ 0 ];                  \
                     f = &imx_sensor_functions[ 0 ]; \
                 }
+#ifdef PRINT_DEBUGS_FOR_SAMPLING
+    #undef PRINTF
+    #define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_SAMPLING ) != 0x00 ) imx_printf(__VA_ARGS__)
+#elif !defined PRINTF
+    #define PRINTF(...)
+#endif
+
 /******************************************************
  *                    Constants
  ******************************************************/
@@ -132,7 +140,10 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 	}
 
 	SET_CSB_VARS_F( type );
-//    wiced_rtos_delay_milliseconds( 100 ); // Used for debug to slow things down
+#ifdef PRINT_DEBUGS_FOR_SAMPLING
+	if( device_config.log_messages & DEBUGS_FOR_SAMPLING )
+	    wiced_rtos_delay_milliseconds( 100 ); // Used for debug to slow things down
+#endif
 	/*
 	 * Check Control / Sensor, update this sensor stored data if it changes warning level or sample rate is due
 	 *
@@ -142,24 +153,25 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 		status = 0;	// Controls may not have an update function as the may just be set remotely
 		if( f[ *active ].update != NULL ) {
 			status = ( f[ *active ].update)( f[ *active ].arg, &sampled_value );
-			/*
-
-			cli_print( "Sampled %s: %u, result: %u", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", *active, status );
-			cli_print( ", Value: " );
-			switch( csb[ *active ].data_type ) {
-				case IMX_INT32 :
-				    cli_print( "%ld", sampled_value.int_32bit );
-					break;
-				case IMX_FLOAT :
-				    cli_print( "%f", sampled_value.float_32bit );
-					break;
-				case IMX_UINT32 :
-				default :
-				    cli_print( "%lu", sampled_value.uint_32bit );
-					break;
+#ifdef PRINT_DEBUGS_FOR_SAMPLING
+			if( device_config.log_messages & DEBUGS_FOR_SAMPLING ) {
+	            cli_print( "Sampled %s: %u, result: %u", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", *active, status );
+	            cli_print( ", Value: " );
+	            switch( csb[ *active ].data_type ) {
+	                case IMX_INT32 :
+	                    cli_print( "%ld", sampled_value.int_32bit );
+	                    break;
+	                case IMX_FLOAT :
+	                    cli_print( "%f", sampled_value.float_32bit );
+	                    break;
+	                case IMX_UINT32 :
+	                default :
+	                    cli_print( "%lu", sampled_value.uint_32bit );
+	                    break;
+	            }
+	            cli_print( "\r\n" );
 			}
-			cli_print( "\r\n" );
-			*/
+#endif
 	        if( status == IMX_SUCCESS ) {
 	            csd[ *active ].last_poll_time = current_time;                       // Got valid data this time
 	            csd[ *active ].last_value.uint_32bit = sampled_value.uint_32bit;    // Its all just 32 bit data
@@ -168,7 +180,7 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 	        } else if( status == IMX_NO_DATA )
 	            ;   // Do nothing - keep using existing data - waiting for control/sensor to finish acquisition
 	        else {
-	//          print_status( "Error Reading sensor %u\r\n", *active );
+	            PRINTF( "Error Reading sensor %u\r\n", *active );
 	            csd[ *active ].errors += 1;
 	            csd[ *active ].error = status;
 	            /*
@@ -293,11 +305,13 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
                 ( csd[ *active ].no_samples >= ( device_config.history_size - 1  ) ) || // We can't get any more in to this record
                 ( csd[ *active ].update_now == true ) ||
                 ( percent_change_detected == true ) ) {
-/*
-                cli_print( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
-                        *active, csb[ *active ].id, csd[ *active ].no_samples, csb[ *active ].sample_batch_size, csd[ *active ].update_now ? "true" : "false",
-                        csd[ *active ].warning, csd[ *active ].last_warning, percent_change_detected ? "true" : "false" );
-*/
+#ifdef PRINT_DEBUGS_FOR_SAMPLING
+                if( device_config.log_messages & DEBUGS_FOR_SAMPLING ) {
+                    cli_print( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
+                            *active, csb[ *active ].id, csd[ *active ].no_samples, csb[ *active ].sample_batch_size, csd[ *active ].update_now ? "true" : "false",
+                            csd[ *active ].warning, csd[ *active ].last_warning, percent_change_detected ? "true" : "false" );
+                }
+#endif
                 csd[ *active ].update_now = false;
                 csd[ *active ].last_warning = csd[ *active ].warning;
                 csd[ *active ].send_batch = true;    // Send this now

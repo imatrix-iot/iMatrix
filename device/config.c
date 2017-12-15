@@ -177,6 +177,7 @@ wiced_result_t imatrix_load_config(bool override_config)
     device_config.longitude = imx_imatrix_init_config.longitude;
     device_config.latitude = imx_imatrix_init_config.latitude;
     device_config.elevation = imx_imatrix_init_config.elevation;
+    device_config.sflash_size = imx_imatrix_init_config.sflash_size;
     device_config.at_command_mode = imx_imatrix_init_config.at_command_mode;
     device_config.log_wifi_AP = imx_imatrix_init_config.log_wifi_AP;
     device_config.log_wifi_rssi = imx_imatrix_init_config.log_wifi_rssi;

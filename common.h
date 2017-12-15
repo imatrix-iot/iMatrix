@@ -355,6 +355,7 @@ typedef struct {
     uint32_t level_id;
     uint32_t indoor_x;
     uint32_t indoor_y;
+    uint32_t sflash_size;
     float longitude;
     float latitude;
     float elevation;

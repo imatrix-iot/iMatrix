@@ -60,6 +60,7 @@
 #define DEBUGS_FOR_SFLASH               (0x00000100)
 #define DEBUGS_FOR_APPLICATION_START    (0x00000200)
 #define DEBUGS_FOR_EVENTS_DRIVEN        (0x00000400)
+#define DEBUGS_FOR_SAMPLING             (0x00000800)
 /*
  * Background (callback) messages to print in main loop
  */

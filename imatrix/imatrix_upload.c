@@ -618,7 +618,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             if( csd[ i ].errors > 0 ) {
                                                 header_bits.bits.sensor_error = csd[ i ].error;
                                                 csd[ i ].errors = 0;
-                                                imx_printf( " --- Errors detected with this entry: %u", (uint16_t) csd[ i ].error );
+                                                PRINTF( " --- Errors detected with this entry: %u", (uint16_t) csd[ i ].error );
                                             } else
                                                 header_bits.bits.sensor_error = 0;
                                             PRINTF( "\r\n" );
@@ -897,7 +897,7 @@ void imatrix_status( uint16_t arg)
 
     	        for( i = 0; i < no_items; i++ ) {
     	            if( ( csb[ i ].enabled == true ) && ( csb[ i ].send_imatrix == true ) ) {
-    	                cli_print( "No: %u: 0x%08lx: %32s ", i, csb[ i ].id, csb[ i ].name );
+    	                cli_print( "No: %2u: 0x%08lx: %32s ", i, csb[ i ].id, csb[ i ].name );
     	                if( csd[ i ].no_samples > 0 ) {
                             if( csb[ i ].sample_rate == 0 ) {
                                 cli_print( "Event Driven: " );

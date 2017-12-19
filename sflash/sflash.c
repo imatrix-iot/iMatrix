@@ -41,6 +41,7 @@
 
 #include "../ota_loader/ota_structure.h"
 #include "spi_flash.h"
+#include "spi_flash_internal.h"
 #include "wiced_apps_common.h"
 #include "spi_flash.h"
 #include "../cli/interface.h"
@@ -50,7 +51,6 @@
 #include "../common.h"
 
 #include "sflash.h"
-
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -147,7 +147,6 @@ uint16_t init_serial_flash(void)
   * @param  None
   * @retval : status
   */
-int sflash_read_status_register( sflash_handle_t* const handle, unsigned char* dest_addr );
 
 int read_serial_flash_status(void)
 {
@@ -161,36 +160,6 @@ void reboot_if( uint16_t failed, char* msg )
 		wiced_rtos_delay_milliseconds( 10000 );
 		wiced_framework_reboot();
 	}
-}
-
-/**
- * Erase 64 KB worth of sectors returning WICED_SUCCESS or
- * WICED_ERROR if sflash_sector_erase returned an error code.
- *
- * written by Eric Thelin 1 June 2016
- */
-wiced_result_t erase_64KB_sector( uint32_t sector_start_address, uint16_t allowed_area )
-{
-	uint16_t i;
-	int result = 0;
-
-	if( sflash_handle.device_id == SFLASH_ID_M25P32 ) {// This device already has 64 KB sectors.
-	    result = protected_sflash_sector_erase( &sflash_handle, sector_start_address, allowed_area );
-		if ( result != 0 ) goto fail;
-	}
-	else {// This device has 4 KB sectors.
-		for ( i = 0; i < 16; i++ ) {
-			result = protected_sflash_sector_erase( &sflash_handle, sector_start_address, allowed_area );
-			if ( result != 0 ) goto fail;
-
-			sector_start_address += 4096;
-		}
-	}
-    return WICED_SUCCESS;
-
-fail:
-    printf("erase_64KB_sector returned Error Code: %d. Aborting Erase!\r\n", result );
-    return WICED_ERROR;
 }
 
 /**

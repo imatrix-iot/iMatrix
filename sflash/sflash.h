@@ -63,7 +63,6 @@ uint32_t get_sflash_sector_size(void);
 uint16_t init_serial_flash(void);
 int read_serial_flash_status(void);
 void get_apps_lut_if_needed(void);
-wiced_result_t erase_64KB_sector( uint32_t sector_start_address, uint16_t allowed_area );
 int protected_sflash_write(const sflash_handle_t* const handle, unsigned long device_address, /*@observer@*/ const void* const data_addr, unsigned int size, uint16_t allowed_areas  );
 int protected_sflash_sector_erase( const sflash_handle_t* const handle, unsigned long device_address, uint16_t allowed_area );
 void test_sflash( wiced_system_monitor_t* watchdog, uint32_t watchdog_delay );

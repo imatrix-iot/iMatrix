@@ -96,7 +96,7 @@
 static bool print_register( imx_peripheral_type_t type, uint16_t entry );
 static void at_print( char *response );
 static bool get_data_type( imx_peripheral_type_t type, uint16_t entry, imx_data_types_t *data_type );
-static bool get_user_input( char *buffer, uint16_t length );
+static bool get_user_input( char *buffer, uint16_t length, bool cr_terminated );
 
 /******************************************************
  *               Variable Definitions
@@ -125,7 +125,7 @@ void cli_at( uint16_t arg )
 	UNUSED_PARAMETER(arg);
 	char variable_length_data_buffer[ MAX_VARIABLE_DATA_LENGTH ];
 	bool process_ct = false;
-	bool complete;
+	bool complete, cr_terminated;
 	uint16_t at_register, result, i, reg_width, var_length_count;
 	imx_result_t imx_result;
 	imx_peripheral_type_t type;
@@ -260,9 +260,19 @@ void cli_at( uint16_t arg )
 	            }
 	            if( data_type == IMX_VARIABLE_LENGTH ) {
 	                /*
-	                 * This is a variable length item - the assignment is the next input of the value number of bytes
+	                 * Check if user wants to enter a string closing with a CR
 	                 */
-	                var_length_count = (uint16_t) atol( &token[ 5 + reg_width ] );
+	                if( token[ 5 + reg_width ] == '$' ) {
+	                    var_length_count = MAX_VARIABLE_DATA_LENGTH - 1;
+	                    cr_terminated = true;
+	                } else {
+	                    /*
+	                     * This is a variable length item - the assignment is the next input of the value number of bytes
+	                     */
+	                    var_length_count = (uint16_t) atol( &token[ 5 + reg_width ] );
+	                    cr_terminated = false;
+
+	                }
 	                if( var_length_count > ( MAX_VARIABLE_DATA_LENGTH - 1 ) ) {
 	                    imx_printf( "Length exceeds maximum length: %u\r\n", MAX_VARIABLE_DATA_LENGTH - 1 );
                         icb.AT_command_errors += 1;
@@ -270,7 +280,7 @@ void cli_at( uint16_t arg )
                         return;
                     }
 //                    imx_printf( "About to get pool for entry\r\n" );
-	                if( get_user_input( variable_length_data_buffer, var_length_count + 1 ) == false ) {
+	                if( get_user_input( variable_length_data_buffer, var_length_count + 1, cr_terminated ) == false ) {
                         imx_printf( "Failed to get variable data input\r\n", MAX_VARIABLE_DATA_LENGTH - 1 );
 	                    icb.AT_command_errors += 1;
 	                    at_print( AT_RESPONSE_ERROR );
@@ -423,7 +433,7 @@ static bool get_data_type( imx_peripheral_type_t type, uint16_t entry, imx_data_
   * @param  Pointer to buffer, length to collect
   * @retval : true - got data / false - timeout
   */
-static bool get_user_input( char *buffer, uint16_t length )
+static bool get_user_input( char *buffer, uint16_t length, bool cr_terminated )
 {
     char ch;
     uint16_t index;
@@ -434,6 +444,9 @@ static bool get_user_input( char *buffer, uint16_t length )
     memset( buffer, 0x00, length );
     do {
         if( imx_get_ch( &ch ) == true ) {
+            if( cr_terminated == true )
+                if( ch == CHR_CR )
+                    return true;
             buffer[ index++ ] = ch;
             if( index == ( length - 1 ) )
                 return true;

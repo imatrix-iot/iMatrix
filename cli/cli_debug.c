@@ -53,7 +53,7 @@
  *                    Constants
  ******************************************************/
 #define NO_DEBUG_MSGS   12
-const char *debug_flags_description[] =
+const char *debug_flags_description[NO_DEBUG_MSGS] =
 {
         "General Debugging ",                   // 0x00000001
         "Debugs For BLE",                       // 0x00000002

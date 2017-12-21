@@ -288,6 +288,5 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
             imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ], csd[ entry ].data[ i + 1] );
     }
 #endif
-    imatrix_status( 1 );
-}
 
+}

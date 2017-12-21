@@ -107,10 +107,12 @@ void cli_debug(uint16_t mode)
 	if( token ) {
 		if( strcmp( token, "on" ) == 0 ) {
 		    device_config.print_debugs = true;
+		    imatrix_save_config();
 			print_flags = true;
-		} else if( strcmp( token, "off" ) == 0 )
+		} else if( strcmp( token, "off" ) == 0 ) {
 		    device_config.print_debugs = false;
-		else if( strncmp( token, "?", 1 ) == 0 ) {
+	        imatrix_save_config();
+	} else if( strncmp( token, "?", 1 ) == 0 ) {
 	        for( i = 0; i < 11; i++ )
 	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
 		    print_flags = true;
@@ -119,6 +121,7 @@ void cli_debug(uint16_t mode)
 		        device_config.log_messages = strtoul( &token[ 2 ], &foo, 16 );
 		    else
 		        device_config.log_messages = strtoul( token, &foo, 10 );
+		    imatrix_save_config();
 		}
 	} else
 	    cli_print( "Invalid option, debug <on|off|?|flags>\r\n" );
@@ -129,6 +132,5 @@ void cli_debug(uint16_t mode)
 	        if( device_config.log_messages & ( 1 << i ) )
 	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
 	}
-	imatrix_save_config();
 
 }

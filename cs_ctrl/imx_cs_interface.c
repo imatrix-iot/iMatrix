@@ -44,6 +44,13 @@
 /******************************************************
  *                      Macros
  ******************************************************/
+#ifdef PRINT_DEBUGS_FOR_EVENTS_DRIVEN
+    #undef PRINTF
+    #define PRINTF(...) if( ( device_config.log_messages & DEBUGS_FOR_EVENTS_DRIVEN ) != 0x00 ) imx_printf(__VA_ARGS__)
+#elif !defined PRINTF
+    #define PRINTF(...)
+#endif
+
 /*
  *  Set up standard variables based on the type of data we are using
  */
@@ -142,16 +149,16 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
         /*
          * Free up last entry if there was one
          */
-//        print_var_pools();
-//        imx_data_32_t *foo;
-//        foo = (imx_data_32_t*) value;
-//        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->length );
+        print_var_pools();
+        imx_data_32_t *foo;
+        foo = (imx_data_32_t*) value;
+        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->length );
         if( csd[ entry ].last_value.var_data != NULL ) {
             imx_printf( "Freeing up existing variable length entry\r\n" );
             imx_add_var_free_pool( csd[ entry ].last_value.var_data );
         }
-//        imx_printf( "*** Getting variable length data for %s: %u, with from: 0x%08lx, length: %u\r\n",
-//                ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, (uint32_t) value, ((imx_data_32_t *) value)->var_data->length );
+        imx_printf( "*** Getting variable length data for %s: %u, with from: 0x%08lx, length: %u\r\n",
+                ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, (uint32_t) value, ((imx_data_32_t *) value)->var_data->length );
         /*
          * Get a spare variable length entry to save the values in - should be available if same or < length as before
          */
@@ -163,7 +170,7 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
             imx_printf( "Unable to save variable length sensor data - Variable data pool empty\r\n" );
             return IMX_OUT_OF_MEMORY;
         }
-//        print_var_pools();
+        print_var_pools();
     } else {
         /*
          * copy the value and do any action needed - Note this is for just raw uint, int and float data

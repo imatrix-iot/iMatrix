@@ -144,11 +144,9 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 	 */
     wiced_time_get_utc_time( &upload_utc_time );
     memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
-    csd[ entry ].no_samples += 1;
     /*
      * Add Data
      */
-
     if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH ) {
         /*
          * Get a buffer and transfer this data to the entry
@@ -163,12 +161,14 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
         /*
          * Copy the data from the passed variable data
          */
+        csd[ entry ].no_samples += 1;
         memcpy( csd[ entry ].data[ csd[ entry ].no_samples ].var_data->data, (char *) ((imx_data_32_t *) value)->var_data->data, ((imx_data_32_t *) value)->var_data->length );
         csd[ entry ].data[ csd[ entry ].no_samples ].var_data->length = ((imx_data_32_t *) value)->var_data->length;
     } else {
         /*
          * All Other Data is really just 32 bit
          */
+        csd[ entry ].no_samples += 1;
         memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, SAMPLE_LENGTH );
     }
 

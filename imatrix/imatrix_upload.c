@@ -213,8 +213,8 @@ void imatrix_upload(wiced_time_t current_time)
     		 * Check if we have any data to process at this time - first check critical uploads
     		 */
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
-//    	        cli_print( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
-//    	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
+    	            PRINTF( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
+    	                    ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
                 SET_CSB_VARS( type );
                 no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
@@ -246,10 +246,8 @@ void imatrix_upload(wiced_time_t current_time)
                                  * Only need one
                                  */
                                 if( csd[ i ].send_batch == true ) {
-///*
                                     PRINTF( "Found %s: %u Ready to send batch of: %u, send batch: %s\r\n" ,
                                             type == IMX_CONTROLS ? "Control" : "Sensor", i, csd[ i ].no_samples, csd[ i ].send_batch == true ? "true" : "false" );
-//*/
                                 } else {
                                     PRINTF( "Found %s: %u with error\r\n" , type == IMX_CONTROLS ? "Control" : "Sensor", i );
                                 }
@@ -301,13 +299,12 @@ void imatrix_upload(wiced_time_t current_time)
     	     * There is something to do here. First build the packet
     	     */
     	    imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );         // Set GREEN LED ON Show we are transmitting an iMatrix Packet
-///*
+
     	    PRINTF( "Sending History to iMatrix Server: %03u.%03u.%03u.%03u ",
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x00ff0000 ) >> 16 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x0000ff00 ) >> 8 ),
     	            (unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x000000ff ) ) );
-//*/
     	    if( icb.time_set_with_NTP == true ) {
     	        wiced_time_get_utc_time_ms( &upload_utc_ms_time );
     	    	wiced_time_get_iso8601_time( &iso8601_time );
@@ -401,10 +398,9 @@ void imatrix_upload(wiced_time_t current_time)
             	    PRINTF( "Checking: %s, Type: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor", k == CHECK_WARNING ? "Warnings" : "Regular" );
         	        for( i = 0; ( i < no_items ) && ( packet_full == false ); i++ )  {
                         if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
-///*
+
                             PRINTF( "Checking %s for %s, No Samples: %u, Warning Level: %u\r\n",
                                     k == CHECK_WARNING ? "Warning" : "Regular", type == IMX_CONTROLS ? device_config.ccb[ i ].name : device_config.scb[ i ].name, csd[ i ].no_samples, csd[ i ].warning );
-//*/
                             /*
                              * Look first for critical records or errors
                              *

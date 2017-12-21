@@ -86,6 +86,15 @@ extern IOT_Device_Config_t device_config;
  *               Function Definitions
  ******************************************************/
 /**
+  * @brief  Init RSSI
+  * @param  None
+  * @retval : None
+  */
+void imx_init_rssi(void)
+{
+
+}
+/**
   * @brief	get the rssi from the wifi radio
   * @param  None
   * @retval : None
@@ -116,6 +125,15 @@ int32_t hal_get_wifi_rssi(void)
 		wwd_wifi_get_rssi( &rssi );
 
 	return( rssi );
+}
+/**
+  * @brief  Init RF Noise
+  * @param  None
+  * @retval : None
+  */
+void imx_init_rfnoise(uint16_t arg)
+{
+
 }
 /**
   * @brief	get the rssi from the wifi radio
@@ -208,4 +226,28 @@ void hal_get_wifi_bssid( wiced_mac_t *bssid )
     if( ( icb.wifi_up == true ) && ( device_config.AP_setup_mode == false ) )
         wwd_wifi_get_bssid( bssid );
 }
+/**
+  * @brief  Additional modules used in sensor definitions
+  * @param  None
+  * @retval : None
+  */
+void imx_init_wi_fi_bssid(uint16_t arg)
+{
 
+}
+imx_result_t  imx_sample_wi_fi_bssid(uint16_t arg, void *value )
+{
+    UNUSED_PARAMETER(arg);
+
+    return IMX_NO_DATA;
+}
+void imx_init_wi_fi_channel(uint16_t arg)
+{
+
+}
+imx_result_t  imx_sample_wi_fi_channel(uint16_t arg, void *value )
+{
+    UNUSED_PARAMETER(arg);
+
+    return IMX_NO_DATA;
+}

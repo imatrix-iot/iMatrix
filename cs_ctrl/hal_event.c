@@ -259,12 +259,12 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
      * See if the batch is ready to go now
      */
     if( ( csd[ entry ].warning != csd[ entry ].last_warning ) ||
-        ( ( csd[ entry ].no_samples / 2 ) >= device_config.scb[ entry ].sample_batch_size ) ||
+        ( ( csd[ entry ].no_samples / 2 ) >= csb[ entry ].sample_batch_size ) ||
         ( csd[ entry ].update_now == true ) ||
         ( percent_change_detected == true ) ) {
 
         PRINTF( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
-                entry, type == IMX_CONTROLS ? device_config.ccb[ entry ].id : device_config.scb[ entry ].id, csd[ entry ].no_samples, csb[ entry ].sample_batch_size, csd[ entry ].update_now ? "true" : "false",
+                entry, csb[ entry ].id, csd[ entry ].no_samples, csb[ entry ].sample_batch_size, csd[ entry ].update_now ? "true" : "false",
                 csd[ entry ].warning, csd[ entry ].last_warning, percent_change_detected ? "true" : "false" );
 
         csd[ entry ].update_now = false;
@@ -276,7 +276,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
      */
     if( ( csd[ entry ].error != csd[ entry ].last_error ) ||
         ( imx_is_later( current_time, csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) ) == true ) ) {
-        imx_printf( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ entry ].error, csd[ entry ].last_error, csd[ entry ].last_sample_time, ( csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) - (uint32_t) current_time )  );
+        PRINTF( "Error: %u, Last Error: %u, current_time: %lu, time difference: %lu\r\n", csd[ entry ].error, csd[ entry ].last_error, csd[ entry ].last_sample_time, ( csd[ entry ].last_sample_time + (wiced_time_t) ( (uint32_t) device_config.scb[ entry ].sample_batch_size * 1000L  ) - (uint32_t) current_time )  );
         csd[ entry ].last_sample_time = current_time;
         csd[ entry ].last_error = csd[ entry ].error;
         csd[ entry ].send_on_error = true;

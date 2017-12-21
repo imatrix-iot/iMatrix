@@ -154,11 +154,17 @@ imx_result_t  imx_sample_temp(uint16_t arg, void *value );
 /*
  * General Wi Fi Status routines
  */
+void imx_init_wi_fi_bssid(uint16_t arg);
+imx_result_t  imx_sample_wi_fi_bssid(uint16_t arg, void *value );
+void imx_init_wi_fi_channel(uint16_t arg);
+imx_result_t  imx_sample_wi_fi_channel(uint16_t arg, void *value );
 uint16_t imx_get_wifi_channel_scb(void);
 uint16_t imx_get_wifi_rssi_scb(void);
 uint16_t imx_get_wifi_bssid_scb(void);
 uint16_t imx_get_wifi_rf_noise_scb(void);
+void imx_init_rssi(uint16_t arg);
 imx_result_t imx_sample_rssi(uint16_t arg, void *value );
+void imx_init_rfnoise(uint16_t arg);
 imx_result_t imx_sample_rfnoise(uint16_t arg, void *value );
 imx_result_t imx_sample_wifi_channel(uint16_t arg, void *value );
 /*

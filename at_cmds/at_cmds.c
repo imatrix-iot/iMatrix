@@ -159,6 +159,7 @@ void cli_at( uint16_t arg )
 	        cli_print( "E - 0 Turn Off Echo | 1 - Turn On Echo\r\n" );
 	        cli_print( "V - 0 No Responses | 1 - Standard Responses | 2 - Include Status messages\r\n" );
 	        cli_print( "&ICn - ? - Get value for Control register n | = <xx> - Set Control Register n to value xxx. Value must match data type\r\n" );
+	        cli_print( "       When setting the value of a variable length entry specify the number of characters or '$' to use a <CR> terminated string\r\n" );
 	        cli_print( "&IP - Set Provisioning Mode\r\n" );
 	        cli_print( "&ISn - ? - Get value for Sensor register n\r\n" );
 	        cli_print( "&IT -  Print the UTC time in seconds since 1970 - 0 if NTP cannot get time\r\n" );

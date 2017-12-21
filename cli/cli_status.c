@@ -237,6 +237,7 @@ void cli_status( uint16_t arg )
                             cli_print( "%0.6f", csd[ i ].last_value.float_32bit );
                             break;
                         case IMX_VARIABLE_LENGTH :
+                            cli_print( "[%u] ", csd[ i ].last_value.var_data->length );
                             print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
                             break;
                     }

@@ -164,7 +164,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
          * Copy the data from the passed variable data
          */
         memcpy( csd[ entry ].data[ csd[ entry ].no_samples ].var_data->data, (char *) ((imx_data_32_t *) value)->var_data->data, ((imx_data_32_t *) value)->var_data->length );
-        csd[ entry ].last_value.var_data->length = ((imx_data_32_t *) value)->var_data->length;
+        csd[ entry ].data[ csd[ entry ].no_samples ].var_data->length = ((imx_data_32_t *) value)->var_data->length;
     } else {
         /*
          * All Other Data is really just 32 bit
@@ -288,5 +288,6 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
             imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ], csd[ entry ].data[ i + 1] );
     }
 #endif
+    imatrix_status( 1 );
 }
 

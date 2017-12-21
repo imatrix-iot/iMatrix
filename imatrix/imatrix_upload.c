@@ -440,7 +440,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * Load first variable length record
                                              */
-                                            printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx ", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
+                                            printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx\r\n", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
                                             /*
                                              * Set up the header and copy in the data
                                              */
@@ -914,6 +914,7 @@ void imatrix_status( uint16_t arg)
                                             cli_print( "%f ", csd[ i ].data[ j + 1 ].float_32bit );
                                             break;
                                         case IMX_VARIABLE_LENGTH :
+                                            cli_print( "[%u] ", csd[ i ].last_value.var_data->length );
                                             print_var_data( VR_DATA_STRING, csd[ i ].data[ j + 1 ].var_data );
                                             cli_print( " " );
                                             break;

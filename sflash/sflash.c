@@ -137,7 +137,7 @@ uint16_t init_serial_flash(void)
     sflash_get_size( &sflash_handle, &size );
     PRINTF( "Serial Flash successfully initialized, flash size is: %lu\r\n", size );
     if( size != device_config.sflash_size ) {
-        printf( "Flash Size: %lu, Expected: %lu\r\n", size, device_config.sflash_size );
+        printf( "Flash ID: 0x%08lx Size: %lu, Expected: %lu\r\n", sflash_handle.device_id, size, device_config.sflash_size );
     	return false;
     } else
     	return true;

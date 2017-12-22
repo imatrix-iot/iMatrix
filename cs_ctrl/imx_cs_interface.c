@@ -37,6 +37,7 @@
 #include "wiced.h"
 #include "../storage.h"
 #include "../cli/interface.h"
+#include "../cli/messages.h"
 #include "../device/var_data.h"
 #include "hal_sample.h"
 #include "hal_event.h"
@@ -130,7 +131,7 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
 
     SET_CSB_VARS( type );
 
-    imx_printf( "Saving %s: %u, Value Address 0x%08x\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, value );
+    PRINTF( "Saving %s: %u, Value Address 0x%08x\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, value );
     if( ( ( type == IMX_SENSORS ) && ( entry > device_config.no_sensors ) ) ||
         ( ( type == IMX_CONTROLS ) && ( entry > device_config.no_controls ) ) )
         return IMX_INVALID_ENTRY;
@@ -152,12 +153,12 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
         print_var_pools();
         imx_data_32_t *foo;
         foo = (imx_data_32_t*) value;
-        imx_printf( "*** Last value: 0x%08lx, value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->length );
+        PRINTF( "*** Last value: 0x%08lx, new value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->length );
         if( csd[ entry ].last_value.var_data != NULL ) {
-            imx_printf( "Freeing up existing variable length entry\r\n" );
+            PRINTF( "Freeing up existing variable length entry\r\n" );
             imx_add_var_free_pool( csd[ entry ].last_value.var_data );
         }
-        imx_printf( "*** Getting variable length data for %s: %u, with from: 0x%08lx, length: %u\r\n",
+        PRINTF( "*** Getting variable length data for %s: %u, with from: 0x%08lx, length: %u\r\n",
                 ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, (uint32_t) value, ((imx_data_32_t *) value)->var_data->length );
         /*
          * Get a spare variable length entry to save the values in - should be available if same or < length as before
@@ -170,16 +171,16 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
             imx_printf( "Unable to save variable length sensor data - Variable data pool empty\r\n" );
             return IMX_OUT_OF_MEMORY;
         }
-        print_var_pools();
+//        print_var_pools();
     } else {
         /*
          * copy the value and do any action needed - Note this is for just raw uint, int and float data
          */
-        imx_printf( "Copying %s: %u to last value @ 0x%08lx\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, &csd[ entry ].last_value );
+        PRINTF( "Copying %s: %u to last value @ 0x%08lx\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, &csd[ entry ].last_value );
         memcpy( &csd[ entry ].last_value, value, SAMPLE_LENGTH );
     }
     csd[ entry ].valid = true;  // We have a sample
-    imx_printf( "%s: %u Now Valid\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry );
+    PRINTF( "%s: %u Now Valid\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry );
 
     /*
      * If this is a control then we might need to do some action

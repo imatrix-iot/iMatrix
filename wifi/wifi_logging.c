@@ -118,6 +118,10 @@ void log_wifi_connection(void)
             var_data_ptr->length = strlen( (char *) var_data_ptr->data ) + 1;    // Include NULL in the length of this data
             imx_printf( " BSSID: %s", var_data_ptr->data );
             imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_bssid_scb(), &var_data_ptr );
+            /*
+             * Free up buffer now it has been recorded
+             */
+            imx_add_var_free_pool( var_data_ptr );
         } else
             imx_printf( "Unable to get variable length data buffer\r\n" );
     }

@@ -126,7 +126,7 @@ void init_var_pool(void)
         }
         pool_index += sizeof( imx_var_data_header_t )  + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
     }
-//    print_var_pools();
+    print_var_pools();
 }
 /**
   * @brief  return / add this var data to the free lists
@@ -171,6 +171,7 @@ var_data_entry_t *imx_get_var_data( uint16_t length )
     uint16_t i;
     var_data_entry_t *var_data_ptr;
 
+//    imx_printf( "Request for: %u Bytes ", length );
     /*
      * Check to find a free buffer capable of handling the requirement.
      */
@@ -189,6 +190,7 @@ var_data_entry_t *imx_get_var_data( uint16_t length )
                  * Make sure data is clear before returning
                  */
                 memset( var_data_ptr->data, 0x00, device_config.var_data_config[ i ].size );
+//                imx_printf( "Success\r\n" );
                 return( var_data_ptr );
             }
         }

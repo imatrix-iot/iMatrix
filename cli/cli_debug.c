@@ -53,7 +53,7 @@
  *                    Constants
  ******************************************************/
 #define NO_DEBUG_MSGS   12
-const char *debug_flags_description[NO_DEBUG_MSGS] =
+const char *debug_flags_description[ NO_DEBUG_MSGS ] =
 {
         "General Debugging ",                   // 0x00000001
         "Debugs For BLE",                       // 0x00000002
@@ -113,7 +113,7 @@ void cli_debug(uint16_t mode)
 		    device_config.print_debugs = false;
 	        imatrix_save_config();
 	} else if( strncmp( token, "?", 1 ) == 0 ) {
-	        for( i = 0; i < 11; i++ )
+	        for( i = 0; i < NO_DEBUG_MSGS; i++ )
 	            cli_print( "0x%08lx - %s\r\n", ( (uint32_t) 1 << i ), debug_flags_description[ i ] );
 		    print_flags = true;
 		} else {

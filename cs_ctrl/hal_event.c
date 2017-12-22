@@ -107,6 +107,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 	imx_control_sensor_block_t *csb;
 	wiced_time_t current_time;
 	wiced_utc_time_t upload_utc_time;
+	var_data_entry_t *var_data;
 
 	wiced_time_get_time( &current_time );
 
@@ -148,22 +149,37 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
      * Add Data
      */
     if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH ) {
+//        print_var_pools();
         /*
          * Get a buffer and transfer this data to the entry
          */
-        csd[ entry ].data[ csd[ entry ].no_samples ].var_data = imx_get_var_data( ((imx_data_32_t *) value)->var_data->length );
-        if( csd[ entry ].data[ csd[ entry ].no_samples ].var_data == NULL ) {
+        var_data = imx_get_var_data( ((imx_data_32_t *) value)->var_data->length );
+        if( var_data == NULL ) {
+            PRINTF( "Unable to add event to history - no spare variable length packets\r\n" );
             /*
              * No entry available, just drop this
              */
             return;
         }
+        csd[ entry ].no_samples += 1;
+        csd[ entry ].data[ csd[ entry ].no_samples ].var_data = var_data;
+        PRINTF( "Got entry, Var data @ 0x%08lx, data ptr @ 0x%08lx\r\n",
+                (uint32_t) csd[ entry ].data[ csd[ entry ].no_samples ].var_data, (uint32_t) csd[ entry ].data[ csd[ entry ].no_samples ].var_data->data );
         /*
          * Copy the data from the passed variable data
          */
-        csd[ entry ].no_samples += 1;
-        memcpy( csd[ entry ].data[ csd[ entry ].no_samples ].var_data->data, (char *) ((imx_data_32_t *) value)->var_data->data, ((imx_data_32_t *) value)->var_data->length );
+        PRINTF( "Copying new variable length data to record: %u, %u Bytes\r\n",  csd[ entry ].no_samples, ((imx_data_32_t *) value)->var_data->length );
+        memcpy( (char *) csd[ entry ].data[ csd[ entry ].no_samples ].var_data->data, (char *) ((imx_data_32_t *) value)->var_data->data, ((imx_data_32_t *) value)->var_data->length );
         csd[ entry ].data[ csd[ entry ].no_samples ].var_data->length = ((imx_data_32_t *) value)->var_data->length;
+        PRINTF( "Sample: %u, data: 0x%08x\r\n", csd[ entry ].no_samples, (uint32_t) csd[ entry ].data[ csd[ entry ].no_samples ].var_data );
+#ifdef PRINT_DEBUGS_FOR_EVENTS_DRIVEN
+    if( ( device_config.log_messages & DEBUGS_FOR_EVENTS_DRIVEN ) != 0x00 ) {
+        imx_printf( "Event Added Data History now contains: %u Event Samples\r\n", (csd[ entry ].no_samples + 1 ) / 2 );   // 2 samples per event..
+        for( i = 0; i < (csd[ entry ].no_samples ); i += 2 )
+            imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ].uint_32bit, csd[ entry ].data[ i + 1 ].uint_32bit );
+    }
+#endif
+
     } else {
         /*
          * All Other Data is really just 32 bit
@@ -283,8 +299,8 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
     }
 #ifdef PRINT_DEBUGS_FOR_EVENTS_DRIVEN
     if( ( device_config.log_messages & DEBUGS_FOR_EVENTS_DRIVEN ) != 0x00 ) {
-        imx_printf( "Event Added Data History now contains: %u Event Samples\r\n", csd[ entry ].no_samples/2 );   // 2 samples per event..
-        for( i = 0; i < (csd[ entry ].no_samples ); i+= 2 )
+        imx_printf( "Event Added Data History now contains: %u Event Samples\r\n", ( csd[ entry ].no_samples + 1 ) / 2 );   // 2 samples per event..
+        for( i = 0; i < (csd[ entry ].no_samples ); i += 2 )
             imx_printf( "Sample: %u, time: %lu, data: 0x%08x\r\n", i, csd[ entry ].data[ i ], csd[ entry ].data[ i + 1] );
     }
 #endif

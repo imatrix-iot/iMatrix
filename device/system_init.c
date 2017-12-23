@@ -54,6 +54,7 @@
 #include "../cli/telnetd.h"
 #include "../cs_ctrl/common_config.h"
 #include "../location/location.h"
+#include "../ota_loader/ota_loader.h"
 #include "../sflash/sflash.h"
 
 /******************************************************
@@ -232,6 +233,10 @@ bool system_init(bool override_config)
     imx_printf( "Initializing Location System\r\n" );
 
     init_location_system();
+    /*
+     * Set up OTA Service
+     */
+    init_ota_loader();
     /*
      * Main state machine set to setup mode
      */

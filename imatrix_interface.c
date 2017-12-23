@@ -47,6 +47,7 @@
 #include "device/imx_LEDS.h"
 #include "device/system_init.c"
 #include "imatrix/imatrix_upload.h"
+#include "ota_loader/ota_loader.h"
 #include "wifi/process_wifi.h"
 /******************************************************
  *                      Macros
@@ -204,6 +205,13 @@ imx_status_t imx_process(void)
 
     process_wifi( current_time );
 
+    /*
+     * Handle OTA functions
+     */
+    ota_loader();
+    /*
+     * Process any items on the CoAP queues
+     */
     coap_recv( true );
     coap_transmit( true );
 

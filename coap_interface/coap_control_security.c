@@ -46,6 +46,7 @@
 
 #include "../storage.h"
 #include "../coap/coap.h"
+#include "../coap/imx_coap.h"
 #include "../cli/interface.h"
 #include "../device/cert_defs.h"
 #include "../device/cert_util.h"

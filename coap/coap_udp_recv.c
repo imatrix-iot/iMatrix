@@ -43,6 +43,7 @@
 #include "wiced.h"
 
 #include "coap.h"
+#include "imx_coap.h"
 #include "coap_udp_recv.h"
 
 #include "../networking/get_inbound_destination_ip.h"

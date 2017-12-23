@@ -150,7 +150,7 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
         /*
          * Free up last entry if there was one
          */
-        print_var_pools();
+//        print_var_pools();
         imx_data_32_t *foo;
         foo = (imx_data_32_t*) value;
         PRINTF( "*** Last value: 0x%08lx, new value @ 0x%08lx, length: %u\r\n", (uint32_t) csd[ entry ].last_value.var_data, (uint32_t) value, foo->var_data->length );

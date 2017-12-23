@@ -47,7 +47,7 @@
 /******************************************************
  *                      Macros
  ******************************************************/
-//#define USE_FIXED_SERVER
+#define USE_FIXED_SERVER
 //#define USE_GREG_TEST_SERVER
 
 #define DNS_UPDATE_RATE	( 10 * ( 60 * 1000 ) )	// Update every 10 Minutes

@@ -164,7 +164,7 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
 
         if ( WICED_SUCCESS == get_uint32_from_query_str( "id", &id, coap_cd->uri_query ) ) {
 
-            if ( is_multicast_ip( &( msg->my_ip_from_request ) ) ) {
+            if ( imx_is_multicast_ip( &( msg->my_ip_from_request ) ) ) {
                 return COAP_NO_RESPONSE;
             }
             /*
@@ -411,7 +411,7 @@ create_response_and_exit:
     }
 
     // Suppress all responses to multicast except CHANGED.
-    if ( is_multicast_ip( &( msg->my_ip_from_request ) ) && ( response_code != CHANGED ) ) {
+    if ( imx_is_multicast_ip( &( msg->my_ip_from_request ) ) && ( response_code != CHANGED ) ) {
         return COAP_NO_RESPONSE;
     }
     else {

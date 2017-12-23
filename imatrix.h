@@ -108,7 +108,7 @@ imx_wifi_mode_t imx_get_wifi_mode(void);
 bool imx_network_connected(void);
 char *imx_get_device_serial_number(void);
 /*
- * Apollo Configuration management
+ * Host App Configuration management
  */
 wiced_result_t imx_get_config_current_address( void *config_address );
 wiced_result_t imx_save_config( void *config, uint16_t config_size );
@@ -126,10 +126,6 @@ void imx_set_cli_handler( bool (*cli_handler)( char *token ) );
 imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value );
 imx_status_t imx_get_control_sensor( imx_peripheral_type_t type, uint16_t entry, void *value );
 
-imx_status_t imx_set_sensor( uint16_t sensor_entry, void *value );
-imx_status_t imx_get_sensor( uint16_t sensor_entry, void *value );
-imx_status_t imx_set_control( uint16_t sensor_entry, void *value );
-imx_status_t imx_get_control( uint16_t control_entry, void *value );
 /*
  * Standard Control/Sensor Processing functions
  */
@@ -167,6 +163,9 @@ imx_result_t imx_sample_rssi(uint16_t arg, void *value );
 void imx_init_rfnoise(uint16_t arg);
 imx_result_t imx_sample_rfnoise(uint16_t arg, void *value );
 imx_result_t imx_sample_wifi_channel(uint16_t arg, void *value );
+void imx_set_wifi_notification( void (*wifi_notification)( bool state ) );
+uint32_t imx_get_wifi_success_count(void);
+uint32_t imx_get_wifi_failed_count(void);
 /*
  * Time & Watchdogs Update
  */
@@ -183,9 +182,11 @@ void *imx_allocate_storage( uint16_t size );
 void imx_add_var_free_pool( var_data_entry_t *var_data_ptr );
 var_data_entry_t *imx_get_var_data( uint16_t length );
 /*
- * CoAP Processing defines
+ * IP & CoAP Processing defines
  */
 #include "coap/coap.h"
+bool imx_is_multicast_ip( wiced_ip_address_t *addr );
+void imx_set_host_coap_interface( uint16_t no_coap_entries, CoAP_entry_t *host_coap_entries );
 /*
  * Include JSON library
  */

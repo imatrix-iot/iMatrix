@@ -100,12 +100,12 @@ void log_wifi_connection(void)
         return;     // Nothing to log
 
     if( device_config.log_wifi_AP == true ) {
-        imx_printf( "Logging Wi Fi Connection:" );
+//        imx_printf( "Logging Wi Fi Connection:" );
         /*
          * Add Channel
          */
         channel = hal_get_wifi_channel();
-        imx_printf( " Channel: %ld", channel );
+//        imx_printf( " Channel: %ld", channel );
         imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_channel_scb(), &channel );
         /*
          * Add BSSID Address
@@ -116,7 +116,7 @@ void log_wifi_connection(void)
             sprintf( (char *) var_data_ptr->data, "%02x:%02x:%02x:%02x:%02x:%02x", ap_bssid.octet[ 0 ], ap_bssid.octet[ 1 ], ap_bssid.octet[ 2 ], ap_bssid.octet[ 3 ],
                     ap_bssid.octet[ 4 ], ap_bssid.octet[ 5 ] );
             var_data_ptr->length = strlen( (char *) var_data_ptr->data ) + 1;    // Include NULL in the length of this data
-            imx_printf( " BSSID: %s", var_data_ptr->data );
+//            imx_printf( " BSSID: %s", var_data_ptr->data );
             imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_bssid_scb(), &var_data_ptr );
             /*
              * Free up buffer now it has been recorded
@@ -128,17 +128,17 @@ void log_wifi_connection(void)
 
     if( device_config.log_wifi_rssi == true ) {
         rssi = hal_get_wifi_rssi();
-        imx_printf( " RSSI: %ld", rssi );
+//        imx_printf( " RSSI: %ld", rssi );
         imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rssi_scb(), (void *) &rssi );
     }
 
     if( device_config.log_wifi_rfnoise == true ) {
         noise = hal_get_wifi_noise();
-        imx_printf( " RF Noise: %ld", noise );
+//        imx_printf( " RF Noise: %ld", noise );
         imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rf_noise_scb(), (void *) &noise );
     }
 
-    imx_printf( "\r\n" );
+//    imx_printf( "\r\n" );
 
 }
 

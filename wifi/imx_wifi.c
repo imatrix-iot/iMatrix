@@ -96,3 +96,30 @@ bool imx_network_connected(void)
 {
     return ( ( device_config.AP_setup_mode == false) && ( icb.wifi_up == true ) );
 }
+/**
+  * @brief  Define a function so that when the Wi Fi state is changed we can notify the host App
+  * @param  function to call
+  * @retval : void
+  */
+void imx_set_wifi_notification( void (*wifi_notification)( bool state ) )
+{
+    icb.wifi_notification = wifi_notification;
+}
+/**
+  * @brief  Return the count of successful Wi Fi Connections
+  * @param  function to call
+  * @retval : successful connections
+  */
+uint32_t imx_get_wifi_success_count(void)
+{
+    return icb.wifi_success_connect_count;
+}
+/**
+  * @brief  Return the count of failed Wi Fi Connections
+  * @param  function to call
+  * @retval : failed connections
+  */
+uint32_t imx_get_wifi_failed_count(void)
+{
+    return icb.wifi_failed_connect_count;
+}

@@ -8,12 +8,6 @@
  * Therefore, you may use this Software only as provided in the license
  * agreement accompanying the software package from which you
  * obtained this Software ("EULA").
- * If no EULA applies, Sierra hereby grants you a personal, non-exclusive,
- * non-transferable license to copy, modify, and compile the Software
- * source code solely for use in connection with Sierra's
- * integrated circuit products. Any reproduction, modification, translation,
- * compilation, or representation of this Software except as specified
- * above is prohibited without the express written permission of Sierra.
  *
  * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
@@ -28,19 +22,19 @@
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Sierra against all liability.
  */
-/*
- * coap_def.h
+
+/** @file imx_coap.h
  *
- *  Created on: Oct 23, 2013
+ *  Created on: December 23, 2017
  *      Author: greg.phillips
+ *
  */
 
-#ifndef COAP_DEF_H_
-#define COAP_DEF_H_
+#ifndef IMX_COAP_H_
+#define IMX_COAP_H_
 
-/** @file
- *
- *  Include file to support coap_def.c
+/*
+ *	Defines for iMatrix host CoAP processing interface
  *
  */
 
@@ -51,20 +45,6 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define NO_IMATRIX_COAP_ENTRIES 10
-
-#define NO_TIME_VALUE		0
-#define NO_ID_VALUE         0xFFFFFFFF
-#define NO_VALUE_VALUE      0xFFFFFFFF
-#define NO_FLOAT_VALUE      -999999.9999
-#define NO_SETTING_VALUE    0xFFFFFFFF
-#define NO_IMAGE_NO			0xFFFFFFFF
-#define NO_MODE_VALUE       "no mode"
-#define MODE_AUTO           "auto"
-#define MODE_ON             "on"
-#define MODE_OFF            "off"
-#define NONE                "none"
-
 
 /******************************************************
  *                   Enumerations
@@ -81,14 +61,7 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-uint16_t get_well_known(coap_message_t *msg, CoAP_msg_detail_t *cd, uint16_t arg);
-int16_t get_uri_query( char *uri_query, char *term, char *value );
-uint16_t isufloat( char  *number );
-uint16_t isuint( char  *number );
+bool imx_is_multicast_ip( wiced_ip_address_t *addr );
+void imx_set_host_coap_interface( uint16_t no_coap_entries, CoAP_entry_t *host_coap_entries );
 
-#ifdef MULTICAST_DEBUGGING
-    uint16_t coap_post_control_multicast(coap_message_t *msg, CoAP_msg_detail_t *cd, uint16_t arg);
-#endif
-
-#endif /* COAP_DEF_H_ */
-
+#endif /* IMX_COAP_H_ */

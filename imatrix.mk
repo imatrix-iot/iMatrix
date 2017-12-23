@@ -41,7 +41,8 @@ GLOBAL_DEFINES += PRINT_DEBUGS_FOR_HAL					# Hardware abstraction layer
 #GLOBAL_DEFINES += PRINT_DEBUGS_FOR_SPI					# SPI - I2C Interface - DO NOT ENABLE UNLESS TESTING SPI
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_SENSORS				# All sensor collection: i2c_*.c & power.c
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_SFLASH				# Serial Flash
-GLOBAL_DEFINES += PRINT_DEBUGS_FOR_APPLICATION_START 	# includes imatrix.c do_everything.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_APPLICATION_START 	# do_everything.c
+GLOBAL_DEFINES += PRINT_DEBUGS_FOR_IMX_UPLOAD			# includes imatrix.c
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_INIT
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_XMIT
 GLOBAL_DEFINES += PRINT_DEBUGS_FOR_RECV 				#includes coap_recv.c coap_get.c coap_post.c match_uri.c
@@ -61,6 +62,7 @@ cli/cli_set_ssid.c cli/cli_set_ssid.h cli/cli_dump.c cli/cli_dump.h cli/cli_log.
 cli/cli_set_serial.c cli/cli_set_serial.h \
 cli/interface.c cli/interface.h cli/print_dct.c cli/print_dct.h cli/telnetd.c cli/telnetd.h cli/cli_debug.c cli/cli_debug.h \
 coap/coap.c coap/coap.h coap/coap_setup.c coap/coap_setup.h coap/coap_udp_recv.c coap_udp_recv.h \
+coap/imx_coap.c coap/imx_coap.h \
 coap/add_coap_option.c coap/add_coap_option.h coap/coap_process.c coap/coap_process.h \
 coap/coap_reliable_udp.c coap/coap_reliable_udp.h \
 coap/que_manager.c coap/queue_manager.h \

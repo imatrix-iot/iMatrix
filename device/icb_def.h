@@ -40,10 +40,10 @@
 
 /** @file icb_def.h
  *
- *	iMatrix Control Block
+ *	iMatrix Control Block - Initialized in storage.h
  *
  */
-
+#include "../coap/coap.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -90,6 +90,7 @@ typedef struct {
 	uint16_t wifi_state;
 	uint16_t no_ble_updates;
 	uint16_t no_ble_devices;
+	uint16_t no_host_coap_entries;
 	uint32_t print_msg;
 	uint32_t print_telnet_msg;
 	uint32_t boot_count;
@@ -122,6 +123,8 @@ typedef struct {
 	void *ccm_heap_start;
 	void *ccm_heap_end;
 	void *ccm_next_entry;
+	void (*wifi_notification)( bool state );
+	CoAP_entry_t *coap_entries;
 	unsigned int imatrix_no_packet_avail    : 1;
 	unsigned int using_ccmsram              : 1;
 	unsigned int running_in_background      : 1;

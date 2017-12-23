@@ -48,6 +48,7 @@
 #include "../cli/interface.h"
 #include "../cli/messages.h"
 #include "../device/config.h"
+#include "../device/icb_def.h"
 #include "../device/var_data.h"
 #include "../time/ck_time.h"
 #include "hal_sample.h"
@@ -86,6 +87,7 @@
  *               Variable Definitions
  ******************************************************/
 extern IOT_Device_Config_t device_config;	// Defined in storage.h
+extern iMatrix_Control_Block_t icb;
 extern control_sensor_data_t *cd;
 extern control_sensor_data_t *sd;
 /******************************************************
@@ -143,7 +145,11 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 	/*
 	 * Event Driven saves Time Stamp & Value pair
 	 */
-    wiced_time_get_utc_time( &upload_utc_time );
+    if( icb.time_set_with_NTP == true ) {
+        wiced_time_get_utc_time( &upload_utc_time );
+    } else
+        upload_utc_time = 0;        // Tell iMatrix to assign
+
     memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
     /*
      * Add Data
@@ -270,7 +276,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
 
     csd[ entry ].last_sample_time = current_time;
 
-    imx_printf( "Event added\r\n" );
+    PRINTF( "Event added\r\n" );
     /*
      * See if the batch is ready to go now
      */

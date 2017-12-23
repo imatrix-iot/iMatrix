@@ -337,7 +337,7 @@ create_response_and_exit:
 	}
 
 	// Suppress all responses to multicast except CHANGED.
-	if ( is_multicast_ip( &( msg->my_ip_from_request ) ) && ( response_code != CHANGED ) ) {
+	if ( imx_is_multicast_ip( &( msg->my_ip_from_request ) ) && ( response_code != CHANGED ) ) {
 	    return COAP_NO_RESPONSE;
 	}
 	else {

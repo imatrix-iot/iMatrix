@@ -41,6 +41,7 @@
 #include "wiced.h"
 
 #include "coap.h"
+#include "imx_coap.h"
 #include "../cli/interface.h"
 #include "../time/ck_time.h"
 #include "sent_message_list.h"
@@ -200,7 +201,7 @@ void expect_response_from( coap_message_t* msg )
 	// Copy data from the passed in message.
 
 	messages_awaiting_response.list[ sent.id ].initial_timestamp = msg->initial_timestamp;
-	messages_awaiting_response.list[ sent.id ].sent_as_multicast = is_multicast_ip( &( msg->ip_addr ) );
+	messages_awaiting_response.list[ sent.id ].sent_as_multicast = imx_is_multicast_ip( &( msg->ip_addr ) );
 	messages_awaiting_response.list[ sent.id ].response_processing_method = msg->response_processing_method;
 	messages_awaiting_response.list[ sent.id ].tkl = msg->header.tkl;
 	for ( i = 0; i < msg->header.tkl; i++ ) {

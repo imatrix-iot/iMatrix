@@ -81,9 +81,6 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define USER_COAP_ENTRIES	    10
-#define MAX_HISTORY             ( 60 * 24 )
-#define MAX_SAMPLES             240
 #define NON_GROUP_DATA          -1
 
 // MULTICAST_STRING_LENGTH,URI_STRING_LENGTH, MAX_CHARS_FOR_IP are used by coap_post_control_multicast()
@@ -116,7 +113,7 @@ extern IOT_Device_Config_t device_config;   // Defined in storage.h
  *               Variable Definitions
  ******************************************************/
 // NO_COAP_ENTRIES defined in coap.c
-CoAP_entry_t CoAP_entries[ USER_COAP_ENTRIES ] = // The structure must be fully initialized and ALL URI's are sorted in alphabetical sequence
+CoAP_entry_t CoAP_entries[ NO_IMATRIX_COAP_ENTRIES ] = // The structure must be fully initialized and ALL URI's are sorted in alphabetical sequence
 {
    {
        .header.next = NULL,
@@ -263,37 +260,8 @@ CoAP_entry_t CoAP_entries[ USER_COAP_ENTRIES ] = // The structure must be fully 
 /******************************************************
  *               Function Definitions
  ******************************************************/
-/*
- * Return the number of user CoAP entries
- */
-uint16_t no_user_coap_entries(void)
-{
-	return(USER_COAP_ENTRIES);
-}
-/**
- * Test to see if an address is a multicast address in the IPv4 multicast range 224.*.*.* - 239.*.*.*
- * To Do: IPv6 is not implemented yet.
- *
- * @param addr is the ip address to test.
- * @return 1 AKA TRUE if it is a multicast address.
- *         Return 0 AKA WICED_FALSE in all other cases.
- *
- * written by Eric Thelin 12 January 2016
- */
-uint16_t is_multicast_ip( wiced_ip_address_t *addr )
-{
-   if ( addr != NULL ) {
-       return ( addr->version == WICED_IPV4 ) && ( ( addr->ip.v4 & 0xF0000000 ) == 0xE0000000 );
-   }
-   else {
-       return WICED_FALSE;
-   }
-}
-/**
-  * @brief  get_well_known
-  * @param  CoAP msg pointer, arg
-  * @retval : CoAP Response
-  */
+
+
 uint16_t get_well_known(coap_message_t *msg, CoAP_msg_detail_t *cd, uint16_t arg)
 {
     UNUSED_PARAMETER( cd );
@@ -321,7 +289,7 @@ uint16_t get_well_known(coap_message_t *msg, CoAP_msg_detail_t *cd, uint16_t arg
 		return COAP_NO_RESPONSE;
 	}
 
-    for( i = 0; i < NO_COAP_ENTRIES; i++ ) {
+    for( i = 0; i < NO_IMATRIX_COAP_ENTRIES; i++ ) {
 
     	char* comma = "";
     	if ( i > 0 )

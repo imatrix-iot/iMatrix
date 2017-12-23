@@ -129,6 +129,10 @@ void process_wifi(wiced_time_t current_time )
 				wiced_time_get_time( &wifi_up_time );
 				wifi_check_count = 0;
         		wiced_time_get_time( &current_time );
+                if( icb.wifi_notification != NULL ) {   // If we have a Host function notify on success
+                    (*icb.wifi_notification)( true );
+                }
+
 				icb.wifi_state = MAIN_WIFI;
 			} else {
 				last_wifi_check = current_time;
@@ -139,6 +143,9 @@ void process_wifi(wiced_time_t current_time )
 					while( 1 )
 						;						// Watchdog will bite
 				}
+                if( icb.wifi_notification != NULL ) {   // If we have a Host function notify on failure
+                    (*icb.wifi_notification)( false );
+                }
 				icb.wifi_state = MAIN_NO_WIFI;
 			}
 			break;

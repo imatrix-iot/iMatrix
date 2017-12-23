@@ -213,8 +213,8 @@ void imatrix_upload(wiced_time_t current_time)
     		 * Check if we have any data to process at this time - first check critical uploads
     		 */
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
-    	            PRINTF( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
-    	                    ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
+//    	            PRINTF( "%u %s: Current Status @: %lu Seconds (past 1970)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
+//    	                    ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
                 SET_CSB_VARS( type );
                 no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 

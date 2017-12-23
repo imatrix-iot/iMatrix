@@ -49,7 +49,9 @@
 #include "../cli/interface.h"
 #include "../cli/messages.h"
 #include "../device/config.h"
+#include "../device/icb_def.h"
 #include "coap.h"
+#include "../CoAP_interface/coap_def.h"
 #include "../CoAP_interface/match_uri.h"
 #include "../CoAP_interface/coap_msg_get_store.h"
 #include "que_manager.h"
@@ -90,8 +92,9 @@
  *               Variable Definitions
  ******************************************************/
 extern message_list_t list_free, list_tcp_coap_xmit, list_tcp_coap_recv, list_udp_coap_xmit, list_udp_coap_recv;
-extern CoAP_entry_t CoAP_entries[];// Defined in coap_def.c.
-extern IOT_Device_Config_t device_config;   // Defined in device/storage.h
+extern CoAP_entry_t CoAP_entries[];         // Defined in coap_def.c.
+extern IOT_Device_Config_t device_config;   // Used for diags
+extern iMatrix_Control_Block_t icb;         // Defined in coap_def.c.
 
 /******************************************************
  *               Function Definitions
@@ -124,16 +127,21 @@ uint16_t handle_request(message_t* msg) {
         return response;
     }
 
-    matched_entry = match_uri( cd.uri, CoAP_entries, NO_COAP_ENTRIES );
+    matched_entry = match_uri( cd.uri, CoAP_entries, NO_IMATRIX_COAP_ENTRIES );
     if ( matched_entry == NULL ) {// uri was not found in list of known actions
-
-        if ( coap_store_response_header( &(msg->coap), NOT_FOUND, response_type, NULL ) != WICED_SUCCESS )
-        {
-            imx_printf( "Unable to create response header in handle_request function.\r\n");
-            return COAP_NO_RESPONSE;
+        /*
+         * Check is any host entries to process
+         */
+        matched_entry = match_uri( cd.uri, icb.coap_entries, icb.no_host_coap_entries );
+        if ( matched_entry == NULL ) {
+            if ( coap_store_response_header( &(msg->coap), NOT_FOUND, response_type, NULL ) != WICED_SUCCESS )
+            {
+                imx_printf( "Unable to create response header in handle_request function.\r\n");
+                return COAP_NO_RESPONSE;
+            }
         }
     }
-    else {
+    if( matched_entry != NULL ) {
         PRINTF( "URI Match Found %s\r\n", matched_entry->node.uri );
 
         switch( MSG_DETAIL(msg->coap.header.code) ) {

@@ -138,7 +138,7 @@ wiced_udp_socket_callback_t coap_udp_recv(void)
     }
 
     get_inbound_destination_ip( packet, &dest_ip ); // for multicasting this is different from what it normally is.
-    if ( is_multicast_ip( &dest_ip ) )
+    if ( imx_is_multicast_ip( &dest_ip ) )
     {
     	/*
     	 * Was it sent from us? if so ignore
@@ -188,7 +188,7 @@ wiced_udp_socket_callback_t coap_udp_recv(void)
 
         // We Should send back a RST packet as we can not accept any data at this time
 
-    	if ( ! is_multicast_ip( &dest_ip ) ) {
+    	if ( ! imx_is_multicast_ip( &dest_ip ) ) {
     	    coap_udp_xmit_reset( id, &udp_coap_socket, &udp_src_ip_addr, udp_src_port );
     	}
 

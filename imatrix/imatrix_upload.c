@@ -525,14 +525,14 @@ void imatrix_upload(wiced_time_t current_time)
                                             * Amount = ?time stamp ( 4 bytes ) + data length ( 4 bytes ) + actual variable length data + padding to fill out 32 bits.
                                             */
                                             foo32bit = sizeof( header_t )
-                                                    + ( ( csb[ i ].sample_rate == 0 ) ? SAMPLE_LENGTH : 0 )    // Timestamp
+                                                    + ( ( csb[ i ].sample_rate == 0 ) ? SAMPLE_LENGTH : 0 ) // Timestamp
                                                     + SAMPLE_LENGTH                                         // Data length
-                                                    + variable_data_length                                  // Data + padding
-                                                    + ( ( variable_data_length % SAMPLE_LENGTH == 0 ) ? 0 : ( SAMPLE_LENGTH - ( variable_data_length % SAMPLE_LENGTH ) ) );
-                                            upload_data = ( upload_data_t *) ( uint32_t) ( upload_data ) + foo32bit;
+                                                    + variable_data_length;                                  // Data + padding
+                                                    // + ( ( variable_data_length % SAMPLE_LENGTH == 0 ) ? 0 : ( SAMPLE_LENGTH - ( variable_data_length % SAMPLE_LENGTH ) ) );
+                                            upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
                                             remaining_data_length -= foo32bit;
                                             entry_loaded = true;
-                                            PRINTF( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
+                                            PRINTF( "Added %lu Bytes, index @: 0x%08lx  , %u Bytes remaining in packet\r\n", foo32bit, (uint32_t) upload_data, remaining_data_length );
                                         } else {
                                             /*
                                              *  Can not fit in this packet
@@ -565,7 +565,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             csd[ i ].send_batch = false;
                                     } else {
                                         /*
-                                         * Process Regular data record
+                                         * Process Regular data record, samplings and events
                                          */
                                         if( remaining_data_length >= ( sizeof( header_t ) + SAMPLE_LENGTH ) ) {
                                             /*
@@ -595,17 +595,17 @@ void imatrix_upload(wiced_time_t current_time)
                                             upload_data->header.id = htonl( csb[ i ].id );
                                             header_bits.bits.data_type = csb[ i ].data_type;
                                             upload_data->header.sample_rate = htonl( csb[ i ].sample_rate );
-                                            if( csb[ i ].sample_rate != 0 ) {
-                                                /*
-                                                 * These are individual sensor readings over time sample time
-                                                 */
-                                                header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_CONTROL : IMX_BLOCK_SENSOR;
-                                            } else {
+                                            if( csb[ i ].sample_rate == 0 ) {
                                                 /*
                                                  * These are a set of Events
                                                  */
                                                 header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_EVENT_CONTROL : IMX_BLOCK_EVENT_SENSOR;
                                                 PRINTF( "- Sending Event Block" );
+                                            } else {
+                                                /*
+                                                 * These are individual sensor readings over time sample time
+                                                 */
+                                                header_bits.bits.block_type = type == IMX_CONTROLS ? IMX_BLOCK_CONTROL : IMX_BLOCK_SENSOR;
                                             }
 
                                             header_bits.bits.no_samples = no_samples;
@@ -620,10 +620,10 @@ void imatrix_upload(wiced_time_t current_time)
                                             PRINTF( "\r\n" );
                                             header_bits.bits.reserved = 0;
                                             upload_data->header.bits.bit_data = htonl( header_bits.bit_data );
-
                                             upload_data->header.last_utc_ms_sample_time = 0;
                                             if( icb.time_set_with_NTP == true )
                                                 upload_data->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
+                                            PRINTF( "Header bits: 0x%08lx, id: 0x%08lx, Sample Rate: %ld\r\n", upload_data->header.bits.bit_data, upload_data->header.id, upload_data->header.sample_rate );
 
                                             for( j = 0; j < no_samples; j++ ) {
                                                 /*
@@ -631,11 +631,6 @@ void imatrix_upload(wiced_time_t current_time)
                                                  */
                                                 memcpy( &foo32bit, &csd[ i ].data[ j ].uint_32bit, SAMPLE_LENGTH );
                                                 upload_data->data[ j ].uint_32bit = htonl( foo32bit );
-                                                /*
-                                                 * If this entry was for a variable length entry - free the item
-                                                 */
-                                                if( csb[ i ].data_type == IMX_VARIABLE_LENGTH )
-                                                    imx_add_var_free_pool( csd[ i ].last_value.var_data );
                                             }
                                             /*
                                              * Update the structure based on how many items were used
@@ -658,12 +653,35 @@ void imatrix_upload(wiced_time_t current_time)
                                             foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH * no_samples );
                                             upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
                                             remaining_data_length -= foo32bit;
-                                            PRINTF( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit, remaining_data_length );
-                                        } else {
+                                            PRINTF( "Added %lu Bytes, index @: 0x%08lx, %u Bytes remaining in packet\r\n", foo32bit, (uint32_t) upload_data, remaining_data_length );
+#ifdef PRINT_DEBUGS_FOR_IMX_UPLOAD
+                                            if( ( device_config.log_messages & DEBUGS_FOR_IMX_UPLOAD ) != 0x00 ) {
+                                                PRINTF( "Data @: 0x%08lx\r\n", (uint32_t) imatrix.msg->coap.data_block->data );
+                                                PRINTF( "Message DATA as string:" );
+                                                if (imatrix.msg->coap.data_block != NULL ) {
+                                                    for( i = 0; i < max_packet_size() - remaining_data_length; i++ ) {
+                                                        if ( isprint( imatrix.msg->coap.data_block->data[ i ] ) ) {
+                                                            PRINTF( " %c  ", imatrix.msg->coap.data_block->data[ i ] );
+                                                        }
+                                                        else {
+                                                            PRINTF( " *  " );
+                                                        }
+                                                    }
+                                                    PRINTF( "\r\n" );
+                                                    PRINTF( "Message DATA as hex:   " );
+                                                    for( i = 0; i < max_packet_size() - remaining_data_length; i++ ) {
+                                                        PRINTF( "[%02x]", imatrix.msg->coap.data_block->data[ i ] );
+                                                    }
+                                                }
+                                            }
+                                            PRINTF( "\r\n" );
+#endif
+                                    } else {
                                             packet_full = true;
                                         }
                                         entry_loaded = true;
                                     }
+
                                     if( packet_full == true )
                                         PRINTF( "\r\niMatrix Packet FULL\r\n" );
                                 } while( ( packet_full == false ) && (entry_loaded == false ) );   /* Add logic for multiple variable length data processing */

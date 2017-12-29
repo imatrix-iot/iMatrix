@@ -243,7 +243,7 @@ bool imx_parse_value( imx_peripheral_type_t type, uint16_t entry, char *string, 
             /*
              * Get a data variable length block for this item
              */
-            string_length = strlen( string ) + 1;
+            string_length = strlen( string );
             value->var_data = imx_get_var_data( string_length );
             if( value->var_data != NULL ) {
                 strcpy( (char *) value->var_data->data, string );

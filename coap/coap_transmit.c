@@ -176,20 +176,27 @@ void coap_transmit( uint16_t process_to_end )
                 wiced_packet_delete( packet ); /* Delete packet, since the send failed */
                 goto free_msg;
             }
-
-            PRINTF( "Message DATA as string:" );
-            if ( msg->coap.data_block != NULL ) {
-                for( i = 0; i < msg->coap.msg_length; i++ ) {
-                    if ( isprint( msg->coap.data_block->data[ i ] ) ) {
-                        PRINTF( "%c", msg->coap.data_block->data[ i ] );
+#ifdef PRINT_DEBUGS_FOR_XMIT
+            if( ( device_config.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) {
+                PRINTF( "Message DATA as string:" );
+                if ( msg->coap.data_block != NULL ) {
+                    for( i = 0; i < msg->coap.msg_length; i++ ) {
+                        if ( isprint( msg->coap.data_block->data[ i ] ) ) {
+                            PRINTF( " %c  ", msg->coap.data_block->data[ i ] );
+                        }
+                        else {
+                            PRINTF( " *  " );
+                        }
                     }
-                    else {
-                        PRINTF( "*" );
+                    PRINTF( "\r\n" );
+                    PRINTF( "Message DATA as hex:   " );
+                    for( i = 0; i < msg->coap.msg_length; i++ ) {
+                        PRINTF( "[%02x]", msg->coap.data_block->data[ i ] );
                     }
                 }
             }
             PRINTF( "\r\n" );
-
+#endif
             data[ 0 ] = msg->coap.header.ver; // first 2 bits are CoAP version
             data[ 0 ] = ( data[ 0 ] << 2 ) | ( msg->coap.header.t ); // next 2 bits are type
             data[ 0 ] = ( data[ 0 ] << 4 ) | ( msg->coap.header.tkl ); // next 4 bits are token length

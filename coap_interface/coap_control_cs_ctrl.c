@@ -53,6 +53,7 @@
 #include "../device/config.h"
 #include "../device/var_data.h"
 #include "../coap/coap.h"
+#include "../coap/imx_coap.h"
 #include "../cs_ctrl/hal_event.h"
 #include "../json/mjson.h"
 #include "../coap/add_coap_option.h"

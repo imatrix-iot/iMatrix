@@ -299,7 +299,6 @@ uint16_t add_coap_str_option( uint16_t option_number, uint16_t *current_option_n
 wiced_result_t coap_append_response_payload( uint16_t media_type, coap_message_t* msg_out, uint8_t* data, uint16_t size );
 wiced_result_t coap_store_response_data(coap_message_t* msg_out, uint16_t code_in, uint16_t type_in, char* data_str, uint16_t media_type );
 uint16_t process_coap_msg( message_t *msg, CoAP_msg_detail_t *cd );
-uint16_t is_multicast_ip( wiced_ip_address_t *addr );
 void * coap_msg_payload( coap_message_t* coap );
 message_t *msg_get( uint16_t min_bytes );
 uint16_t get_messaging_list_empty_errors(void);

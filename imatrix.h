@@ -142,9 +142,9 @@ bool imx_get_led_state( imx_led_t led );
 void imx_init_led_red_ismart( void );
 void imx_init_led_green_ismart( void );
 void imx_init_led_blue_ismart( void );
-void imx_update_led_red_status_ismart( bool state );
-void imx_update_led_green_status_ismart( bool state );
-void imx_update_led_blue_status_ismart( bool state );
+void imx_update_led_red_ismart( bool state );
+void imx_update_led_green_ismart( bool state );
+void imx_update_led_blue_ismart( bool state );
 void imx_init_temp(uint16_t arg);
 imx_result_t  imx_sample_temp(uint16_t arg, void *value );
 /*

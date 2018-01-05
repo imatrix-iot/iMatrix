@@ -86,7 +86,7 @@ void imx_init_led_red_ismart(uint16_t arg)
     UNUSED_PARAMETER(arg);
 
     wiced_gpio_init( ON_BOARD_LED_RED, OUTPUT_PUSH_PULL );
-    imx_update_led_red_status_ismart( false );
+    imx_update_led_red_ismart( false );
     imx_printf( "Initialized Red LED using GPIO: %u\r\n", ON_BOARD_LED_RED );
 }
 /**
@@ -99,7 +99,7 @@ void imx_init_led_green_ismart(uint16_t arg)
     UNUSED_PARAMETER(arg);
 
     wiced_gpio_init( ON_BOARD_LED_GREEN, OUTPUT_PUSH_PULL );
-    imx_update_led_green_status_ismart( false );
+    imx_update_led_green_ismart( false );
     imx_printf( "Initialized Green LED using GPIO: %u\r\n", ON_BOARD_LED_GREEN );
 }
 /**
@@ -112,7 +112,7 @@ void imx_init_led_blue_ismart(uint16_t arg)
     UNUSED_PARAMETER(arg);
 
     // Add init for Blue
-    imx_update_led_blue_status_ismart( false );
+    imx_update_led_blue_ismart( false );
 }
 
 /**
@@ -120,7 +120,7 @@ void imx_init_led_blue_ismart(uint16_t arg)
   * @param  None
   * @retval : None
   */
-void imx_update_led_red_status_ismart( bool state )
+void imx_update_led_red_ismart( bool state )
 {
     if( state == true ) {
         wiced_gpio_output_high( ON_BOARD_LED_RED );
@@ -133,7 +133,7 @@ void imx_update_led_red_status_ismart( bool state )
   * @param  None
   * @retval : None
   */
-void imx_update_led_green_status_ismart( bool state )
+void imx_update_led_green_ismart( bool state )
 {
     if( state == true ) {
         wiced_gpio_output_high( ON_BOARD_LED_GREEN );
@@ -147,7 +147,7 @@ void imx_update_led_green_status_ismart( bool state )
   * @param  None
   * @retval : None
   */
-void imx_update_led_blue_status_ismart( bool state )
+void imx_update_led_blue_ismart( bool state )
 {
     if( state == true ) {
         // wiced_gpio_output_high( ON_BOARD_LED_BLUE );

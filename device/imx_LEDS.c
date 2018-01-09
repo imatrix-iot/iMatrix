@@ -33,7 +33,7 @@
  *
  *  The Mode for blinking and flashing is stored in the top nibble of the word - only one be is expected to be set and if multiple bits are set then the first set is the priority
  *
- *  IMX_LED_BLINK_1                 0x1000  // Single Blinking action on or more LEDs
+ *  IMX_LED_BLINK_1                 0x1000  // Single Blinking action one or more LEDs
  *  IMX_LED_BLINK_2                 0x2000  // Dual Alternating Blinking
  *  IMX_LED_FLASH                   0x4000  // Indicate this is a flash, this is a 1 Second event For Dual LEDs First LED ON for BLINK 1 second is on for BLINK 2 - off for remainder of 1 Second
  *
@@ -94,8 +94,8 @@ static timer_handler_t flash_led( void *arg );
 static timer_handler_t alt_flash_led( void *arg );
 static timer_handler_t blink_led( void *arg );
 static timer_handler_t alt_blink_led( void *arg );
-static void void_led_function(void);
-static void void_led_update_function( bool state );
+static void void_led_function(uint16_t arg);
+static imx_result_t void_led_update_function( uint16_t arg, void *value );
 static void select_leds( imx_led_t led, imx_led_t *master_led, imx_led_t *slave_led );
 /******************************************************
  *               Variable Definitions
@@ -170,6 +170,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
 {
     bool start_timer;
     uint16_t i;
+    uint32_t value;
     wiced_result_t wiced_result;
     imx_led_t master_led, slave_led;
 
@@ -197,7 +198,8 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                 lcb[ i ].state = false;
                 lcb[ i ].in_pair = false;
                 lcb[ i ].count = 0;
-                lcb[ i ].update_led_status( false );
+                value = false;
+                lcb[ i ].update_led_status( 0, &value );
             }
             break;
         case IMX_LED_OFF :
@@ -218,7 +220,8 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                     lcb[ led ].in_pair = false;
                     lcb[ led ].state = false;
                     lcb[ led ].count = 0;
-                    lcb[ led ].update_led_status( false );
+                    value = false;
+                    lcb[ led ].update_led_status( 0, &value );
                     break;
                 case IMX_LED_RED_GREEN :
                 case IMX_LED_RED_BLUE :
@@ -245,8 +248,10 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                     lcb[ slave_led ].state = false;
                     lcb[ slave_led ].count = 0;
                     lcb[ slave_led ].in_pair = false;
-                    lcb[ master_led ].update_led_status( false );
-                    lcb[ slave_led ].update_led_status( false );
+                    value = false;
+                    lcb[ master_led ].update_led_status( 0, &value );
+                    value = false;
+                    lcb[ slave_led ].update_led_status( 0, &value);
                     break;
                 default :   // Unknown LED - Ignore
                     return false;
@@ -267,7 +272,8 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                             imx_printf( " Failed to stop LED: %u Timer: %u\r\n", led, wiced_result );
                     }
                     lcb[ led ].state = true;
-                    lcb[ led ].update_led_status( true );
+                    value = true;
+                    lcb[ led ].update_led_status( 0, &value );
                     break;
                 /*
                  * Pair of LEDS
@@ -290,8 +296,10 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
                         if( wiced_result != WICED_SUCCESS )
                             imx_printf( " Failed to stop LED: %u Timer: %u\r\n", master_led, wiced_result );
                     }
-                    lcb[ master_led ].update_led_status( true );
-                    lcb[ slave_led ].update_led_status( true );
+                    value = true;
+                    lcb[ master_led ].update_led_status( 0, &value );
+                    value = true;
+                    lcb[ slave_led ].update_led_status( 0, &value );
                     break;
                 default :   // Unknown LED - Ignore
                     return false;
@@ -453,7 +461,7 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
 //            imx_printf( "Initializing Product LEDs\r\n" );
             for( i = 0; i < IMX_NO_LEDS; i++ )
                 if( lcb[ i ].init_led != NULL )
-                    (*lcb[ i ].init_led)();
+                    (*lcb[ i ].init_led)( 0 );
             /*
              * Set up the timers used for LEDS
              */
@@ -496,8 +504,9 @@ void imx_init_led_functions( imx_led_functions_t *led_functions )
   * @param  None
   * @retval : false
   */
-static void void_led_function(void)
+static void void_led_function(uint16_t arg)
 {
+    UNUSED_PARAMETER(arg);
     /*
      * Do Nothing :)
      */
@@ -508,13 +517,14 @@ static void void_led_function(void)
   * @param  None
   * @retval : false
   */
-static void void_led_update_function( bool state )
+static imx_result_t void_led_update_function( uint16_t arg, void *value )
 {
-    UNUSED_PARAMETER( state );
+    UNUSED_PARAMETER(arg);
+    UNUSED_PARAMETER(value);
     /*
      * Do Nothing :)
      */
-    return;
+    return IMATRIX_SUCCESS;
 }
 /**
   * @brief blink LED
@@ -524,6 +534,7 @@ static void void_led_update_function( bool state )
 static timer_handler_t blink_led( void *arg )
 {
     imx_led_t led;
+    uint32_t value;
 
     memcpy( &led, arg, sizeof( imx_led_t ) );
 
@@ -531,10 +542,12 @@ static timer_handler_t blink_led( void *arg )
         return WICED_SUCCESS;   // Ignore this
 
     lcb[ led ].state = !lcb[ led ].state;
-    (*lcb[ led ].update_led_status)( lcb[ led ].state );
+    value = lcb[ led ].state;
+    (*lcb[ led ].update_led_status)( 0, &value );
     if( lcb[ led ].in_pair == true ) {
         lcb[ lcb[ led ].pair ].state = !lcb[ lcb[ led ].pair ].state;
-        (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+        value = lcb[ lcb[ led ].pair ].state;
+        (*lcb[ lcb[ led ].pair ].update_led_status)( 0, &value );
     }
     return WICED_SUCCESS;
 }
@@ -546,6 +559,7 @@ static timer_handler_t blink_led( void *arg )
 static timer_handler_t alt_blink_led( void *arg )
 {
     bool update;
+    uint32_t value;
     imx_led_t led;
 
     memcpy( &led, arg, sizeof( imx_led_t ) );
@@ -575,9 +589,11 @@ static timer_handler_t alt_blink_led( void *arg )
     }
 
     if( update == true ) {
-        (*lcb[ led ].update_led_status)( lcb[ led ].state );
+        value = lcb[ led ].state;
+        (*lcb[ led ].update_led_status)( 0, &value );
         if( lcb[ led ].in_pair == true ) {          // Should be
-            (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+            value = lcb[ lcb[ led ].pair ].state;
+            (*lcb[ lcb[ led ].pair ].update_led_status)( 0, &value );
         }
     }
 
@@ -591,6 +607,7 @@ static timer_handler_t alt_blink_led( void *arg )
 static timer_handler_t flash_led( void *arg )
 {
     bool update;
+    uint32_t value;
     imx_led_t led;
 
     memcpy( &led, arg, sizeof( imx_led_t ) );
@@ -626,9 +643,11 @@ static timer_handler_t flash_led( void *arg )
         lcb[ led ].count = 0;
     }
     if( update == true ) {
-        (*lcb[ led ].update_led_status)( lcb[ led ].state );
+        value = lcb[ led ].state;
+        (*lcb[ led ].update_led_status)( 0, &value );
         if( lcb[ led ].in_pair == true ) {
-            (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+            value = lcb[ lcb[ led ].pair ].state;
+            (*lcb[ lcb[ led ].pair ].update_led_status)( 0, &value );
         }
     }
 
@@ -643,6 +662,7 @@ static timer_handler_t flash_led( void *arg )
 static timer_handler_t alt_flash_led( void *arg )
 {
     bool update;
+    uint32_t value;
     imx_led_t led;
 
     memcpy( &led, arg, sizeof( imx_led_t ) );
@@ -685,9 +705,11 @@ static timer_handler_t alt_flash_led( void *arg )
         lcb[ led ].count = 0;
     }
     if( update == true ) {
-        (*lcb[ led ].update_led_status)( lcb[ led ].state );
+        value = lcb[ led ].state;
+        (*lcb[ led ].update_led_status)( 0, &value );
         if( lcb[ led ].in_pair == true ) {
-            (*lcb[ lcb[ led ].pair ].update_led_status)( lcb[ lcb[ led ].pair ].state );
+            value = lcb[ lcb[ led ].pair ].state;
+            (*lcb[ lcb[ led ].pair ].update_led_status)( 0, &value );
         }
     }
 

@@ -130,7 +130,7 @@ wiced_result_t imatrix_load_config(bool override_config)
     /*
      * Default Device name as product name
      */
-    strncpy( device_config.device_name, imx_imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
+    strncpy( device_config.device_name, imx_imatrix_init_config.device_name, IMX_DEVICE_NAME_LENGTH );
     strncpy( device_config.ota_public_url, imx_imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.manufacturing_url, imx_imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.imatrix_bind_uri, imx_imatrix_init_config.imatrix_bind_uri, IMX_IMATRIX_URI_LENGTH );

@@ -38,6 +38,8 @@
 #include "wiced.h"
 
 #include "common.h"
+#include "platform_functions/onewire.h"
+#include "platform_functions/ISMART.h"
 /*
  *	Defines for iMatrix API
  *
@@ -136,17 +138,6 @@ void load_config_defaults_generic_ccb( uint16_t arg );
  */
 bool imx_set_led( imx_led_t led, imx_led_state_t mode, uint16_t mode_details );
 bool imx_get_led_state( imx_led_t led );
-/*
- * Additional support Platform code - ISMART-43340/43362
- */
-void imx_init_led_red_ismart( void );
-void imx_init_led_green_ismart( void );
-void imx_init_led_blue_ismart( void );
-void imx_update_led_red_ismart( bool state );
-void imx_update_led_green_ismart( bool state );
-void imx_update_led_blue_ismart( bool state );
-void imx_init_temp(uint16_t arg);
-imx_result_t  imx_sample_temp(uint16_t arg, void *value );
 /*
  * General Wi Fi Status routines
  */

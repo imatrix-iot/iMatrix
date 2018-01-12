@@ -84,9 +84,11 @@ static wiced_result_t thermistor_take_sample(wiced_adc_t adc, float* celcius );
 void imx_init_led_red_ismart(uint16_t arg)
 {
     UNUSED_PARAMETER(arg);
+    uint32_t value;
 
     wiced_gpio_init( ON_BOARD_LED_RED, OUTPUT_PUSH_PULL );
-    imx_update_led_red_status_ismart( false );
+    value = false;
+    imx_update_led_red_ismart( 0, &value );
     imx_printf( "Initialized Red LED using GPIO: %u\r\n", ON_BOARD_LED_RED );
 }
 /**
@@ -97,9 +99,11 @@ void imx_init_led_red_ismart(uint16_t arg)
 void imx_init_led_green_ismart(uint16_t arg)
 {
     UNUSED_PARAMETER(arg);
+    uint32_t value;
 
     wiced_gpio_init( ON_BOARD_LED_GREEN, OUTPUT_PUSH_PULL );
-    imx_update_led_green_status_ismart( false );
+    value = false;
+    imx_update_led_green_ismart( 0, &value );
     imx_printf( "Initialized Green LED using GPIO: %u\r\n", ON_BOARD_LED_GREEN );
 }
 /**
@@ -110,9 +114,11 @@ void imx_init_led_green_ismart(uint16_t arg)
 void imx_init_led_blue_ismart(uint16_t arg)
 {
     UNUSED_PARAMETER(arg);
+    uint32_t value;
 
     // Add init for Blue
-    imx_update_led_blue_status_ismart( false );
+    value = false;
+    imx_update_led_blue_ismart( 0, &value );
 }
 
 /**
@@ -120,26 +126,39 @@ void imx_init_led_blue_ismart(uint16_t arg)
   * @param  None
   * @retval : None
   */
-void imx_update_led_red_status_ismart( bool state )
+imx_result_t imx_update_led_red_ismart( uint16_t arg, void *value )
 {
+    UNUSED_PARAMETER(arg);
+
+    bool state;
+    memcpy( &state, value, IMX_SAMPLE_LENGTH );
+
     if( state == true ) {
         wiced_gpio_output_high( ON_BOARD_LED_RED );
     } else {
         wiced_gpio_output_low( ON_BOARD_LED_RED );
     }
+    return IMX_SUCCESS;
+
 }
 /**
   * @brief update_led_green_status
   * @param  None
   * @retval : None
   */
-void imx_update_led_green_status_ismart( bool state )
+imx_result_t imx_update_led_green_ismart( uint16_t arg, void *value )
 {
+    UNUSED_PARAMETER(arg);
+
+    bool state;
+    memcpy( &state, value, IMX_SAMPLE_LENGTH );
+
     if( state == true ) {
         wiced_gpio_output_high( ON_BOARD_LED_GREEN );
     } else {
         wiced_gpio_output_low( ON_BOARD_LED_GREEN );
     }
+    return IMX_SUCCESS;
 
 }
 /**
@@ -147,13 +166,19 @@ void imx_update_led_green_status_ismart( bool state )
   * @param  None
   * @retval : None
   */
-void imx_update_led_blue_status_ismart( bool state )
+imx_result_t imx_update_led_blue_ismart( uint16_t arg, void *value )
 {
+    UNUSED_PARAMETER(arg);
+
+    bool state;
+    memcpy( &state, value, IMX_SAMPLE_LENGTH );
+
     if( state == true ) {
         // wiced_gpio_output_high( ON_BOARD_LED_BLUE );
     } else {
         // wiced_gpio_output_low( ON_BOARD_LED_BLUE );
     }
+    return IMX_SUCCESS;
 
 }
 /**

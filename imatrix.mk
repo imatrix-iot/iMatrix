@@ -105,6 +105,7 @@ networking/keep_alive.c networking/keep_alive.h networking/utility.c networking/
 ota_loader/load_sflash.c ota_loader/load_sflash.h ota_loader/ota_checksum.c ota_loader/ota_checksum.h ota_loader/ota_loader.c ota_loader/ota_loader.h \
 ota_loader/lut.c \
 platform_functions/ISMART.c platform_functions/ISMART.h platform_functions/rtc_time.c platform_functions/rtc_time.h \
+platform_functions/onewire.c platform_functions/onewire.h \
 sflash/sflash.c sflash/sflash.h \
 spi_flash_fast_erase/spi_flash_fast_erase.c spi_flash_fast_erase/spi_flash_fast_erase.h \
 time/ck_time.c time/ck_time.h time/ntp_success.c time/ntp_success.h time/sntp.c time/sntp.h time/watchdog.c time/watchdog.h \

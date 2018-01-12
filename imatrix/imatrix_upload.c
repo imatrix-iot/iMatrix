@@ -238,6 +238,7 @@ void imatrix_upload(wiced_time_t current_time)
         		 * See if it is time to check for batches completed
         		 */
         		if( imx_is_later( current_time, imatrix.last_upload_time + device_config.imatrix_batch_check_time ) ) {
+        		    PRINTF( "Checking to see if a batch is ready\r\n" );
             		for( i = 0; i < no_items; i++ ) {
                         if( ( csb[ i ].enabled == true ) &&  ( csb[ i ].send_imatrix == true ) ) {
                             if( ( csd[ i ].send_batch == true ) ||
@@ -905,8 +906,9 @@ void imatrix_status( uint16_t arg)
                 SET_CSB_VARS( type );
                 no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
-    	        cli_print( "%u %s: Current Status @: %lu mS (mS Timer)\r\n", ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
-    	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time );
+    	        cli_print( "%u %s: Current Status @: %lu mS (mS Timer), Upload time + Check time: %lu\r\n",
+    	                ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
+    	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time, (uint32_t) imatrix.last_upload_time + device_config.imatrix_batch_check_time );
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
     	        for( i = 0; i < no_items; i++ ) {

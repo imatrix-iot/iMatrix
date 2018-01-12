@@ -472,8 +472,12 @@ void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security )
     dct_network = (platform_dct_network_config_t*)wiced_dct_get_current_address( DCT_NETWORK_CONFIG_SECTION );
     memmove( &( save.network ), dct_network, sizeof( platform_dct_network_config_t ) );
 
-    strcpy( (char *) save.network.hostname.value, HOSTNAME_PREFIX );
-    strncat( (char *) save.network.hostname.value, device_config.device_serial_number, HOSTNAME_SIZE - 8 );
+    strncpy( (char *) save.network.hostname.value, device_config.device_name, HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
+    strncat( (char *) save.network.hostname.value, ":", HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
+    if( strlen( device_config.device_serial_number ) == 0 )
+        strncat( (char *) save.network.hostname.value, "No SN", HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
+    else
+        strncat( (char *) save.network.hostname.value, device_config.device_serial_number, HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
     wiced_dct_write( &( save.network ), DCT_NETWORK_CONFIG_SECTION, 0, sizeof(platform_dct_network_config_t) );
 
     if( device_config.AP_setup_mode == true ) { // We were in set up mode - turn off the blinking led

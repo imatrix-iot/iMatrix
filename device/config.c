@@ -130,7 +130,7 @@ wiced_result_t imatrix_load_config(bool override_config)
     /*
      * Default Device name as product name
      */
-    strncpy( device_config.device_name, imx_imatrix_init_config.product_name, IMX_DEVICE_NAME_LENGTH );
+    strncpy( device_config.device_name, imx_imatrix_init_config.device_name, IMX_DEVICE_NAME_LENGTH );
     strncpy( device_config.ota_public_url, imx_imatrix_init_config.ota_public_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.manufacturing_url, imx_imatrix_init_config.manufacturing_url, IMX_IMATRIX_URL_LENGTH );
     strncpy( device_config.imatrix_bind_uri, imx_imatrix_init_config.imatrix_bind_uri, IMX_IMATRIX_URI_LENGTH );
@@ -285,7 +285,7 @@ void imatrix_print_config( uint16_t arg )
     else
         cli_print( "Wi Fi Station" );
 
-    cli_print( "\r\niMatrix URL: %s, iMatrix batch check time: %lumS\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time );
+    cli_print( "\r\niMatrix URL: %s, iMatrix batch check time: %lumS, History Size: %u\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time, device_config.history_size );
 	cli_print( "Manufacturing URL: %s, Bind URI: %s, OTA URL: %s\r\n", device_config.manufacturing_url, device_config.imatrix_bind_uri, device_config.ota_public_url );
 	cli_print( "AT Variable Entry Timeout: %u mS, AT Verbose mode: %u\r\n", device_config.AT_variable_data_timeout, device_config.AT_verbose );
 	cli_print( "Controls Configuration:\r\n" );

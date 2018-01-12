@@ -180,7 +180,7 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 	        } else if( status == IMX_NO_DATA )
 	            ;   // Do nothing - keep using existing data - waiting for control/sensor to finish acquisition
 	        else {
-	            PRINTF( "Error Reading sensor %u\r\n", *active );
+	            PRINTF( "Error Reading sensor: %u - %u\r\n", *active, status );
 	            csd[ *active ].errors += 1;
 	            csd[ *active ].error = status;
 	            /*
@@ -301,8 +301,8 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
              * See if the batch is ready to go
              */
             if( ( csd[ *active ].warning != csd[ *active ].last_warning ) ||
-                ( csd[ *active ].no_samples >= device_config.scb[ *active ].sample_batch_size ) ||
-                ( csd[ *active ].no_samples >= ( device_config.history_size - 1  ) ) || // We can't get any more in to this record
+                ( csd[ *active ].no_samples >= csb[ *active ].sample_batch_size ) ||
+                ( csd[ *active ].no_samples >= ( device_config.history_size - 2  ) ) || // We can't get any more in to this record
                 ( csd[ *active ].update_now == true ) ||
                 ( percent_change_detected == true ) ) {
 #ifdef PRINT_DEBUGS_FOR_SAMPLING

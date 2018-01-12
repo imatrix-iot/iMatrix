@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, Sierra Telecom. All Rights Reserved.
+ * Copyright 2018, Sierra Telecom. All Rights Reserved.
  *
  * This software, associated documentation and materials ("Software"),
  * is owned by Sierra Telecom ("Sierra") and is protected by and subject to
@@ -25,7 +25,7 @@
 
 /** @file .h
  *
- *  Created on: December 23, 2017
+ *  Created on: January 7, 2018
  *      Author: greg.phillips
  *
  */

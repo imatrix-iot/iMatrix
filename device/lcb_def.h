@@ -55,8 +55,8 @@
  ******************************************************/
 typedef struct led_control_block {
     imx_led_t led_no;
-    void (*init_led)(void);
-    void (*update_led_status)( bool state );
+    void (*init_led)(uint16_t arg);
+    imx_result_t (*update_led_status)( uint16_t arg, void *value );
     uint16_t blink_1_count;
     uint16_t blink_2_count;
     uint16_t flash_count;

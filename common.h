@@ -75,7 +75,7 @@
 
 #define IMX_MAGIC_CONFIG                ( 0x87654321 )
 #define IMX_PRODUCT_NAME_LENGTH         ( 64 )
-#define IMX_DEVICE_NAME_LENGTH          ( IMX_PRODUCT_NAME_LENGTH )
+#define IMX_DEVICE_NAME_LENGTH          ( 16 )
 #define IMX_DEVICE_SERIAL_NUMBER_LENGTH ( 10 )
 #define IMX_SAMPLE_LENGTH               ( 4 )
 #define IMX_MAX_NO_BLE_DEVICES          ( 20 )
@@ -197,6 +197,7 @@ typedef enum imx_result {
     IMX_CONTROL_DISABLED,
     IMX_SENSOR_DISABLED,
     IMX_SENSOR_ERROR,
+    IMX_SENSOR_INIT_ERROR,
     IMX_GENERAL_FAILURE,
     IMX_INIT_ERROR,
     IMX_I2C_ERROR,
@@ -326,8 +327,8 @@ typedef struct imx_var_data_config {
 } imx_var_data_config_t;
 
 typedef struct imx_led_functions {
-    void (*init_led)(void);
-    void (*set_led)( bool state );
+    void (*init_led)(uint16_t arg);
+    imx_result_t (*set_led)(uint16_t arg, void *value);
 } imx_led_functions_t;
 
 typedef struct {

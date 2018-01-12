@@ -42,6 +42,7 @@
 #include "../device/icb_def.h"
 #include "../cli/interface.h"
 #include "../coap/coap.h"
+#include "../coap/imx_coap.h"
 #include "coap_msg_get_store.h"
 #include "../cli/messages.h"
 #include "../device/icb_def.h"
@@ -134,7 +135,7 @@ bad_data:
     }
 
     // Suppress all responses to multicast except CHANGED.
-    if ( is_multicast_ip( &( msg->my_ip_from_request ) ) && ( response != CHANGED ) ) {
+    if ( imx_is_multicast_ip( &( msg->my_ip_from_request ) ) && ( response != CHANGED ) ) {
         return COAP_NO_RESPONSE;
     }
     else {

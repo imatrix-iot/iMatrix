@@ -180,7 +180,7 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 	        } else if( status == IMX_NO_DATA )
 	            ;   // Do nothing - keep using existing data - waiting for control/sensor to finish acquisition
 	        else {
-	            PRINTF( "Error Reading sensor %u\r\n", *active );
+	            PRINTF( "Error Reading sensor: %u - %u\r\n", *active, status );
 	            csd[ *active ].errors += 1;
 	            csd[ *active ].error = status;
 	            /*

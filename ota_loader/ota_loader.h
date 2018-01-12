@@ -68,8 +68,8 @@
  ******************************************************/
 void init_ota_loader(void);
 uint16_t ota_is_active();
-void setup_ota_loader( char *site, char *uri, uint16_t image_no, uint16_t load_file, uint32_t checksum32 );
-uint16_t ota_loader(void);
+void setup_ota_loader( char *site, char *uri, uint16_t port, uint16_t image_no, uint16_t load_file, uint32_t checksum32 );
+void ota_loader(void);
 void ota_loader_deinit(void);
 void print_lut(uint16_t arg);
 void reboot_to_image( uint16_t image_no );

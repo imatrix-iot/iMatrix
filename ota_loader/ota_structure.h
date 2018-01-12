@@ -111,6 +111,8 @@ enum image_types_t {// Definitions for the 8 DCT_??_APP_INDEX constants are in W
 struct OTA_CONFIGURATION {
 	char site[ IMX_IMATRIX_SITE_LENGTH ], uri[ IMX_IMATRIX_URI_LENGTH ], version[ VERSION_LENGTH ], *buffer;
 	wiced_ip_address_t address;
+	uint16_t port;
+//    wiced_tls_context_t context;// TLS is not currently supported.
     uint16_t image_no;
     uint16_t image_type;
     uint16_t ota_loader_state;

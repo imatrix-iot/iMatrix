@@ -281,7 +281,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
      * See if the batch is ready to go now
      */
     if( ( csd[ entry ].warning != csd[ entry ].last_warning ) ||
-        ( ( csd[ entry ].no_samples / 2 ) >= csb[ entry ].sample_batch_size ) ||
+        ( ( ( csd[ entry ].no_samples + 1 ) / 2 ) >= csb[ entry ].sample_batch_size ) ||
         ( csd[ entry ].update_now == true ) ||
         ( percent_change_detected == true ) ) {
 

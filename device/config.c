@@ -285,7 +285,7 @@ void imatrix_print_config( uint16_t arg )
     else
         cli_print( "Wi Fi Station" );
 
-    cli_print( "\r\niMatrix URL: %s, iMatrix batch check time: %lumS\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time );
+    cli_print( "\r\niMatrix URL: %s, iMatrix batch check time: %lumS, History Size: %u\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time, device_config.history_size );
 	cli_print( "Manufacturing URL: %s, Bind URI: %s, OTA URL: %s\r\n", device_config.manufacturing_url, device_config.imatrix_bind_uri, device_config.ota_public_url );
 	cli_print( "AT Variable Entry Timeout: %u mS, AT Verbose mode: %u\r\n", device_config.AT_variable_data_timeout, device_config.AT_verbose );
 	cli_print( "Controls Configuration:\r\n" );

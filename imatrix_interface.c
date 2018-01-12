@@ -182,6 +182,13 @@ imx_status_t imx_process(void)
     wiced_time_get_time( &current_time );
 
     /*
+     * Handle OTA functions
+     */
+    ota_loader();
+
+    if ( ota_is_active() ) return IMX_SUCCESS;
+
+    /*
      * Process CLI & Telnet Clients
      */
     cli_process();
@@ -205,10 +212,6 @@ imx_status_t imx_process(void)
 
     process_wifi( current_time );
 
-    /*
-     * Handle OTA functions
-     */
-    ota_loader();
     /*
      * Process any items on the CoAP queues
      */

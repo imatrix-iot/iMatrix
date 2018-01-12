@@ -99,33 +99,36 @@ extern IOT_Device_Config_t device_config;   // Defined in device/storage.h
 uint16_t coap_post_control_otaupdate(coap_message_t *msg, CoAP_msg_detail_t *cd, uint16_t arg)
 {
     char site[ IMX_IMATRIX_SITE_LENGTH ], uri[ IMX_IMATRIX_URI_LENGTH ];
-    unsigned int image_no;
+    int image_no;
+    int port;
     int result;
     int checksum32;
     struct json_attr_t json_attrs[] = {
             {"site",  t_string, .addr.string = site, .len = IMX_IMATRIX_SITE_LENGTH },// Strings default to empty string ""
             {"uri",  t_string, .addr.string = uri, .len = IMX_IMATRIX_URI_LENGTH },
-            {"image_no", t_uinteger, .addr.uinteger = (unsigned int *)&image_no, .dflt.uinteger = NO_IMAGE_NO },
+            {"port", t_integer, .addr.integer = &port, .dflt.integer = 80 },
+            {"image_no", t_integer, .addr.integer = &image_no, .dflt.integer = NO_IMAGE_NO },
 			{"cksum", t_integer, .addr.integer = &checksum32, .dflt.integer = (long int)IGNORE_CHECKSUM32 },// initially tried using t_uinteger, but that is only a 31 bit integer.
             {NULL}
     };
     uint16_t response;
 
-    PRINTF( "POST mode - '/control/otaupdate'\r\n");
+    printf( "POST mode - '/control/otaupdate'\r\n");
     /*
      * Process the passed URI Query
      */
     if( strlen( cd->uri_query ) > 0 ) {
+        printf("URI query is invalid.\r\n");
         response = BAD_REQUEST;     // No URI Query supported
         goto bad_data;
     }
-    PRINTF( "URI Query: %s\r\n", cd->uri_query );
-    PRINTF( "URI Payload: %s\r\n", cd->payload );
+    printf( "URI Query: %s\r\n", cd->uri_query );
+    printf( "URI Payload: %s\r\n", cd->payload );
 
     result = json_read_object( cd->payload, json_attrs, NULL );
 
     if( result ) {
-        PRINTF( "Result: %u\r\n", result );
+        printf( "Result: %u\r\n", result );
         response = BAD_REQUEST;
         goto bad_data;
     }
@@ -137,7 +140,20 @@ uint16_t coap_post_control_otaupdate(coap_message_t *msg, CoAP_msg_detail_t *cd,
     }
 
     if( strcmp( uri, "" ) == 0 ) {
-        PRINTF( "Missing uri value in JSON from request.\r\n");
+        printf( "Missing uri value in JSON from request.\r\n");
+        response = BAD_REQUEST;
+        goto bad_data;
+    }
+
+    if( ( port < 0 ) || ( port > 0xFFFF ) ) {
+        printf( "Invalid port number in JSON request.\r\n" );
+        response = BAD_REQUEST;
+        goto bad_data;
+    }
+
+    if( port != 80 ) {
+        printf( "TLS encryption is not currently supported in iMatrix,\r\n");
+        printf( "consequently no port number may be specified in the JSON request. - Invalid port number in JSON request.\r\n");
         response = BAD_REQUEST;
         goto bad_data;
     }
@@ -147,14 +163,14 @@ uint16_t coap_post_control_otaupdate(coap_message_t *msg, CoAP_msg_detail_t *cd,
             goto bad_data;
     }
 
-    PRINTF( "Site: %s, uri: %s, cksum: %ld\r\n", site, uri, checksum32);
+    printf( "Site: %s, uri: %s, cksum: %d\r\n", site, uri, checksum32);
 
     /*
      * Got here with maybe GOOD data, do the action and say CHANGED :)
      *
      */
 
-    setup_ota_loader( site, uri, image_no, true, (uint32_t)checksum32 );
+    setup_ota_loader( site, uri, (uint16_t)port, image_no, true, (uint32_t)checksum32 );
 
     if( msg->header.t == CONFIRMABLE ) {
         if( coap_store_response_header( msg, CHANGED, ACKNOWLEDGEMENT, NULL )  != WICED_SUCCESS ) {
@@ -167,7 +183,7 @@ uint16_t coap_post_control_otaupdate(coap_message_t *msg, CoAP_msg_detail_t *cd,
     }
     return COAP_SEND_RESPONSE;
 
-    PRINTF( "Sending response for ota update request\r\n" );
+    printf( "Sending response for ota update request\r\n" );
 
     return COAP_NO_RESPONSE;
 
@@ -182,6 +198,6 @@ bad_data:
             return COAP_NO_RESPONSE;
         }
     }
-    PRINTF( "Sending Bad response for ota update POST\r\n" );
+    printf( "Sending Bad response for ota update POST\r\n" );
     return COAP_SEND_RESPONSE;
 }

@@ -58,7 +58,7 @@
 #define NO_VALUE_VALUE      0xFFFFFFFF
 #define NO_FLOAT_VALUE      -999999.9999
 #define NO_SETTING_VALUE    0xFFFFFFFF
-#define NO_IMAGE_NO			0xFFFFFFFF
+#define NO_IMAGE_NO			-1
 #define NO_MODE_VALUE       "no mode"
 #define MODE_AUTO           "auto"
 #define MODE_ON             "on"

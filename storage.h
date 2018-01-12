@@ -63,8 +63,15 @@
 #define IMX_AT_VAR_DATA_TIMEOUT             ( 10000 )   // 10 Seconds total for packet
 
 #define IMX_MAX_CONNECTION_RETRY_COUNT      2
+
+// For the ISM43362 we only have space for a reduced number of sensors and controls.
+#ifdef _STM32F215RGT6_
+#define IMX_MAX_NO_CONTROLS                 10
+#define IMX_MAX_NO_SENSORS                  10
+#else
 #define IMX_MAX_NO_CONTROLS                 16
 #define IMX_MAX_NO_SENSORS                  32
+#endif
 
 /*
  * Common characters and strings

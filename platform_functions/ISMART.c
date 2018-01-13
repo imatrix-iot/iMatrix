@@ -130,7 +130,7 @@ imx_result_t imx_update_led_red_ismart( uint16_t arg, void *value )
 {
     UNUSED_PARAMETER(arg);
 
-    bool state;
+    uint32_t state;
     memcpy( &state, value, IMX_SAMPLE_LENGTH );
 
     if( state == true ) {
@@ -150,7 +150,7 @@ imx_result_t imx_update_led_green_ismart( uint16_t arg, void *value )
 {
     UNUSED_PARAMETER(arg);
 
-    bool state;
+    uint32_t state;
     memcpy( &state, value, IMX_SAMPLE_LENGTH );
 
     if( state == true ) {
@@ -170,7 +170,7 @@ imx_result_t imx_update_led_blue_ismart( uint16_t arg, void *value )
 {
     UNUSED_PARAMETER(arg);
 
-    bool state;
+    uint32_t state;
     memcpy( &state, value, IMX_SAMPLE_LENGTH );
 
     if( state == true ) {

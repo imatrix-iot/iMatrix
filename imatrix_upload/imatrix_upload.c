@@ -428,7 +428,7 @@ void imatrix_upload(wiced_time_t current_time)
                                          }
 
                                         variable_data_length = csd[ i ].data[ var_data_index ].var_data->length; // Events have timestamp / Value pairs
-                                        printf( "Trying to add variable length data record, ptr @ 0x%08lx of: %u bytes\r\n", csd[ i ].data[ var_data_index ].uint_32bit, variable_data_length );
+                                        PRINTF( "Trying to add variable length data record, ptr @ 0x%08lx of: %u bytes\r\n", csd[ i ].data[ var_data_index ].uint_32bit, variable_data_length );
                                         if( remaining_data_length >= ( sizeof( header_t ) + variable_data_length ) ) {
                                             /*
                                              * Load data into packet
@@ -436,7 +436,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                              * Load first variable length record
                                              */
-                                            printf( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx\r\n", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
+                                            PRINTF( "\r\nAdding Variable length data (%u Bytes) for %s: %u - ID: 0x%08lx\r\n", variable_data_length, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
                                             /*
                                              * Set up the header and copy in the data
                                              */

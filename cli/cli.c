@@ -54,7 +54,7 @@
 #include "../device/icb_def.h"
 #include "../device/config.h"
 #include "../device/hal_leds.h"
-#include "../imatrix/imatrix_upload.h"
+#include "../imatrix_upload/imatrix_upload.h"
 #include "../manufacturing/manufacturing.h"
 #include "../networking/http_get_sn_mac_address.h"
 #include "../ota_loader/ota_loader.h"

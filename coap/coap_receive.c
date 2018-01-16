@@ -127,11 +127,13 @@ uint16_t handle_request(message_t* msg) {
         return response;
     }
 
+    PRINTF( "Looking for uri in iMatrix CoAP entries\r\n" );
     matched_entry = match_uri( cd.uri, CoAP_entries, NO_IMATRIX_COAP_ENTRIES );
     if ( matched_entry == NULL ) {// uri was not found in list of known actions
         /*
          * Check is any host entries to process
          */
+        PRINTF( "Looking for uri in Host Application CoAP entries\r\n" );
         matched_entry = match_uri( cd.uri, icb.coap_entries, icb.no_host_coap_entries );
         if ( matched_entry == NULL ) {
             if ( coap_store_response_header( &(msg->coap), NOT_FOUND, response_type, NULL ) != WICED_SUCCESS )

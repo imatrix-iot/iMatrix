@@ -47,7 +47,7 @@
 #include "../device/icb_def.h"
 #include "../device/hal_wifi.h"
 #include "../device/var_data.h"
-#include "../imatrix/logging.h"
+#include "../imatrix_upload/logging.h"
 
 #include "wifi_logging.h"
 

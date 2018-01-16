@@ -51,7 +51,7 @@
 #include "../device/icb_def.h"
 #include "../device/imx_LEDS.h"
 #include "../device/var_data.h"
-#include "../imatrix/imatrix.h"
+#include "../imatrix_upload/imatrix_upload.h"
 #include "../wifi/wifi.h"
 #include "cli_status.h"
 

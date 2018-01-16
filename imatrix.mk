@@ -95,8 +95,8 @@ device/hal_wifi.c device/hal_wifi.h device/imx_config.c device/imx_config.h \
 device/imx_LEDS.c device/imx_LEDS.h device/lcb_def.h \
 device/set_serial.c device/set_serial.h device/system_init.c \
 device/system_init.h device/var_data.c device/var_data.h \
-imatrix/add_internal.c imatrix/add_internal.h imatrix/imatrix_get_ip.c imatrix/imatrix_get_ip.h imatrix/imatrix_upload.c imatrix/imatrix_upload.h \
-imatrix/logging.c imatrix/logging.h imatrix/registration.c imatrix/registration.h \
+imatrix_upload/add_internal.c imatrix_upload/add_internal.h imatrix_upload/imatrix_get_ip.c imatrix_upload/imatrix_get_ip.h imatrix_upload/imatrix_upload.c imatrix_upload/imatrix_upload.h \
+imatrix_upload/logging.c imatrix_upload/logging.h imatrix_upload/registration.c imatrix_upload/registration.h \
 json/mjson.c json/mjson.h \
 location/location.c location/location.h \
 manufacturing/manufacturing.c manufacturing/manufacturing.h \

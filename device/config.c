@@ -46,7 +46,7 @@
 #include "../device_app_dct.h"
 #include "../cli/interface.h"
 #include "../cs_ctrl/common_config.h"
-#include "../imatrix/imatrix.h"
+#include "../imatrix_upload/imatrix_upload.h"
 #include "cert_util.h"
 #include "icb_def.h"
 #include "config.h"
@@ -96,8 +96,9 @@ extern imx_imatrix_init_config_t imx_imatrix_init_config;
   */
 wiced_result_t imatrix_load_config(bool override_config)
 {
-   wiced_result_t result;
-   uint16_t i;
+    platform_dct_mfg_info_t* dct_mfg_info = NULL;
+    wiced_result_t result;
+    uint16_t i;
 
     update_cert_pointers();// Make sure cert pointers are updated regardless of any errors accessing the DCT.
 #ifdef USE_STM32
@@ -115,8 +116,18 @@ wiced_result_t imatrix_load_config(bool override_config)
     imx_printf( "*** Reseting to Factory Defaults ***\r\n" );
     /*
      * Start with know values and then update based on Host configuration
+     *
+     * Get SN from Manufacturing section of DCT
      */
     memcpy( &device_config, &factory_default_config, sizeof( IOT_Device_Config_t ) );
+#ifdef USE_STM32
+    result = wiced_dct_read_lock( (void**) &dct_mfg_info, WICED_FALSE, DCT_MFG_INFO_SECTION, 0, sizeof( *dct_mfg_info ) );
+    if ( result != WICED_SUCCESS )
+        return result;
+#endif
+    strncpy( device_config.device_serial_number, dct_mfg_info->serial_number, IMX_DEVICE_SERIAL_NUMBER_LENGTH );
+    wiced_dct_read_unlock( dct_mfg_info, WICED_FALSE );
+
     /*
      * Set up system based on settings in user provided init structure
      */

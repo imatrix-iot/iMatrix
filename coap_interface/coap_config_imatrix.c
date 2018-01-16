@@ -44,7 +44,7 @@
 #include "storage.h"
 #include "../device/config.h"
 #include "../coap/coap.h"
-#include "../imatrix/registration.h"
+#include "../imatrix_upload/registration.h"
 #include "../json/mjson.h"
 #include "../coap/add_coap_option.h"
 #include "../CoAP_interface/get_uint_from_query_str.h"

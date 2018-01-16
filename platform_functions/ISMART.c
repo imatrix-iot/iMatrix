@@ -119,6 +119,7 @@ void imx_init_led_blue_ismart(uint16_t arg)
     // Add init for Blue
     value = false;
     imx_update_led_blue_ismart( 0, &value );
+    imx_printf( "Initialized Blue LED - No external hardware\r\n" );
 }
 
 /**
@@ -174,9 +175,9 @@ imx_result_t imx_update_led_blue_ismart( uint16_t arg, void *value )
     memcpy( &state, value, IMX_SAMPLE_LENGTH );
 
     if( state == true ) {
-        // wiced_gpio_output_high( ON_BOARD_LED_BLUE );
+        ;// wiced_gpio_output_high( ON_BOARD_LED_BLUE );
     } else {
-        // wiced_gpio_output_low( ON_BOARD_LED_BLUE );
+        ;// wiced_gpio_output_low( ON_BOARD_LED_BLUE );
     }
     return IMX_SUCCESS;
 

@@ -42,7 +42,7 @@
 
 #include "../storage.h"
 #include "../device/icb_def.h"
-#include "../imatrix/logging.h"
+#include "../imatrix_upload/logging.h"
 
 /******************************************************
  *                      Macros

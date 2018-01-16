@@ -459,9 +459,14 @@ bool imx_set_led( imx_led_t led, imx_led_state_t state, uint16_t mode_details )
              * Start Off
              */
 //            imx_printf( "Initializing Product LEDs\r\n" );
-            for( i = 0; i < IMX_NO_LEDS; i++ )
-                if( lcb[ i ].init_led != NULL )
-                    (*lcb[ i ].init_led)( 0 );
+            for( i = 0; i < IMX_NO_LEDS; i++ ) {
+//                imx_printf( "Initializing LED %u\r\n", i );
+                if( lcb[ i ].init_led != NULL ) {
+//                   imx_printf( "Calling init for LED %u\r\n", i );
+                    (*lcb[ i ].init_led)( i );
+                }
+            }
+//            imx_printf( "Done Initializing LEDs\r\n" );
             /*
              * Set up the timers used for LEDS
              */
@@ -490,13 +495,19 @@ void imx_init_led_functions( imx_led_functions_t *led_functions )
 {
     uint16_t i;
 
+    imx_printf( "Setting up LED Functions\r\n" );
     for( i = 0; i < IMX_NO_LEDS; i++ ) {
         if( led_functions[ i ].init_led != NULL )
             lcb[ i ].init_led = led_functions[ i ].init_led;
+        else
+            lcb[ i ].init_led = NULL;
         if( led_functions[ i ].set_led != NULL )
             lcb[ i ].update_led_status = led_functions[ i ].set_led;
+        else
+            lcb[ i ].update_led_status = NULL;
     }
     imx_set_led( 0, IMX_LED_INIT, 0 );
+    imx_printf( "LED Functions set & Initialized\r\n" );
 }
 
 /**

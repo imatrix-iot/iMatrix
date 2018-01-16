@@ -49,7 +49,7 @@
 #include "../cli/interface.h"
 #include "../device/config.h"
 #include "../device/icb_def.h"
-#include "../imatrix/registration.h"
+#include "../imatrix_upload/registration.h"
 #include "../networking/utility.h"
 
 /******************************************************

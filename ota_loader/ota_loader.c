@@ -37,8 +37,9 @@
  * coap://192.168.123.121:5683/control/otaupdate
  *
  * Playload
+ * http://ota.imatrix.io/images/7fa2176d5ac741a8a0628e1379e35509.elf
  *
- *{ "site" : "ota.sierratelecom.net", "uri" : "/images/c7cb244bbafea573d815a75e5dd2476c.elf", "image_no" : 6, "cksum" : 1600602452}
+ *{ "site" : "ota.imatrix.io", "uri" : "/images/7fa2176d5ac741a8a0628e1379e35509.elf", "image_no" : 5, "cksum" : 458091861}
  *
  *  Created on: October, 2015
  *      Author: greg.phillips

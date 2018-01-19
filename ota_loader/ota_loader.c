@@ -433,7 +433,7 @@ void ota_loader(void)
                 imx_printf( "Sflash erase failed.\r\n" );
             }
             ota_loader_config.ota_loader_state = OTA_LOADER_VERIFY_ERASE;
-
+            break;
         case OTA_LOADER_VERIFY_ERASE :
 #ifdef VERIFY_FLASH
             if( ota_loader_config.erase_count < ( ota_loader_config.content_offset + ota_loader_config.erase_length ) ) {
@@ -461,7 +461,7 @@ void ota_loader(void)
             break;
         case OTA_DNS_LOOKUP :// Restart after a partial download here if web server supports partial downloads.
             /*
-             * During OTA Dim lights to 100% and turn ON Green LED
+             * During OTA Dim lights up to 100% and turn ON Green LED
              */
             imx_printf( "Attempting to load OTA image: %s, from: %s\r\n", ota_loader_config.uri, ota_loader_config.site );
             imx_printf( "Doing DNS lookup...\r\n" );
@@ -700,7 +700,6 @@ void ota_loader(void)
                     }
                     wiced_time_get_utc_time( &ota_loader_config.last_recv_packet_utc_time );
                     ota_loader_config.packet_count = 1;
-                    imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_4 );
                     ota_loader_config.ota_loader_state = OTA_LOADER_RECEIVE_STREAM;
                     wiced_packet_delete( temp_packet );
                     return;
@@ -786,7 +785,6 @@ void ota_loader(void)
                         return;
                     }
                     ota_loader_config.packet_count += 1;
-                    imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_4 );
                     ota_loader_config.ota_loader_state = OTA_LOADER_RECEIVE_STREAM;
                     wiced_packet_delete( temp_packet );
                     return;
@@ -912,7 +910,10 @@ void ota_loader(void)
             ota_loader_config.crc_content_offset = ota_loader_config.content_offset;// - ota_loader_config.content_received;
             ota_loader_config.crc_content_end = ota_loader_config.content_offset + ota_loader_config.content_received;
 //            imx_printf( "Calculating SFLASH SHA512 hash.\r\n" );
-			imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_8 );
+            /*
+             * Blink LED to indicate action
+             */
+            imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_8 );
             ota_loader_config.good_load = true;
             ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_CONNECTION;
 //            ota_loader_config.ota_loader_state = OTA_CALC_CRC;

@@ -227,7 +227,7 @@ static void print_csb_entry( imx_peripheral_type_t type, imx_control_sensor_bloc
         if( csb[ entry ].sample_rate >= 1000 )
             cli_print( "Sample Every: %03.1f Sec", ( (float) csb[ entry ].sample_rate ) / 1000.0 );
         else
-            cli_print( "Sample Every: %04u mSec", csb[ entry ].sample_rate );
+            cli_print( "Sample Every: %03u mSec", csb[ entry ].sample_rate );
     }
     cli_print( ", Batch size: %2u", csb[ entry ].sample_batch_size );
 

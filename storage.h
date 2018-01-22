@@ -67,7 +67,7 @@
 // For the ISM43362 we only have space for a reduced number of sensors and controls.
 #ifdef _STM32F215RGT6_
 #define IMX_MAX_NO_CONTROLS                 10
-#define IMX_MAX_NO_SENSORS                  10
+#define IMX_MAX_NO_SENSORS                  16
 #else
 #define IMX_MAX_NO_CONTROLS                 16
 #define IMX_MAX_NO_SENSORS                  32

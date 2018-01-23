@@ -90,7 +90,7 @@ extern IOT_Device_Config_t device_config;
   * @retval : None
   */
 
-wiced_result_t imx_get_config_current_address( void *config_address )
+wiced_result_t imx_get_config_current_address( void **config_address )
 {
 
 	// The address in the DCT becomes invalid as soon as anything is written to the DCT
@@ -100,12 +100,12 @@ wiced_result_t imx_get_config_current_address( void *config_address )
 	    return WICED_ERROR;
 	}
 
-	config_address = (void *) temp_app_config;
+	*config_address = (void *) temp_app_config;
 
     return WICED_SUCCESS;
 }
 /**
-  * @brief  print saved configuration
+  * @brief  save configuration
   * @param  None
   * @retval : None
   */
@@ -117,7 +117,7 @@ wiced_result_t imx_save_config( void *data, uint16_t length )
        return WICED_ERROR;
    }
 
-   return wiced_dct_write( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, app_config ), APP_CONFIG_SIZE );
+   return wiced_dct_write( data, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, app_config ), length );
 
     return WICED_SUCCESS;
 }

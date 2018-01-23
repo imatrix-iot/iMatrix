@@ -112,7 +112,7 @@ char *imx_get_device_serial_number(void);
 /*
  * Host App Configuration management
  */
-wiced_result_t imx_get_config_current_address( void *config_address );
+wiced_result_t imx_get_config_current_address( void **config_address );
 wiced_result_t imx_save_config( void *config, uint16_t config_size );
 /*
  * CLI - Console I/O

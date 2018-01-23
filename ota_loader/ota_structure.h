@@ -112,7 +112,7 @@ struct OTA_CONFIGURATION {
 	char site[ IMX_IMATRIX_SITE_LENGTH ], uri[ IMX_IMATRIX_URI_LENGTH ], version[ VERSION_LENGTH ], *buffer;
 	wiced_ip_address_t address;
 	uint16_t port;
-//    wiced_tls_context_t context;// TLS is not currently supported.
+    wiced_tls_context_t context;// TLS is not currently supported.
     uint16_t image_no;
     uint16_t image_type;
     uint16_t ota_loader_state;
@@ -135,8 +135,8 @@ struct OTA_CONFIGURATION {
     uint32_t crc_content_end;
     wiced_tcp_socket_t socket;
     wiced_tcp_stream_t tcp_stream;
-    uint32_t checksum;
-    uint32_t checksum32;
+//    uint32_t checksum;
+//    uint32_t checksum32;
     uint16_t allowed_sflash_area;
     unsigned int socket_assigned	: 1;
     unsigned int good_load 			: 1;

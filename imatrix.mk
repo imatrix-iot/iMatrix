@@ -102,8 +102,7 @@ location/location.c location/location.h \
 manufacturing/manufacturing.c manufacturing/manufacturing.h \
 networking/get_inbound_destination_ip.c networking/get_inbound_destination_ip.h networking/http_get_sn_mac_address.c networking/http_get_sn_mac_address.h \
 networking/keep_alive.c networking/keep_alive.h networking/utility.c networking/utility.h \
-ota_loader/load_sflash.c ota_loader/load_sflash.h ota_loader/ota_checksum.c ota_loader/ota_checksum.h ota_loader/ota_loader.c ota_loader/ota_loader.h \
-ota_loader/lut.c \
+ota_loader/load_sflash.c ota_loader/load_sflash.h ota_loader/ota_loader.c ota_loader/ota_loader.h \
 platform_functions/ISMART.c platform_functions/ISMART.h platform_functions/rtc_time.c platform_functions/rtc_time.h \
 platform_functions/onewire.c platform_functions/onewire.h \
 sflash/sflash.c sflash/sflash.h \

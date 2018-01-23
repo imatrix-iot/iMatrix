@@ -206,7 +206,7 @@ extern iMatrix_Control_Block_t icb;
 extern IOT_Device_Config_t device_config;	// Defined in device/config.h and saved in DCT
 
 extern sflash_handle_t sflash_handle;
-extern app_header_t apps_lut[ FULL_IMAGE ];
+app_header_t apps_lut[ FULL_IMAGE ] = {0};
 struct OTA_CONFIGURATION ota_loader_config CCMSRAM;
 
 /******************************************************
@@ -296,7 +296,7 @@ static void* return_item( uint8_t* data, uint32_t data_length, uint8_t* item, ui
  * Copy temporary variables on the stack into persistent variables and start an Over The Air(OTA) update.
  * If an OTA update is already in progress, do nothing.
  */
-void setup_ota_loader( char *site, char *uri, uint16_t port, uint16_t image_no, uint16_t load_file, uint32_t checksum32 )
+void setup_ota_loader( char *site, char *uri, uint16_t port, uint16_t image_no, uint16_t load_file )
 {
     if( ota_is_active() ) {
         imx_printf( "OTA loader already active\r\n" );
@@ -319,7 +319,6 @@ void setup_ota_loader( char *site, char *uri, uint16_t port, uint16_t image_no, 
     ota_loader_config.port = port;
     ota_loader_config.image_no = image_no;
     ota_loader_config.load_file = load_file;// Currently always TRUE, but maybe used in the future.
-    ota_loader_config.checksum32 = checksum32;
 
     ota_loader_config.ota_loader_state = OTA_LOADER_INIT;
 //    sha4_starts( &ota_loader_config.sha512context, USE_SHA512 );// Guarantees that SHA512 is initialized,
@@ -395,8 +394,7 @@ void ota_loader(void)
             ota_loader_config.content_received = 0;
 
 /*
-            image_location_t dct_app_location = {0};
-            if ( wiced_dct_read_with_copy( &dct_app_location, DCT_INTERNAL_SECTION, DCT_APP_LOCATION_OF( ota_loader_config.image_no ), sizeof(image_location_t) ) != WICED_SUCCESS ) {
+            image_location_t dct_app_location = {0};', DCT_APP_LOCATION_OF( ota_loader_config.image_no ), sizeof(image_location_t) ) != WICED_SUCCESS ) {
                 imx_printf( "Failed to get the location from the DCT where the Over The Air Update will be saved.\r\n");
                 ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
                 return;
@@ -1007,7 +1005,6 @@ void ota_loader(void)
 
 			            imx_set_led( IMX_LED_GREEN, IMX_LED_OFF, 0 );
 			            imx_set_led( IMX_LED_RED, IMX_LED_ON, 0 );                        imx_printf( "OTA loader completed loading SFLASH, in IDLE mode\r\n" );
-                        ota_loader_config.checksum32 = IGNORE_CHECKSUM32;
                         ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
                         return;
                     }
@@ -1228,7 +1225,7 @@ uint16_t get_latest_version(void)
 				        imx_printf( "Missing checksum value in JSON from request.\r\n");
 				        return( false );
 				    }
-				    ota_loader_config.checksum32 = atol( checksum );
+//				    ota_loader_config.checksum32 = atol( checksum );
 
 				    /*
 				     * Got here with maybe GOOD data, return TRUE :)
@@ -1258,12 +1255,12 @@ uint16_t get_latest_version(void)
 		    	imx_printf("Got the uri and checksum.\r\n");
 		    	if( ( ota_loader_config.image_type == OTA_IMAGE_SFLASH ) ||
 		    		( ota_loader_config.image_type == OTA_IMAGE_BETA_SFLASH ) )
-		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, 80, FULL_IMAGE, true, (uint32_t)ota_loader_config.checksum32 );
+		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, 80, FULL_IMAGE, true );
 		    	else if( ( ota_loader_config.image_type == OTA_IMAGE_MASTER ) ||
 		    			 ( ota_loader_config.image_type == OTA_IMAGE_BETA_MASTER ) )
-		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, 80, APP0, true, (uint32_t)ota_loader_config.checksum32 );
+		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, 80, APP0, true );
 		    	else
-		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, 80, APP2, true, (uint32_t)ota_loader_config.checksum32 );
+		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, 80, APP2, true );
 		    }
 		    else {
 		    	imx_printf("Get Latest failed.\r\n");

@@ -330,6 +330,9 @@ uint16_t wifi_init(void)
     return true;
 
 connectivity_deinit_and_fail:
+/*
+ * REVIEW - THIS USED TO BE NEEDED - NOW CAUSES CRASH ON NETWORK RETRY
+ */
     // wiced_wlan_connectivity_deinit();// Always returns success even when it fails.
     /*
      * De init TCP only frees up TCP resources if they were allocated.

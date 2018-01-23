@@ -151,12 +151,14 @@ uint16_t coap_post_control_otaupdate(coap_message_t *msg, CoAP_msg_detail_t *cd,
         goto bad_data;
     }
 
+#ifdef SKIP_THIS
     if( port != 80 ) {
         printf( "TLS encryption is not currently supported in iMatrix,\r\n");
         printf( "consequently no port number may be specified in the JSON request. - Invalid port number in JSON request.\r\n");
         response = BAD_REQUEST;
         goto bad_data;
     }
+#endif
 
     if( image_no == NO_IMAGE_NO ) {
             response = UNSUPPORTED_CONTENT;
@@ -170,7 +172,7 @@ uint16_t coap_post_control_otaupdate(coap_message_t *msg, CoAP_msg_detail_t *cd,
      *
      */
 
-    setup_ota_loader( site, uri, (uint16_t)port, image_no, true, (uint32_t)checksum32 );
+    setup_ota_loader( site, uri, (uint16_t)port, image_no, true );
 
     if( msg->header.t == CONFIRMABLE ) {
         if( coap_store_response_header( msg, CHANGED, ACKNOWLEDGEMENT, NULL )  != WICED_SUCCESS ) {

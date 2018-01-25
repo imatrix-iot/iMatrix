@@ -263,13 +263,13 @@ uint16_t wifi_init(void)
 		goto connectivity_deinit_and_fail;
 	}
 
-    /*
-     * Initialize TCP
-     */
-	init_tcp();
-
 	if( device_config.AP_setup_mode == false ) {
-		/* Get the gateway that the STA is connected to */
+	    /*
+	     * Initialize TCP TLS Connection
+	     */
+	    init_tcp();
+
+	    /* Get the gateway that the STA is connected to */
 		if( wiced_ip_get_gateway_address( interface, &icb.gw_ip ) != WICED_SUCCESS ) {	// In the current version of WICED, this always returns success
 			imx_printf( "Failed to get Gateway Address\r\n" );
 			goto connectivity_deinit_and_fail;
@@ -330,14 +330,21 @@ uint16_t wifi_init(void)
     return true;
 
 connectivity_deinit_and_fail:
-    wiced_wlan_connectivity_deinit();// Always returns success even when it fails.
+/*
+ * REVIEW - THIS USED TO BE NEEDED - NOW CAUSES CRASH ON NETWORK RETRY
+ */
+    // wiced_wlan_connectivity_deinit();// Always returns success even when it fails.
+    /*
+     * De init TCP only frees up TCP resources if they were allocated.
+     */
     deinit_tcp();
 
+    imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
     /*
-     * All done here
+     * Update LED flash to show progress - Short Green - Long Red
      */
-    if( device_config.AP_setup_mode == false )
-        imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OFF, 0 );
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_1 | IMX_LED_BLINK_1_2 | IMX_LED_BLINK_2_7 );
+
     return false;// When the network was successfully torn down after an error.
 }
 

@@ -206,7 +206,7 @@ extern iMatrix_Control_Block_t icb;
 extern IOT_Device_Config_t device_config;	// Defined in device/config.h and saved in DCT
 
 extern sflash_handle_t sflash_handle;
-app_header_t apps_lut[ FULL_IMAGE ] = {0};
+app_header_t apps_lut[ FULL_IMAGE ];
 struct OTA_CONFIGURATION ota_loader_config CCMSRAM;
 
 /******************************************************
@@ -584,7 +584,7 @@ void ota_loader(void)
             ota_loader_config.ota_loader_state = OTA_LOADER_CLOSE_SOCKET;
             break;
         case OTA_LOADER_PARSE_HEADER :
-            result = wiced_tcp_receive( &ota_loader_config.socket, &temp_packet, 5000 );
+            result = wiced_tcp_receive( &ota_loader_config.socket, &temp_packet, 0 );
 
             if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
 
@@ -720,7 +720,7 @@ void ota_loader(void)
             break;
 
         case OTA_LOADER_PARSE_PARTIAL_HEADER :
-            result = wiced_tcp_receive( &ota_loader_config.socket, &temp_packet, 5000 );
+            result = wiced_tcp_receive( &ota_loader_config.socket, &temp_packet, 0 );
 
             if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
 
@@ -796,7 +796,7 @@ void ota_loader(void)
             break;
 
         case OTA_LOADER_RECEIVE_STREAM :
-            result = wiced_tcp_receive( &ota_loader_config.socket, &temp_packet, 5000 );
+            result = wiced_tcp_receive( &ota_loader_config.socket, &temp_packet, 0 );
 //wiced_rtos_delay_milliseconds(500);
             if( result == WICED_TCPIP_SUCCESS ) { // Got some data process it - This will be the header
                 wiced_packet_get_data(temp_packet, 0, &packet_data, &data_length, &available_data_length);
@@ -870,12 +870,17 @@ void ota_loader(void)
                 }
                 wiced_time_get_utc_time( &ota_loader_config.last_recv_packet_utc_time );    // Set last time we got a packet
                 data_length = 0;
-            }else {
-                imx_printf("wiced_tcp_receive() failed with error code: %u\r\n", (unsigned int)result);
-                wiced_time_get_utc_time( &utc_time );
-                if( ( result == 7014 ) || ( utc_time > ota_loader_config.last_recv_packet_utc_time + TIMEOUT_WAIT_FOR_DATA ) ) {
-                    ota_loader_config.ota_loader_state = OTA_LOADER_DATA_TIMEOUT;
-                }
+            }else {// receive != SUCCESS
+            	if ( ( result != WICED_TCPIP_TIMEOUT ) && ( result != WICED_TCPIP_PENDING ) && ( result != WICED_TCPIP_IN_PROGRESS ) ) {
+                    imx_printf("wiced_tcp_receive() failed with error code: %u\r\n", (unsigned int)result);
+					ota_loader_config.ota_loader_state = OTA_LOADER_DATA_TIMEOUT;
+            	}
+            	else {
+					wiced_time_get_utc_time( &utc_time );
+					if ( utc_time > ota_loader_config.last_recv_packet_utc_time + TIMEOUT_WAIT_FOR_DATA ) {
+						ota_loader_config.ota_loader_state = OTA_LOADER_DATA_TIMEOUT;
+					}
+            	}
             }
             break;
         case OTA_LOADER_ALL_RECEIVED :

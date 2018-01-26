@@ -72,5 +72,5 @@ typedef struct {
  ******************************************************/
 void init_tcp(void);
 void deinit_tcp(void);
-void process_tcp( wiced_time_t current_time );
+void process_tcp( void );
 #endif /* TCP_TRANSPORT_H_ */

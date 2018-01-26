@@ -367,10 +367,14 @@ void wifi_shutdown()
     telnetd_deinit();// No return code, so I can't do error handling here. Error handling must be in telnetd().
 
     deinit_udp( interface );
+    deinit_tcp();
+
 	wiced_network_deregister_link_callback( link_up, link_down, interface );// These callbacks indicate link status but do not interact with multicasting or udp.
 
+	icb.wifi_up = false;
+
     wiced_wlan_connectivity_deinit();// Always returns success even when it fails.
-    deinit_tcp();
+
     imx_printf( "Completed shutting Down the Wi Fi Interface\r\n" );
 }
 
@@ -403,16 +407,7 @@ void link_down(void)
 	icb.wifi_up = false;
 	icb.wifi_dropouts += 1;
 }
-/*
- * We lost Wi Fi or system wants to terminate current connection and start new
- */
-void stop_network()
-{
-	sntp_stop_auto_time_sync();
-	stop_keep_alive();
-	wifi_shutdown();
-	icb.wifi_up = false;	// In case this was not a forced shutdown
-}
+
 char* get_wifi_ssid( char* buffer, uint16_t index )
 {
 	platform_dct_wifi_config_t *wifi;

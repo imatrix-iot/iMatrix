@@ -48,6 +48,7 @@
 #include "../device/config.h"
 #include "../networking/keep_alive.h"
 #include "../time/ck_time.h"
+#include "../time/sntp.h"
 #include "wifi.h"
 #include "process_wifi.h"
 
@@ -187,7 +188,9 @@ void process_wifi(wiced_time_t current_time )
 				 * Wi Fi Gone away
 				 *
 				 */
-				stop_network();
+				sntp_stop_auto_time_sync();
+				stop_keep_alive();
+				wifi_shutdown();
 				keep_alive_backoff = 0;
 				icb.wifi_state = MAIN_WIFI_SETUP;
 				imx_printf( "Trying to restart Network\r\n" );

@@ -72,12 +72,15 @@
 enum tcp_transport_t {
     TCP_INIT = 0,
     TCP_CLOSE_CONNECTION,
-    TCP_CLOSE_SOCKET,
-    TCP_DONE,
+	TCP_CLOSE_CONNECTION_AND_RETRY,
+	TCP_START_RETRY_TIMER,
     TCP_RETRY,
+	TCP_RECONNECT,
+	TCP_DEREGISTER_CALLBACKS_AND_RECONNECT,
     TCP_REGISTER,
     TCP_GET_RESPONSE,
-    TCP_IDLE
+    TCP_IDLE,
+	TCP_OFFLINE
 };
 
 /******************************************************
@@ -96,9 +99,12 @@ wiced_tcp_socket_callback_t coap_tcp_disconnect( wiced_tcp_socket_t* socket, voi
  *               Variable Definitions
  ******************************************************/
 tcp_t tcp;
-wiced_mutex_t tcp_mutex;
+//wiced_mutex_t tcp_mutex;
 extern iMatrix_Control_Block_t icb;
 extern IOT_Device_Config_t device_config;
+
+static uint32_t tcp_connection_dropped = WICED_FALSE;
+
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -121,19 +127,24 @@ void deinit_tcp(void)
 {
     wiced_result_t result;
 
-    tcp.state = TCP_IDLE;   // Do Noting
-
-    if( tcp.tcp_connection_up == true ) {
+    if( tcp.state == TCP_IDLE ) {
         result = wiced_tcp_unregister_callbacks( &tcp.socket );
-        if( result != WICED_SUCCESS )
+        if( result != WICED_SUCCESS ) {
             imx_printf( "Unable to unregister TCP callback...\r\n" );
-
-        result = wiced_tcp_delete_socket( &tcp.socket );
-        if( result != WICED_SUCCESS )
-                imx_printf( "Unable to delete TCP socket...\r\n" );
+        }
     }
+    // if a connection & socket exist close them.
+    if( ( tcp.state != TCP_OFFLINE ) && ( tcp.state != TCP_INIT ) &&
+        ( tcp.state != TCP_START_RETRY_TIMER ) && ( tcp.state != TCP_RETRY ) )
+    {
+    	tcp.state = TCP_CLOSE_CONNECTION;
+    	process_tcp();
+    }
+
+    tcp.state = TCP_OFFLINE;   // Do Noting
 }
-void process_tcp( wiced_time_t current_time )
+
+void process_tcp( void )
 {
     char *registration, *response;
     uint16_t available_data_length;
@@ -141,6 +152,16 @@ void process_tcp( wiced_time_t current_time )
     wiced_packet_t *packet, *rx_packet;
     wiced_result_t result;
 
+    if( tcp_connection_dropped == WICED_TRUE ) {
+    	tcp_connection_dropped = WICED_FALSE;
+        if( tcp.state == TCP_IDLE ) {
+        	tcp.state = TCP_DEREGISTER_CALLBACKS_AND_RECONNECT;
+        }
+        else if( ( tcp.state == TCP_REGISTER ) || ( tcp.state == TCP_GET_RESPONSE ) ) {
+        	// In these states, the callbacks should not have been registered yet so this should never happen.
+        	tcp.state = TCP_RETRY;
+        }
+    }
     switch( tcp.state ) {
         case TCP_INIT :
             if( ( device_config.AP_setup_mode == true ) || ( icb.wifi_up == false ) ) {
@@ -223,24 +244,46 @@ void process_tcp( wiced_time_t current_time )
                 retry_count++;
             }
             imx_printf( "Failed to establish TCP Connection\r\n" );
+            tcp.state = TCP_START_RETRY_TIMER;
+            break;
+        case TCP_START_RETRY_TIMER :
             wiced_time_get_time( &tcp.last_attempt );
             tcp.state = TCP_RETRY;
             break;
+        case TCP_DEREGISTER_CALLBACKS_AND_RECONNECT :
+            result = wiced_tcp_unregister_callbacks( &tcp.socket );
+            if( result != WICED_SUCCESS ) {
+                imx_printf( "Unable to unregister TCP callback...\r\n" );
+            }
+        	// Fall through to reconnect.
+        case TCP_CLOSE_CONNECTION_AND_RETRY :
         case TCP_CLOSE_CONNECTION :
+        case TCP_RECONNECT :
             result = wiced_tcp_disconnect( &tcp.socket );
             if( result != WICED_SUCCESS )
                 imx_printf( "TCP Disconnect Failed: %u\r\n", result );
             result = wiced_tcp_delete_socket( &tcp.socket );
-            if( result != WICED_SUCCESS )
-                imx_printf( "TCP Disconnect Failed: %u\r\n", result );
-            /*
-             * Retry Connection
-             */
-            tcp.state = TCP_INIT;
+            if( result != WICED_SUCCESS ) {
+                imx_printf( "TCP Disconnect Failed: %u. Rebooting.\r\n", result );
+                wiced_framework_reboot();
+            }
+            if( tcp.state == TCP_CLOSE_CONNECTION ) {
+                tcp.state = TCP_OFFLINE;
+                break;
+            }
+            if( tcp.state == TCP_CLOSE_CONNECTION_AND_RETRY ) {
+            	tcp.state = TCP_START_RETRY_TIMER;
+            	break;
+            }
+            tcp.state = TCP_INIT;// Reconnect.
             break;
         case TCP_RETRY :
-            if( imx_is_later( current_time, tcp.last_attempt + TCP_RETRY_TIME ) )
-                tcp.state = TCP_INIT;
+            {
+            	wiced_time_t current_time;
+                wiced_time_get_time( &current_time );
+                if( imx_is_later( current_time, tcp.last_attempt + TCP_RETRY_TIME ) )
+                   tcp.state = TCP_INIT;
+            }
             break;
         case TCP_REGISTER :
             /*
@@ -266,12 +309,12 @@ void process_tcp( wiced_time_t current_time )
             result = wiced_tcp_send_packet( &tcp.socket, packet );
             if( result != WICED_SUCCESS ) {
                 imx_printf("TCP packet creation failed, in registration\r\n" );
-                tcp.state = TCP_CLOSE_CONNECTION;
+                tcp.state = TCP_RECONNECT;
             } else {
                 /*
                  * Get Response
                  */
-                tcp.last_attempt = current_time;
+                wiced_time_get_time( &tcp.last_attempt );
                 tcp.state = TCP_GET_RESPONSE;
             }
             break;
@@ -297,20 +340,25 @@ void process_tcp( wiced_time_t current_time )
                  */
                 result = wiced_tcp_register_callbacks( &tcp.socket, NULL, (wiced_tcp_socket_callback_t) &coap_tcp_recv, (wiced_tcp_socket_callback_t) &coap_tcp_disconnect, &tcp.socket );
                 if( result == WICED_TCPIP_SUCCESS ) {
-                    tcp.tcp_connection_up = true;
+//                    tcp.tcp_connection_up = true;
+                	wiced_time_t current_time;
+                    wiced_time_get_time( &current_time );
                     tcp.state = TCP_IDLE;
                     icb.comm_mode = COMM_TCP;
                     return;
                 } else
-                    tcp.state = TCP_CLOSE_CONNECTION;
+                    tcp.state = TCP_RECONNECT;
             } else {
+            	wiced_time_t current_time;
+                wiced_time_get_time( &current_time );
                 if( imx_is_later( current_time, tcp.last_attempt + TCP_REGISTRATION_TIMEOUT ) ) {
                     imx_printf( "Timed out waiting for response from CoAP Server\r\n" );
-                    tcp.state = TCP_CLOSE_CONNECTION;
+                    tcp.state = TCP_RECONNECT;
                 }
             }
             break;
         case TCP_IDLE :
+        case TCP_OFFLINE :
             break;
     }
 }
@@ -318,19 +366,20 @@ void process_tcp( wiced_time_t current_time )
 wiced_tcp_socket_callback_t coap_tcp_disconnect( wiced_tcp_socket_t* socket, void* arg )
 {
     UNUSED_PARAMETER( arg );
-    wiced_result_t result;
-
+//    wiced_result_t result;
+/*
     result = wiced_rtos_lock_mutex( &tcp_mutex );
     if( result != WICED_SUCCESS ) {
         imx_printf( "TCP Unable to lock mutex...\r\n" );
     }
-
+*/
     if( socket == &tcp.socket )     // Is it for the main TCP stream (Other is Telnet etc.
-        tcp.state = TCP_CLOSE_CONNECTION;
-
+    	tcp_connection_dropped = WICED_TRUE;
+/*
     result = wiced_rtos_unlock_mutex( &tcp_mutex );
     if( result != WICED_SUCCESS ) {
         imx_printf( "TCP Unable to un lock mutex...\r\n" );
     }
+*/
     return WICED_SUCCESS;
 }

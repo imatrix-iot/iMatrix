@@ -131,11 +131,16 @@ bool system_init(bool override_config)
     imx_printf( "Preparing WICED...");
 
     result = IMX_SUCCESS;
-    wiced_result = wiced_init();  //wiced_core_init();
+    wiced_result = wiced_init();
 	if ( wiced_result != WICED_SUCCESS ) {
 		imx_printf( "wiced_core_init() failed with error code: %u.\r\n", wiced_result );
 		return IMX_GENERAL_FAILURE;
 	}
+
+	if( init_serial_flash() == false )
+	    imx_printf( "ERROR: Serial Flash size does not match product definition\r\n" );
+    device_config.boot_count += 1;
+    imatrix_save_config();
 
     imx_printf( "\r\n" );
     /*
@@ -188,11 +193,6 @@ bool system_init(bool override_config)
     icb.fake_utc_boot_time = (wiced_utc_time_t) ( device_config.last_ntp_updated_time / 1000 );// Convert ms to seconds
     wiced_time_set_utc_time_ms( &( device_config.last_ntp_updated_time ) );
     icb.boot_time = icb.fake_utc_boot_time;
-
-	if( init_serial_flash() == false )
-	    imx_printf( "ERROR: Serial Flash size does not match product definition\r\n" );
-    device_config.boot_count += 1;
-    imatrix_save_config();
 
     imx_printf( "Core System Initialized\r\n" );
     /*

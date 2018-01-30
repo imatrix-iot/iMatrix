@@ -135,9 +135,6 @@ uint16_t wifi_init(void)
 	 */
     imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
 
-
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_1 | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_3 );
-
 	imx_printf( "Initializing Wi Fi\r\n" );
     /*
      * Kill the network - Code for test purposes only
@@ -145,11 +142,17 @@ uint16_t wifi_init(void)
     // wiced_network_suspend();
     // return;
 
+	/*
+	 * Do not blink LEDS during connectivity init as this is loading code from SFLASH to Wi Fi Module.
+	 */
 	wiced_result = wiced_wlan_connectivity_init();
     if ( wiced_result != WICED_SUCCESS ) {
         imx_printf( "wiced_wlan_connectivity_init() failed with error code: %u.\n", wiced_result );
         return false;
     }
+
+    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_1 | IMX_LED_BLINK_1_5 | IMX_LED_BLINK_2_3 );
+
 #ifdef BLE_ENABLED
     /*
      * If we have BLE Scanning enabled - do the init
@@ -302,17 +305,17 @@ uint16_t wifi_init(void)
 	icb.wifi_up = true;
     if( device_config.AP_setup_mode == false ) {
         imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
-        imx_set_led( IMX_LED_GREEN, IMX_LED_ON, 0 );
+        imx_set_led( IMX_LED_GREEN, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_5 );
+        /*
+         * Log this connection
+         */
+        log_wifi_connection();
+        /*
+         * If we are powered up and online and don't have a serial number contact the server and get one.
+         */
+        if( ( strlen( device_config.device_serial_number ) == 0 ) && ( device_config.AP_setup_mode == false ) )
+            get_sn_mac( 0 );
     }
-    /*
-     * Log this connection
-     */
-    log_wifi_connection();
-	/*
-	 * If we are powered up and online and don't have a serial number contact the server and get one.
-	 */
-	if( ( strlen( device_config.device_serial_number ) == 0 ) && ( device_config.AP_setup_mode == false ) )
-	    get_sn_mac( 0 );
 #ifdef BLE_ENABLED
 	/*
 	 * Start BLE Scanning if enabled
@@ -325,8 +328,10 @@ uint16_t wifi_init(void)
     /*
      * All done here
      */
-    if( device_config.AP_setup_mode == false )
+    if( device_config.AP_setup_mode == false ) {
+        wiced_rtos_delay_milliseconds( 2000 );  // Make sure user can see connected LED indication
         imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
+    }
     return true;
 
 connectivity_deinit_and_fail:
@@ -341,11 +346,11 @@ connectivity_deinit_and_fail:
 
     imx_set_led( 0, IMX_LED_ALL_OFF, 0 );
     /*
-     * Update LED flash to show progress - Short Green - Long Red
+     * Update LED flash Long Red
      */
-    imx_set_led( IMX_LED_GREEN_RED, IMX_LED_OTHER, IMX_LED_FLASH | IMX_LED_FLASH_1 | IMX_LED_BLINK_1_2 | IMX_LED_BLINK_2_7 );
+    imx_set_led( IMX_LED_RED, IMX_LED_OTHER, IMX_LED_BLINK_1 | IMX_LED_BLINK_1_1 );
 
-    return false;// When the network was successfully torn down after an error.
+    return false;// When the network failed to connect
 }
 
 void wifi_shutdown()

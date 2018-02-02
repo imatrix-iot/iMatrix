@@ -136,6 +136,13 @@ bool system_init(bool override_config)
 		imx_printf( "wiced_core_init() failed with error code: %u.\r\n", wiced_result );
 		return IMX_GENERAL_FAILURE;
 	}
+    /*
+     * Load current config from DCT or factory default if none stored, includes loading serial number from CPU data.
+     */
+    imatrix_load_config( override_config );
+    imx_printf( "Configuration Loaded\r\n" );
+    set_serial_number();
+//  print_serial_number();
 
 	if( init_serial_flash() == false )
 	    imx_printf( "ERROR: Serial Flash size does not match product definition\r\n" );
@@ -152,13 +159,6 @@ bool system_init(bool override_config)
      */
     wiced_rtos_delay_milliseconds( MIN_LED_DISPLAY_TIME );
 
-    /*
-     * Load current config from DCT or factory default if none stored, includes loading serial number from CPU data.
-     */
-    imatrix_load_config( override_config );
-    imx_printf( "Configuration Loaded\r\n" );
-    set_serial_number();
-//  print_serial_number();
     /*
      * Initialize variable storage based on settings
      */

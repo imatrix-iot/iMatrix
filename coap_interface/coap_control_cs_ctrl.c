@@ -149,8 +149,8 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
         response_type = ACKNOWLEDGEMENT;
     }
 
-    imx_printf( "Get Configuration - '/control/cs_ctrl'\r\n");
-    imx_printf( "URI Query: %s\r\n", coap_cd->uri_query );
+    PRINTF( "Get Configuration - '/control/cs_ctrl'\r\n");
+    PRINTF( "URI Query: %s\r\n", coap_cd->uri_query );
 
     if ( WICED_SUCCESS != get_uint_from_query_str( "type", &type, coap_cd->uri_query ) ) {// Require type
         if( coap_store_response_header( msg, BAD_REQUEST, response_type, NULL )  != WICED_SUCCESS ) {

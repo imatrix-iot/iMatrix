@@ -480,10 +480,15 @@ void set_wifi_st_ssid( char *ssid, char *passphrase, wiced_security_t security )
     memmove( &( save.network ), dct_network, sizeof( platform_dct_network_config_t ) );
 
     strncpy( (char *) save.network.hostname.value, device_config.device_name, HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
-    strncat( (char *) save.network.hostname.value, ":", HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
-    if( strlen( device_config.device_serial_number ) == 0 )
-        strncat( (char *) save.network.hostname.value, "No SN", HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
-    else
+    strncat( (char *) save.network.hostname.value, ": ", HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
+    if( strlen( device_config.device_serial_number ) == 0 ) {
+        /*
+         * Use MAC to identify
+         */
+        strncat( (char *) save.network.hostname.value, "MAC: ", HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
+        if( ( strlen( save.network.hostname.value ) + 9 ) < HOSTNAME_SIZE )
+            sprintf( &save.network.hostname.value[ strlen( save.network.hostname.value ) ], "%02X:%02X:%02X", (uint16_t) dct_wifi->mac_address.octet[ 3 ], (uint16_t) dct_wifi->mac_address.octet[ 4 ], (uint16_t) dct_wifi->mac_address.octet[ 5 ] );
+    } else
         strncat( (char *) save.network.hostname.value, device_config.device_serial_number, HOSTNAME_SIZE - ( IMX_DEVICE_SERIAL_NUMBER_LENGTH + 1 ) );
     wiced_dct_write( &( save.network ), DCT_NETWORK_CONFIG_SECTION, 0, sizeof(platform_dct_network_config_t) );
 

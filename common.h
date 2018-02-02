@@ -59,6 +59,7 @@
 /******************************************************
  *                    Constants
  ******************************************************/
+#define IMX_VERSION_FORMAT              "%d.%03d.%03d"
 #define IMX_CONTROL_SENSOR_NAME_LENGTH  ( 32 )
 #define IMX_CONTROL_NAME_LENGTH         (IMX_CONTROL_SENSOR_NAME_LENGTH)
 /*
@@ -349,6 +350,9 @@ typedef struct {
     uint32_t default_st_security_mode;
     uint16_t no_sensors;
     uint16_t no_controls;
+    uint16_t host_major_version;
+    uint16_t host_minor_version;
+    uint16_t host_build_version;
     uint32_t product_capabilities;
     uint32_t product_id;
     uint32_t manufactuer_id;

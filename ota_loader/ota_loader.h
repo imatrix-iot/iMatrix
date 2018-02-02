@@ -67,7 +67,8 @@
  *               Function Definitions
  ******************************************************/
 void init_ota_loader(void);
-uint16_t ota_is_active();
+bool ota_is_active(void);
+bool ota_get_latest_is_active(void);
 void setup_ota_loader( char *site, char *uri, uint16_t port, uint16_t image_no, uint16_t load_file );
 void ota_loader(void);
 void ota_loader_deinit(void);

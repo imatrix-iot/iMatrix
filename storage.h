@@ -266,6 +266,9 @@ typedef struct IOT_Device_Config {
     uint16_t reboots;// Space for a reboot counter if we want it for Known Good Configuration Logic that involves the bootloader.
     uint16_t no_sensors;
     uint16_t no_controls;
+    uint16_t host_major_version;
+    uint16_t host_minor_version;
+    uint16_t host_build_version;
     uint16_t history_size;
     uint16_t no_variable_length_pools;
     uint16_t AT_variable_data_timeout;      // Duration for time for data to load a packet

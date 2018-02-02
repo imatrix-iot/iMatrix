@@ -45,7 +45,6 @@
 /******************************************************
  *                    Constants
  ******************************************************/
-#define	VERSION_FORMAT 	"%d.%03d.%03d"
 #define MajorVersion    0
 #define MinorVersion    1
 #define HardwareVersion	1

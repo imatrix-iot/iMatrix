@@ -46,6 +46,8 @@
 #include "coap_msg_get_store.h"
 #include "../cli/messages.h"
 #include "../storage.h"
+#include "../ota_loader/ota_structure.h"
+#include "../ota_loader/ota_loader.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -129,26 +131,25 @@ uint16_t coap_post_control_otagetlatest(coap_message_t *msg, CoAP_msg_detail_t *
      */
 
 	imx_printf( "Attempting to get latest firmware\r\n" );
-	/*
 	if( strcmp( image, "master" ) == 0x00 ) {
-		setup_get_latest_version( OTA_IMAGE_MASTER, SITE );
+		setup_get_latest_version( OTA_IMAGE_MASTER, device_config.ota_public_url );
 		cli_print( "OTA Get Latest 'master' set to run\r\n" );
 	} else if( strcmp( image, "sflash" ) == 0x00 ) {
-		setup_get_latest_version( OTA_IMAGE_SFLASH, SITE );
+		setup_get_latest_version( OTA_IMAGE_SFLASH, device_config.ota_public_url );
 		cli_print( "OTA Get Latest 'sflash' set to run\r\n" );
 	} else if( strcmp( image, "beta_master" ) == 0x00 ) {
-		setup_get_latest_version( OTA_IMAGE_BETA_MASTER, SITE );
+		setup_get_latest_version( OTA_IMAGE_BETA_MASTER, device_config.ota_public_url );
 		cli_print( "OTA Get Latest beta 'master' set to run\r\n" );
 	} else if( strcmp( image, "beta_slave" ) == 0x00 ) {
 	} else if( strcmp( image, "beta_sflash" ) == 0x00 ) {
-		setup_get_latest_version( OTA_IMAGE_BETA_SFLASH, SITE );
+		setup_get_latest_version( OTA_IMAGE_BETA_SFLASH, device_config.ota_public_url );
 		cli_print( "OTA Get Latest beta 'sflash' set to run\r\n" );
 	} else {
     	response = BAD_REQUEST;
     	goto bad_data;
 	}
-	*/
-    if( msg->header.t == CONFIRMABLE ) {
+
+	if( msg->header.t == CONFIRMABLE ) {
         if( coap_store_response_header( msg, CHANGED, ACKNOWLEDGEMENT, NULL )  != WICED_SUCCESS ) {
             return COAP_NO_RESPONSE;
         }

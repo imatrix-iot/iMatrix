@@ -181,13 +181,21 @@ imx_status_t imx_process(void)
 
     wiced_time_get_time( &current_time );
 
-    /*
-     * Handle OTA functions
-     */
-    ota_loader();
 
-    if ( ota_is_active() ) return IMX_SUCCESS;
+    if ( ota_is_active() ) {
+        /*
+         * Handle OTA functions ONLY
+         */
+        ota_loader();
+        return IMX_SUCCESS;
+    }
 
+    if( ota_get_latest_is_active() ) {
+        /*
+         * Handle Get Latest
+         */
+        get_latest_version();
+    }
     /*
      * Process CLI & Telnet Clients
      */

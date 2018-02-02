@@ -171,6 +171,10 @@ wiced_result_t imatrix_load_config(bool override_config)
     }
     device_config.no_sensors = imx_imatrix_init_config.no_sensors;
     device_config.no_controls = imx_imatrix_init_config.no_controls;
+    device_config.host_major_version = imx_imatrix_init_config.host_major_version;
+    device_config.host_minor_version = imx_imatrix_init_config.host_minor_version;
+    device_config.host_build_version = imx_imatrix_init_config.host_build_version;
+
     device_config.history_size = imx_imatrix_init_config.history_size;
     if( imx_imatrix_init_config.no_variable_length_pools > IMX_MAX_VAR_LENGTH_POOLS )
         device_config.no_variable_length_pools = IMX_MAX_VAR_LENGTH_POOLS;

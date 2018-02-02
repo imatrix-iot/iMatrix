@@ -222,6 +222,7 @@ void init_ota_loader(void)
 {
     ota_loader_config.last_ota_loader_state =
     ota_loader_config.ota_loader_state = OTA_LOADER_IDLE;
+    ota_loader_config.ota_getlatest_state = GET_LATEST_IDLE;
 	icb.ota_loader_active = false;
 	icb.get_latest_active = false;
 }
@@ -231,10 +232,21 @@ void init_ota_loader(void)
  *
  * written by Eric Thelin 18 August 2016
  */
-uint16_t ota_is_active()
+bool ota_is_active(void)
 {
     return ( ota_loader_config.ota_loader_state != OTA_LOADER_IDLE );
 }
+
+/**
+ * Return 1 (true) if OTA get latest is doing anything, otherwise return 0 (false).
+ *
+ * written by Greg Phillips Feb 1, 2018
+ */
+bool ota_get_latest_is_active(void)
+{
+    return ( ota_loader_config.ota_getlatest_state != GET_LATEST_IDLE );
+}
+
 
 #ifdef SKIP_THIS
 /**
@@ -1063,6 +1075,11 @@ void cli_get_latest( uint16_t arg )
 
 void setup_get_latest_version(uint16_t image_type, char *site )
 {
+    if( ota_get_latest_is_active() ) {
+        imx_printf( "OTA loader already active\r\n" );
+        return; // Only one can be active at any point in time
+    }
+
 	icb.get_latest_active = true;
 	ota_loader_config.retry_count = 0;
 	ota_loader_config.good_get_latest = false;
@@ -1251,13 +1268,14 @@ uint16_t get_latest_version(void)
 		    wiced_tcp_delete_socket( &ota_loader_config.socket );
 		    if( ota_loader_config.good_get_latest ) {
 		    	if( ota_loader_config.image_type == OTA_IMAGE_MASTER ) {	// Only check version for MASTER flash
-			    	sprintf( my_version, VERSION_FORMAT, MajorVersion, MinorVersion, AUTO_BUILD );
+			    	sprintf( my_version, IMX_VERSION_FORMAT, device_config.host_major_version, device_config.host_minor_version, device_config.host_build_version );
 			    	if( strcmp( my_version, ota_loader_config.version ) >= 0 ) {
 			    		imx_printf( "We have the latest Version: %s, No need to upgrade to: %s\r\n", my_version, ota_loader_config.version );
+			    		ota_loader_config.ota_getlatest_state = GET_LATEST_IDLE;
 			    		return( true );
 			    	}
 		    	}
-		    	imx_printf("Got the uri and checksum.\r\n");
+		    	imx_printf( "Upgrading to Version: %s, from: %s\r\n", ota_loader_config.version, my_version  );
 		    	if( ( ota_loader_config.image_type == OTA_IMAGE_SFLASH ) ||
 		    		( ota_loader_config.image_type == OTA_IMAGE_BETA_SFLASH ) )
 		    		setup_ota_loader( ota_loader_config.site, ota_loader_config.uri, 80, FULL_IMAGE, true );

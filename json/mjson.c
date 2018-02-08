@@ -74,9 +74,9 @@ PERMISSIONS
 #include <math.h>	/* for HUGE_VAL */
 
 #include "mjson.h"
-
+//#define DEBUG_ENABLE
 #ifdef DEBUG_ENABLE
-static int debuglevel = 0;
+static int debuglevel = 10;
 static FILE *debugfp;
 
 void json_enable_debug(int level, FILE * fp)
@@ -96,11 +96,16 @@ static void json_trace(int errlevel, const char *fmt, ...)
 	(void)strncpy(buf, "json: ", BUFSIZ-1);
 	buf[BUFSIZ-1] = '\0';
 	va_start(ap, fmt);
+	/*
 	(void)vsnprint_status(buf + strlen(buf), sizeof(buf) - strlen(buf), fmt,
 			ap);
+	 */
+	(void)vsprintf(buf + strlen(buf), fmt, ap);
 	va_end(ap);
-
+	printf( "%s\r\n", buf );
+/*
 	(void)fputs(buf, debugfp);
+	*/
     }
 }
 

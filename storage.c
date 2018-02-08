@@ -180,7 +180,7 @@ imx_status_t init_storage(void)
         if( ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries ) > 0 )
             imx_printf( "  Pool size: %u, %u entries\r\n", device_config.var_data_config[ i ].size, device_config.var_data_config[ i ].no_entries );
 #endif
-        memory_requested += sizeof( imx_var_data_header_t ) + ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries );
+        memory_requested += ( sizeof( var_data_entry_t ) + ( device_config.var_data_config[ i ].size ) * device_config.var_data_config[ i ].no_entries );
     }
 
     if( memory_requested != 0 ) {

@@ -171,7 +171,7 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
             /*
              * Scan array for entry
              */
-            imx_printf( "Scanning for %u, id: %lu, 0x%08lx\r\n", type, id, id );
+            PRINTF( "Scanning for %u, id: %lu, 0x%08lx\r\n", type, id, id );
             if( type == IMX_CONTROLS ) {
                 for( i = 0; i < device_config.no_controls; i++ )
                     if( device_config.ccb[ i ].id == id ) {
@@ -186,21 +186,21 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
                                 sprintf( json_out, "{ \"name\" : \"%s\", \"float_value\" : %f }", device_config.ccb[ i ].name, cd[ i ].last_value.float_32bit );
                                 break;
                             case IMX_VARIABLE_LENGTH :
-                                result = base64_encode( (unsigned char* ) cd[ i ].last_value.var_data->data, cd[ i ].last_value.var_data->length,
-                                        (unsigned char*) base64_output, BASE64_MAX_LENGTH, BASE64_STANDARD );
-                                if( result < 0 ) {
-                                    /*
-                                     * Error
-                                     */
-                                    if( coap_store_response_header( msg, REQUEST_ENTITY_TOO_BIG, response_type, NULL )  != WICED_SUCCESS ) {
-                                        PRINTF( "Failed to create response.\r\n" );
-                                        return COAP_NO_RESPONSE;
+                                if( cd[ i ].last_value.var_data->length > 0 ) {
+                                    result = base64_encode( (unsigned char* ) cd[ i ].last_value.var_data->data, cd[ i ].last_value.var_data->length,
+                                            (unsigned char*) base64_output, BASE64_MAX_LENGTH, BASE64_STANDARD );
+                                    if( result < 0 ) {
+                                        /*
+                                         * Error
+                                         */
+                                        if( coap_store_response_header( msg, REQUEST_ENTITY_TOO_BIG, response_type, NULL )  != WICED_SUCCESS ) {
+                                            PRINTF( "Failed to create response.\r\n" );
+                                            return COAP_NO_RESPONSE;
+                                        }
                                     }
-                                } else {
-                                    sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
-                                            device_config.ccb[ i ].name, ( cd[ i ].last_value.var_data == NULL ? "" : (char* ) base64_output ) );
-
                                 }
+                                sprintf( json_out, "{ \"name\" : \"%s\", \"var_value\" : \"%s\" }",
+                                        device_config.ccb[ i ].name, ( cd[ i ].last_value.var_data == NULL ? "" : (char* ) base64_output ) );
                                 break;
                         }
                         goto done;
@@ -284,6 +284,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     double double_value;
     float  float_value;
     imx_data_32_t value;
+    imx_status_t imx_status;
 
     if ( ( msg == NULL ) || ( coap_cd == NULL ) ) {
         PRINTF( "NULL value sent to coap_post_control_cs_ctrl.\r\n" );
@@ -303,7 +304,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
         {"uint_value", t_uinteger, .addr.uinteger = &uint_value, .dflt.uinteger = NO_VALUE_VALUE},
         {"int_value", t_uinteger, .addr.integer = &int_value, .dflt.integer = NO_VALUE_VALUE},
         {"float_value", t_real, .addr.real = &double_value, .dflt.real = NO_FLOAT_VALUE},
-        {"var_value", t_string, .addr.string = string_value, .len = MAX_STRING_SIZE },
+        {"var_value", t_string, .addr.string = &string_value[ 0 ], .len = MAX_STRING_SIZE },
         {NULL}
     };
 
@@ -325,7 +326,7 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
     /*
      * Scan array for entry
      */
-    imx_printf( "Updating: %lu, 0x%08lx - to: %lu, %ld, %f, %s\r\n", id, id, uint_value, int_value, float_value, string_value );
+    PRINTF( "Updating: %lu, 0x%08lx - to: %lu, %ld, %f\r\n", id, id, uint_value, int_value, float_value );
     for( i = 0; i < device_config.no_controls; i++ )
         if( device_config.ccb[ i ].id == id ) {
             switch( device_config.ccb[ i ].data_type ) {
@@ -379,14 +380,16 @@ uint16_t coap_post_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_
                     }
                     value.var_data = imx_get_var_data( result );
                     if( value.var_data != NULL ) {
-                        memcpy( value.var_data->data, string_value, result );
+                        memcpy( value.var_data->data, base64_result, result );
                         value.var_data->length = result; // Add space for the NULL - all data is returned 0 from allocation routine
-                        if( imx_set_control_sensor( IMX_CONTROLS,  i, &value ) != IMX_SUCCESS ) {
+                        imx_status = imx_set_control_sensor( IMX_CONTROLS,  i, &value );
+                        imx_add_var_free_pool( value.var_data );
+                        if( imx_status != IMX_SUCCESS ) {
                             response_code = BAD_REQUEST;
                             goto create_response_and_exit;
                         }
                     } else {
-                        response_code = BAD_REQUEST;
+                        response_code = SERVICE_UNAVAILABLE;
                         goto create_response_and_exit;
 
                     }

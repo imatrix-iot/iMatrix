@@ -187,7 +187,7 @@ void handle_response(message_t* msg) {
         return;
     }
     if ( ( MSG_CLASS( msg->coap.header.code ) == CLIENT_ERROR ) ||
-              ( MSG_CLASS( msg->coap.header.code ) == SERVER_ERROR ) ) {
+         ( MSG_CLASS( msg->coap.header.code ) == SERVER_ERROR ) ) {
         PRINTF( "%u.%u.%u.%u responded to a request with error code: %u.%02u.\r\n", 0xFF & ( msg->coap.ip_addr.ip.v4 >> 24 ),
                 0xFF & ( msg->coap.ip_addr.ip.v4 >> 16 ),
                 0xFF & ( msg->coap.ip_addr.ip.v4 >> 8 ),
@@ -196,7 +196,7 @@ void handle_response(message_t* msg) {
                 MSG_DETAIL(msg->coap.header.code) );
     }
     else {//it is an invalid response class.
-        PRINTF( "Invalid response code in message. - Ignoring." );
+        PRINTF( "Invalid response code in message: %u. - Ignoring.", (uint16_t) msg->coap.header.code );
     }
 }
 

@@ -178,24 +178,24 @@ void coap_transmit( uint16_t process_to_end )
             }
 #ifdef PRINT_DEBUGS_FOR_XMIT
             if( ( device_config.log_messages & DEBUGS_FOR_XMIT ) != 0x00 ) {
-                PRINTF( "Message DATA as string:" );
+                imx_printf( "Message DATA as string:" );
                 if ( msg->coap.data_block != NULL ) {
                     for( i = 0; i < msg->coap.msg_length; i++ ) {
                         if ( isprint( msg->coap.data_block->data[ i ] ) ) {
-                            PRINTF( " %c  ", msg->coap.data_block->data[ i ] );
+                            imx_printf( " %c  ", msg->coap.data_block->data[ i ] );
                         }
                         else {
-                            PRINTF( " *  " );
+                            imx_printf( " *  " );
                         }
                     }
-                    PRINTF( "\r\n" );
-                    PRINTF( "Message DATA as hex:   " );
+                    imx_printf( "\r\n" );
+                    imx_printf( "Message DATA as hex:   " );
                     for( i = 0; i < msg->coap.msg_length; i++ ) {
-                        PRINTF( "[%02x]", msg->coap.data_block->data[ i ] );
+                        imx_printf( "[%02x]", msg->coap.data_block->data[ i ] );
                     }
                 }
             }
-            PRINTF( "\r\n" );
+            imx_printf( "\r\n" );
 #endif
             data[ 0 ] = msg->coap.header.ver; // first 2 bits are CoAP version
             data[ 0 ] = ( data[ 0 ] << 2 ) | ( msg->coap.header.t ); // next 2 bits are type

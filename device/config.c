@@ -107,7 +107,22 @@ wiced_result_t imatrix_load_config(bool override_config)
         return result;
 #endif
     if ( ( device_config.valid_config == IMX_MAGIC_CONFIG) && ( override_config == false)  ){
-        imx_printf( "Restored configuration from DCT\r\n" );
+        imx_printf( "Restored configuration from DCT" );
+        if( ( device_config.host_major_version != imx_imatrix_init_config.host_major_version ) ||
+            ( device_config.host_minor_version != imx_imatrix_init_config.host_minor_version ) ||
+            ( device_config.host_build_version != imx_imatrix_init_config.host_build_version ) ) {
+            /*
+             * Update version number
+             */
+            device_config.host_major_version = imx_imatrix_init_config.host_major_version;
+            device_config.host_minor_version = imx_imatrix_init_config.host_minor_version;
+            device_config.host_build_version = imx_imatrix_init_config.host_build_version;
+            imx_printf( "New HOST software version detected: " );
+            imx_printf( IMX_VERSION_FORMAT, device_config.host_major_version, device_config.host_minor_version, device_config.host_build_version );
+            imx_printf( "\r\n" );
+            return imatrix_save_config();
+        }
+        imx_printf( "\r\n" );
         return WICED_SUCCESS;
     }
 

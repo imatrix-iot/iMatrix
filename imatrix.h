@@ -139,12 +139,28 @@ void load_config_defaults_generic_ccb( uint16_t arg );
 bool imx_set_led( imx_led_t led, imx_led_state_t mode, uint16_t mode_details );
 bool imx_get_led_state( imx_led_t led );
 /*
+ * Location functions
+ */
+float imx_get_longitude(void);
+void imx_set_longitude(float longitude);
+float imx_get_latitude(void);
+void imx_set_latitude(float latitude);
+float imx_get_elevation(void);
+void imx_set_elevation(float elevation);
+uint32_t imx_get_indoor_x(void);
+void imx_set_indoor_x(uint32_t indoor_x);
+uint32_t imx_get_indoor_y(void);
+void imx_set_indoor_y(uint32_t indoor_y);
+uint32_t imx_get_indoor_z(void);
+void imx_set_indoor_z(uint32_t indoor_z);
+/*
  * General Wi Fi Status routines
  */
 void imx_init_wi_fi_bssid(uint16_t arg);
 imx_result_t  imx_sample_wi_fi_bssid(uint16_t arg, void *value );
 void imx_init_wi_fi_channel(uint16_t arg);
 imx_result_t  imx_sample_wi_fi_channel(uint16_t arg, void *value );
+uint16_t imx_get_host_s_w_version_scb(void);
 uint16_t imx_get_wifi_channel_scb(void);
 uint16_t imx_get_wifi_rssi_scb(void);
 uint16_t imx_get_wifi_bssid_scb(void);
@@ -160,6 +176,8 @@ uint32_t imx_get_wifi_failed_count(void);
 /*
  * Time & Watchdogs Update
  */
+void imx_set_local_seconds_offset_from_utc( int32_t local_seconds_offset_from_utc );
+int32_t imx_get_local_seconds_offset_from_utc(void);
 wiced_utc_time_t imx_current_local_time(void);
 uint16_t imx_ntp_succeeded_at_least_once(void);
 uint16_t imx_day_of_week(wiced_utc_time_t seconds_since_1969);
@@ -178,6 +196,7 @@ var_data_entry_t *imx_get_var_data( uint16_t length );
 #include "coap/coap.h"
 bool imx_is_multicast_ip( wiced_ip_address_t *addr );
 void imx_set_host_coap_interface( uint16_t no_coap_entries, CoAP_entry_t *host_coap_entries );
+bool imx_supress_multicast_response( wiced_ip_address_t *addr, uint16_t response );
 /*
  * Include JSON library
  */

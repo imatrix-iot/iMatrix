@@ -292,7 +292,7 @@ typedef struct IOT_Device_Config {
     uint32_t ota_fail_sflash_crc;
     uint32_t ota_fail_communications_link;
     uint32_t valid_config;
-    uint32_t building_id, level_id, indoor_x, indoor_y;
+    uint32_t building_id, level_id, indoor_x, indoor_y, indoor_z;
     int32_t local_seconds_offset_from_utc;
     uint32_t log_messages;
     float longitude, latitude, elevation;
@@ -302,37 +302,38 @@ typedef struct IOT_Device_Config {
     imx_control_sensor_block_t ccb[ IMX_MAX_NO_CONTROLS ];
     imx_control_sensor_block_t scb[ IMX_MAX_NO_SENSORS ];
     imx_var_data_config_t var_data_config[ IMX_MAX_VAR_LENGTH_POOLS ];
-    unsigned int print_debugs               : 1;
-    unsigned int log_wifi_AP                : 1;    // Log Wi Fi Events and levels
-    unsigned int log_wifi_rssi              : 1;
-    unsigned int log_wifi_rfnoise           : 1;
-    unsigned int send_logs_to_imatrix       : 1;    // Send log messages to iMatrix
-    unsigned int at_command_mode            : 1;    // Determines CLI output styles
-    unsigned int application_loaded         : 1;    // Has the application already loaded
-    unsigned int api_loaded                 : 1;    // Has API loaded values - use to overide defaults
-    unsigned int imatrix_enabled            : 1;
-    unsigned int cli_enabled                : 1;
-    unsigned int telnet_enabled             : 1;
-    unsigned int ssh_enabled                : 1;
-    unsigned int username_password_enabled  : 1;
-    unsigned int comm_mode                  : 4;    // Used for iMatrix Communication options
-    unsigned int mobile_device              : 1;    // Send regular location updates
-    unsigned int indoor_device              : 1;    // Do we send both GPS or indoor locations?
-    unsigned int enable_imatrix             : 1;
-    unsigned int use_rssi                   : 1;
-    unsigned int use_rfnoise                : 1;
-    unsigned int use_wifi_channel           : 1;
-    unsigned int use_temperatue             : 1;
-    unsigned int use_red_led                : 1;
-    unsigned int use_green_led              : 1;
-    unsigned int send_now_on_warning_level  : 2;
-    unsigned int provisioned                : 1;
-    unsigned int do_SFLASH_load             : 1;    // On boot load the SFLASH from a known source
-    unsigned int AP_setup_mode              : 1;    // Operate as an Access Point to enable other device to be programmed with AP settings to use
-    unsigned int connected_to_imatrix       : 1;    // Set to true once a device has successfully connected to iMatrix Server
-    unsigned int log_to_imatrix             : 1;
-    unsigned int AT_echo                    : 1;    // Echo characters 0 - Disable / 1 - Enable
-    unsigned int AT_verbose                 : 2;    // Verbose mode - 0 - No response / 1 Standard Response / 2 - Standard + ISMART Status messages / 3 - Undefined
+    unsigned int print_debugs               : 1;    // 0
+    unsigned int log_wifi_AP                : 1;    // 1 - Log Wi Fi Events and levels
+    unsigned int log_wifi_rssi              : 1;    // 2
+    unsigned int log_wifi_rfnoise           : 1;    // 3
+    unsigned int send_logs_to_imatrix       : 1;    // 4 Send log messages to iMatrix
+    unsigned int at_command_mode            : 1;    // 5 Determines CLI output styles
+    unsigned int application_loaded         : 1;    // 6 Has the application already loaded
+    unsigned int api_loaded                 : 1;    // 7 Has API loaded values - use to overide defaults
+    unsigned int imatrix_enabled            : 1;    // 8
+    unsigned int cli_enabled                : 1;    // 9
+    unsigned int telnet_enabled             : 1;    // 10
+    unsigned int ssh_enabled                : 1;    // 11
+    unsigned int username_password_enabled  : 1;    // 12
+    unsigned int comm_mode                  : 4;    // 13-16 Used for iMatrix Communication options
+    unsigned int mobile_device              : 1;    // 17 - Send regular location updates
+    unsigned int indoor_device              : 1;    // 18 - Do we send both GPS or indoor locations?
+    unsigned int enable_imatrix             : 1;    // 19
+    unsigned int use_rssi                   : 1;    // 20
+    unsigned int use_rfnoise                : 1;    // 21
+    unsigned int use_wifi_channel           : 1;    // 22
+    unsigned int use_temperatue             : 1;    // 23
+    unsigned int use_red_led                : 1;    // 24
+    unsigned int use_green_led              : 1;    // 25
+    unsigned int send_now_on_warning_level  : 2;    // 26-27
+    unsigned int provisioned                : 1;    // 28
+    unsigned int do_SFLASH_load             : 1;    // 29 - On boot load the SFLASH from a known source
+    unsigned int AP_setup_mode              : 1;    // 30 - Operate as an Access Point to enable other device to be programmed with AP settings to use
+    unsigned int connected_to_imatrix       : 1;    // 31 - Set to true once a device has successfully connected to iMatrix Server
+    unsigned int log_to_imatrix             : 1;    // 32
+    unsigned int AT_echo                    : 1;    // 33 - Echo characters 0 - Disable / 1 - Enable
+    unsigned int AT_verbose                 : 2;    // 34 - Verbose mode - 0 - No response / 1 Standard Response / 2 - Standard + ISMART Status messages / 3 - Undefined
+    unsigned int reserved                   : 30;   // 33 - 63
 } IOT_Device_Config_t;
 
 

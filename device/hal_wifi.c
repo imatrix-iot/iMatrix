@@ -145,7 +145,7 @@ imx_result_t  imx_sample_rfnoise(uint16_t arg, void *value )
 	int32_t foo;
 	UNUSED_PARAMETER(arg);
 
-	foo = hal_get_wifi_noise();
+	foo = hal_get_wifi_rfnoise();
 	if( foo != 0 ) {
 		memcpy( value, &foo, sizeof( foo ) );
 		return IMATRIX_SUCCESS;
@@ -157,7 +157,7 @@ imx_result_t  imx_sample_rfnoise(uint16_t arg, void *value )
   * @param  None
   * @retval : None
   */
-int32_t hal_get_wifi_noise(void)
+int32_t hal_get_wifi_rfnoise(void)
 {
 	int32_t noise;
 

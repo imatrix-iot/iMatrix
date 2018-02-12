@@ -102,7 +102,7 @@ typedef struct {
 	uint32_t spi_errors;
     uint32_t wifi_failed_connect_count;
     uint32_t wifi_success_connect_count;
-	uint32_t indoor_x, indoor_y, indoor_level;
+	uint32_t indoor_x, indoor_y, indoor_z, indoor_level;
 	float longitude, latitude, elevation;
 	ip_stats_t ip_stats[ NO_PROTOCOL_STATS ];
 	wiced_ip_address_t gw_ip;
@@ -135,6 +135,7 @@ typedef struct {
 	unsigned int send_registration          : 1;
 	unsigned int send_gps_coords	        : 1;
 	unsigned int send_indoor_coords	        : 1;
+	unsigned int send_host_sw_revision      : 1;
 	unsigned int ble_initialized	        : 1;
 	unsigned int arduino_valid		        : 1;
 	unsigned int wifi_change		        : 1;

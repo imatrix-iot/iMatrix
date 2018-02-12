@@ -60,6 +60,7 @@
  *                    Constants
  ******************************************************/
 #define IMX_VERSION_FORMAT              "%d.%03d.%03d"
+#define IMX_VERSION_LENGTH              ( 3 /* Major Version */ + 1 /* . */ + 3 /* Minor Version */ + 1 /* . */ + 3 /* BUILD NUMBER */ )
 #define IMX_CONTROL_SENSOR_NAME_LENGTH  ( 32 )
 #define IMX_CONTROL_NAME_LENGTH         (IMX_CONTROL_SENSOR_NAME_LENGTH)
 /*

@@ -115,7 +115,7 @@ void log_wifi_connection(void)
         if( var_data_ptr != NULL ) {
             sprintf( (char *) var_data_ptr->data, "%02x:%02x:%02x:%02x:%02x:%02x", ap_bssid.octet[ 0 ], ap_bssid.octet[ 1 ], ap_bssid.octet[ 2 ], ap_bssid.octet[ 3 ],
                     ap_bssid.octet[ 4 ], ap_bssid.octet[ 5 ] );
-            var_data_ptr->length = strlen( (char *) var_data_ptr->data );    // Include NULL in the length of this data
+            var_data_ptr->length = strlen( (char *) var_data_ptr->data );
 //            imx_printf( " BSSID: %s", var_data_ptr->data );
             imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_bssid_scb(), &var_data_ptr );
             /*
@@ -133,9 +133,9 @@ void log_wifi_connection(void)
     }
 
     if( device_config.log_wifi_rfnoise == true ) {
-        noise = hal_get_wifi_noise();
+        noise = hal_get_wifi_rfnoise();
 //        imx_printf( " RF Noise: %ld", noise );
-        imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rf_noise_scb(), (void *) &noise );
+        imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rfnoise_scb(), (void *) &noise );
     }
 
 //    imx_printf( "\r\n" );

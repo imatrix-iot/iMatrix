@@ -72,7 +72,7 @@ void load_config_defaults_noise( uint16_t arg );
 uint16_t sample_rssi(uint16_t arg, void *value );
 int32_t hal_get_wifi_rssi(void);
 uint16_t sample_rfnoise(uint16_t arg, void *value );
-int32_t hal_get_wifi_noise(void);
+int32_t hal_get_wifi_rfnoise(void);
 int16_t hal_get_wifi_tx_power(void);
 void load_config_defaults_wifi_channel( uint16_t arg );
 uint16_t sample_wifi_channel(uint16_t arg, void *value );

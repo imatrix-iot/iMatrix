@@ -88,7 +88,7 @@ extern iMatrix_Control_Block_t icb;
 uint16_t wifi_check_count = 0, wifi_was_connected = false;
 uint32_t random_seed_from_mac = 0, keep_alive_backoff = 0;
 wiced_time_t last_wifi_check = 0, wifi_up_time = 0, start_time_synch = 0;
-wiced_utc_time_t utc_time = 0, sec_since_boot = 0;
+wiced_utc_time_t utc_time = 0;
 
 extern iMatrix_Control_Block_t icb;
 extern unsigned int random_seed;
@@ -116,11 +116,7 @@ void process_wifi(wiced_time_t current_time )
 				 * Set up the RTC
 				 */
 				if( device_config.AP_setup_mode == false ) {	// We should be connected to the Internet
-					wiced_time_get_time( &start_time_synch );
-					wiced_time_get_utc_time( &utc_time );
-					sec_since_boot = utc_time - icb.fake_utc_boot_time;
-
-					    imx_printf( "\r\nRTC Start.....\r\n" );
+					imx_printf( "\r\nRTC Start.....\r\n" );
 				    start_random_delay_timer_for_sntp();
 				}
 			    wwd_wifi_get_mac_address( &mac, WWD_STA_INTERFACE );
@@ -168,8 +164,10 @@ void process_wifi(wiced_time_t current_time )
 					wiced_time_t time;
 					wiced_time_get_time( &time );
 					wiced_time_get_utc_time( &utc_time );
-
-					icb.boot_time = utc_time - sec_since_boot - ( time_difference( time, start_time_synch )/1000 );
+					/*
+					 * This will not be actual boot time but will be close as we can get a system time changes when NTP is loaded. So we can not relay on saving a system time at real boot.
+					 */
+					icb.boot_time = utc_time;
 			    }
 
 				// Start keep alive when back off expires.

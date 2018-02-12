@@ -64,6 +64,6 @@
 uint16_t imx_get_wifi_channel_scb(void);
 uint16_t imx_get_wifi_rssi_scb(void);
 uint16_t imx_get_wifi_bssid_scb(void);
-uint16_t imx_get_wifi_rf_noise_scb(void);
+uint16_t imx_get_wifi_rfnoise_scb(void);
 
 #endif /* HOST_SUPPORT_H_ */

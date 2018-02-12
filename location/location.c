@@ -68,7 +68,7 @@
  *                    Structures
  ******************************************************/
 typedef struct {
-	float lattitude;
+	float latitude;
 	float longitude;
 	uint16_t delay;
 } gps_update_entry_t ;
@@ -152,7 +152,7 @@ void process_location( wiced_time_t current_time )
 #ifdef SIMULATE_GPS
 
 	if( is_later( current_time, wait_for_update + simple_gps_route[ gps_index ].delay ) == true ) {
-		icb.lattitude = simple_gps_route[ gps_index ].lattitude;
+		icb.latitude = simple_gps_route[ gps_index ].latitude;
 		icb.longitude = simple_gps_route[ gps_index ].longitude;
         gps_index += 1;
         if( gps_index >= NO_GPS_ENTRIES )
@@ -161,4 +161,112 @@ void process_location( wiced_time_t current_time )
 	if( is_later( current_time, last_gps_update + device_config.location_update_rate ) == true )
 		icb.send_gps_coords = true;
 #endif
+}
+/**
+  * @brief Get the longitude of the Thing
+  * @param  None
+  * @retval : longitude
+  */
+float imx_get_longitude(void)
+{
+    return icb.longitude;
+}
+/**
+  * @brief Set the longitude of the Thing
+  * @param  None
+  * @retval : longitude
+  */
+void imx_set_longitude(float longitude)
+{
+    icb.longitude = longitude;
+}
+/**
+  * @brief Get the latitude of the Thing
+  * @param  None
+  * @retval : latitude
+  */
+float imx_get_latitude(void)
+{
+    return icb.latitude;
+}
+/**
+  * @brief Set the latitude of the Thing
+  * @param  None
+  * @retval : imx_get_latitude
+  */
+void imx_set_latitude(float latitude)
+{
+    icb.latitude = latitude;
+}
+/**
+  * @brief Get the elevation of the Thing
+  * @param  None
+  * @retval : elevation
+  */
+float imx_get_elevation(void)
+{
+    return icb.elevation;
+}
+/**
+  * @brief Set the elevation of the Thing
+  * @param  None
+  * @retval : imx_get_elevation
+  */
+void imx_set_elevation(float elevation)
+{
+    icb.elevation = elevation;
+}
+/**
+  * @brief Get the indoor_x of the Thing
+  * @param  None
+  * @retval : indoor_x
+  */
+uint32_t imx_get_indoor_x(void)
+{
+    return icb.indoor_x;
+}
+/**
+  * @brief Set the indoor_x of the Thing
+  * @param  None
+  * @retval : indoor_x
+  */
+void imx_set_indoor_x(uint32_t indoor_x)
+{
+    icb.indoor_x = indoor_x;
+}
+/**
+  * @brief Get the indoor_y of the Thing
+  * @param  None
+  * @retval : indoor_y
+  */
+uint32_t imx_get_indoor_y(void)
+{
+    return icb.indoor_y;
+}
+/**
+  * @brief Set the indoor_y of the Thing
+  * @param  None
+  * @retval : indoor_y
+  */
+void imx_set_indoor_y(uint32_t indoor_y)
+{
+    icb.indoor_y = indoor_y;
+}
+/**
+  * @brief Get the indoor_z of the Thing
+  * @param  None
+  * @retval : indoor_z
+  */
+uint32_t imx_get_indoor_z(void)
+{
+    return icb.indoor_z;
+}
+/**
+  * @brief Set the indoor_z of the Thing
+  * @param  None
+  * @retval : indoor_z
+  */
+void imx_set_indoor_z(uint32_t indoor_z)
+{
+    icb.indoor_z = indoor_z;
 }

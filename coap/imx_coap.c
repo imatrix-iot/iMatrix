@@ -90,11 +90,6 @@ bool imx_is_multicast_ip( wiced_ip_address_t *addr )
    }
 }
 /**
-  * @brief  get_well_known
-  * @param  CoAP msg pointer, arg
-  * @retval : CoAP Response
-  */
-/**
   * @brief Set the pointer to the coap interface block for host functions
   * @param  No of entries, pointer to block of uris and routines
   * @retval : None
@@ -106,4 +101,18 @@ void imx_set_host_coap_interface( uint16_t no_coap_entries, CoAP_entry_t *host_c
      */
     icb.no_host_coap_entries = no_coap_entries;
     icb.coap_entries = host_coap_entries;
+}
+
+/**
+  * @brief  Determine if this response should be suppressed based on the response
+  *         Normally processed multi-cast messages will not send a response. Only error responses will return
+  * @param  Address of senders destination, response code
+  * @retval : true / false
+  */
+bool imx_supress_multicast_response( wiced_ip_address_t *addr, uint16_t response )
+{
+    if( ( imx_is_multicast_ip( addr ) == true ) && ( ( response & MSG_MASK ) == MSG_2_XX ) )
+        return true;
+    else
+        return false;
 }

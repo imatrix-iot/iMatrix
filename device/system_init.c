@@ -39,6 +39,7 @@
 #include <stdbool.h>
 
 #include "wiced.h"
+#include "imatrix.h"
 
 #include "../storage.h"
 #include "config.h"
@@ -189,10 +190,12 @@ bool system_init(bool override_config)
     random_seed = device_config.sn.serial1;
     message_id = rand_r( &random_seed );
     request_id = rand_r( &random_seed );
-
-    icb.fake_utc_boot_time = (wiced_utc_time_t) ( device_config.last_ntp_updated_time / 1000 );// Convert ms to seconds
+    /*
+     * Set up boot time - this will be based on last know time as we don't have NTP yet. So it will be wrong by up to 1 Day perhaps.
+     */
+    icb.fake_utc_boot_time =
+    icb.boot_time = (wiced_utc_time_t) ( device_config.last_ntp_updated_time / 1000 );// Convert ms to seconds
     wiced_time_set_utc_time_ms( &( device_config.last_ntp_updated_time ) );
-    icb.boot_time = icb.fake_utc_boot_time;
 
     imx_printf( "Core System Initialized\r\n" );
     /*
@@ -241,6 +244,21 @@ bool system_init(bool override_config)
      * Main state machine set to setup mode
      */
     icb.wifi_state = MAIN_WIFI_SETUP;
+    if( icb.send_host_sw_revision == true ) {
+        var_data_entry_t *var_data_ptr;
+        var_data_ptr = imx_get_var_data( IMX_VERSION_LENGTH );
+        if( var_data_ptr != NULL ) {
+            sprintf( (char *) var_data_ptr->data, IMX_VERSION_FORMAT, device_config.host_major_version, device_config.host_minor_version, device_config.host_build_version );
+            var_data_ptr->length = strlen( (char *) var_data_ptr->data );
+//            imx_printf( "Version Set to: %s", var_data_ptr->data );
+            imx_set_control_sensor( IMX_SENSORS, imx_get_host_s_w_version_scb(), &var_data_ptr );
+            /*
+             * Free up buffer now it has been recorded
+             */
+            imx_add_var_free_pool( var_data_ptr );
+            icb.send_host_sw_revision = false;
+        }
+    }
 
     imx_printf( "Initialization Complete, Thing will run in %s mode\r\n", device_config.AP_setup_mode ? "Provisioning" : "Operational" );
 

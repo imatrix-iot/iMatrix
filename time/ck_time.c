@@ -201,7 +201,25 @@ char* sprintf_iso8601_time(char* str_out, uint32_t max_length, wiced_iso8601_tim
 
     return str_out;
 }
-
+/**
+  * @brief  Set the local time offset from UTC
+  * @param  None
+  * @retval : Local time offset from UTC
+  */
+void imx_set_local_seconds_offset_from_utc( int32_t local_seconds_offset_from_utc )
+{
+    device_config.local_seconds_offset_from_utc = local_seconds_offset_from_utc;
+    imatrix_save_config();
+}
+/**
+  * @brief  Return the local time offset from UTC
+  * @param  None
+  * @retval : Local time offset from UTC
+  */
+int32_t imx_get_local_seconds_offset_from_utc(void)
+{
+    return device_config.local_seconds_offset_from_utc;
+}
 /**
  * Adjust UTC time retrieved from the system clock to current local time.
  *

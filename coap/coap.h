@@ -100,36 +100,41 @@ uint16_t no_user_coap_entries(void);
 #define EMPTY_MSG           0
 /*
  * 1.01-1.31    Reserved
- *
+ */
+#define MSG_MASK                ( 0xE0 )
+ /*
  * 2.xx
  */
-#define CREATED                 ( (0x40) | 1 )
-#define DELETED                 ( (0x40) | 2 )
-#define VALID                   ( (0x40) | 3 )
-#define CHANGED                 ( (0x40) | 4 )
-#define CONTENT                 ( (0x40) | 5 )
+#define MSG_2_XX                ( 0x40 )
+#define CREATED                 ( MSG_2_XX | 1 )
+#define DELETED                 ( MSG_2_XX | 2 )
+#define VALID                   ( MSG_2_XX | 3 )
+#define CHANGED                 ( MSG_2_XX | 4 )
+#define CONTENT                 ( MSG_2_XX | 5 )
 /*
  * 4.xx
  */
-#define BAD_REQUEST             ( (0x80) | 0 )
-#define UNAUTHORIZED            ( (0x80) | 1 )
-#define BAD_OPTION              ( (0x80) | 2 )
-#define FORBIDDEN               ( (0x80) | 3 )
-#define NOT_FOUND               ( (0x80) | 4 )
-#define METHOD_NOT_ALLOWED      ( (0x80) | 5 )
-#define NOT_ACCEPTABLE          ( (0x80) | 6 )
-#define PRECONDTION_FAILED      ( (0x80) | 12 )
-#define REQUEST_ENTITY_TOO_BIG  ( (0x80) | 13 )
-#define UNSUPPORTED_CONTENT     ( (0x80) | 15 )
+#define MSG_4_XX                ( 0x80 )
+#define BAD_REQUEST             ( MSG_4_XX | 0 )
+#define UNAUTHORIZED            ( MSG_4_XX | 1 )
+#define BAD_OPTION              ( MSG_4_XX | 2 )
+#define FORBIDDEN               ( MSG_4_XX | 3 )
+#define NOT_FOUND               ( MSG_4_XX | 4 )
+#define METHOD_NOT_ALLOWED      ( MSG_4_XX | 5 )
+#define NOT_ACCEPTABLE          ( MSG_4_XX | 6 )
+#define PRECONDTION_FAILED      ( MSG_4_XX | 12 )
+#define REQUEST_ENTITY_TOO_BIG  ( MSG_4_XX | 13 )
+#define UNSUPPORTED_CONTENT     ( MSG_4_XX | 15 )
 /*
  * 5.xx
  */
-#define INTERNAL_SERVER_ERROR   ( (0xA0) | 0 )
-#define NOT_IMPLEMENTED         ( (0xA0) | 1 )
-#define BAD_GATEWAY             ( (0xA0) | 2 )
-#define SERVICE_UNAVAILABLE     ( (0xA0) | 3 )
-#define GATEWAY_TIMEOUT         ( (0xA0) | 4 )
-#define PROXY_NOT_SUPPORTED     ( (0xA0) | 5 )
+#define MSG_5_XX                ( 0xA0 )
+#define INTERNAL_SERVER_ERROR   ( MSG_5_XX | 0 )
+#define NOT_IMPLEMENTED         ( MSG_5_XX | 1 )
+#define BAD_GATEWAY             ( MSG_5_XX | 2 )
+#define SERVICE_UNAVAILABLE     ( MSG_5_XX | 3 )
+#define GATEWAY_TIMEOUT         ( MSG_5_XX | 4 )
+#define PROXY_NOT_SUPPORTED     ( MSG_5_XX | 5 )
 /*
  * Internal Control
  */

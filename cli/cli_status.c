@@ -106,12 +106,31 @@ void cli_status( uint16_t arg )
 	wiced_time_t current_time;
 	wiced_iso8601_time_t iso8601_time;
 	wiced_utc_time_t utc_time;
+    uint32_t uptime, days, hours, minutes, seconds;
+
+    wiced_time_get_utc_time( &utc_time );
+    uptime = utc_time - icb.boot_time;
+
+    days = uptime / 86400;
+    hours = ( uptime % 86400 ) / 3600 ;
+    minutes = ( uptime % 3600 ) / 60;
+    seconds = uptime % 60;
+
 
     wiced_time_get_utc_time( &utc_time );
     wiced_time_get_iso8601_time( &iso8601_time );
-    cli_print( "System UTC time is: %lu -> %.26s Current Status:\r\n", utc_time, (char*)&iso8601_time );
+    cli_print( "System UTC time is: %lu -> %.26s - ", utc_time, (char*)&iso8601_time );
 
-    cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
+    if( icb.boot_time != icb.fake_utc_boot_time ) {
+        wiced_time_convert_utc_ms_to_iso8601( (wiced_utc_time_ms_t)icb.boot_time * 1000, &iso8601_time );
+        cli_print( "Booted at: %.26s, ", (char*)&iso8601_time );
+    } else {
+        wiced_time_convert_utc_ms_to_iso8601( (wiced_utc_time_ms_t)icb.fake_utc_boot_time * 1000, &iso8601_time );
+        cli_print( "NTP Has not set time yet, using last NTP time of: %.26s, ", (char*)&iso8601_time );
+    }
+    cli_print( "System up time %u Days, %02lu Hours %02lu Minutes %02lu Seconds", days, hours, minutes, seconds );
+
+    cli_print( "\r\nProduct Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
     cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
     cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
@@ -137,7 +156,7 @@ void cli_status( uint16_t arg )
 			cli_print( "Client list not yet implemented" );
 		} else {
 			rssi = hal_get_wifi_rssi();
-			noise = hal_get_wifi_noise();
+			noise = hal_get_wifi_rfnoise();
 			channel = hal_get_wifi_channel();
     		cli_print( "Secured with: " );
 		    switch( device_config.st_security_mode ) {

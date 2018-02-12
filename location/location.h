@@ -64,4 +64,16 @@
  ******************************************************/
 void init_location_system(void);
 void process_location( wiced_time_t current_time );
+float imx_get_longitude(void);
+void imx_set_longitude(float longitude);
+float imx_get_latitude(void);
+void imx_set_latitude(float latitude);
+float imx_get_elevation(void);
+void imx_set_elevation(float elevation);
+uint32_t imx_get_indoor_x(void);
+void imx_set_indoor_x(uint32_t indoor_x);
+uint32_t imx_get_indoor_y(void);
+void imx_set_indoor_y(uint32_t indoor_y);
+uint32_t imx_get_indoor_z(void);
+void imx_set_indoor_z(uint32_t indoor_z);
 #endif /* LOCATAION__H_ */

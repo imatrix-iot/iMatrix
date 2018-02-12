@@ -63,5 +63,5 @@
  ******************************************************/
 bool imx_is_multicast_ip( wiced_ip_address_t *addr );
 void imx_set_host_coap_interface( uint16_t no_coap_entries, CoAP_entry_t *host_coap_entries );
-
+bool imx_supress_multicast_response( wiced_ip_address_t *addr, uint16_t response );
 #endif /* IMX_COAP_H_ */

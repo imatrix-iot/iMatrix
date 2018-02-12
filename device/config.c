@@ -80,6 +80,7 @@
  ******************************************************/
 extern IOT_Device_Config_t device_config;
 extern imx_imatrix_init_config_t imx_imatrix_init_config;
+extern iMatrix_Control_Block_t icb;
 #include "factory_def.c"
 /******************************************************
  *               Function Definitions
@@ -108,6 +109,25 @@ wiced_result_t imatrix_load_config(bool override_config)
 #endif
     if ( ( device_config.valid_config == IMX_MAGIC_CONFIG) && ( override_config == false)  ){
         imx_printf( "Restored configuration from DCT" );
+        /*
+         * Check if there is a change in the no control or sensors - reset to defaults
+         */
+        if( ( device_config.no_controls != imx_imatrix_init_config.no_controls  ) ||
+            ( device_config.no_sensors != imx_imatrix_init_config.no_sensors  ) ) {
+            if( imx_imatrix_init_config.no_controls > IMX_MAX_NO_CONTROLS ) {
+                imx_printf( "Max Controls Exceeded, keeping old configuration\r\n" );
+            } else {
+                if( imx_imatrix_init_config.no_sensors > IMX_MAX_NO_SENSORS ) {
+                    imx_printf( "Max Sensors Exceeded, keeping old configuration\r\n" );
+                } else {
+                    imx_printf( "Updating Controls and Sensors Default Configuration\r\n" );
+                    cs_reset_defaults();
+                }
+            }
+        }
+        /*
+         * Check if S/W update occurred
+         */
         if( ( device_config.host_major_version != imx_imatrix_init_config.host_major_version ) ||
             ( device_config.host_minor_version != imx_imatrix_init_config.host_minor_version ) ||
             ( device_config.host_build_version != imx_imatrix_init_config.host_build_version ) ) {
@@ -120,6 +140,7 @@ wiced_result_t imatrix_load_config(bool override_config)
             imx_printf( "New HOST software version detected: " );
             imx_printf( IMX_VERSION_FORMAT, device_config.host_major_version, device_config.host_minor_version, device_config.host_build_version );
             imx_printf( "\r\n" );
+            icb.send_host_sw_revision = true;   // Need to set this flag as data structures have not yet been initialized
             return imatrix_save_config();
         }
         imx_printf( "\r\n" );
@@ -267,6 +288,10 @@ wiced_result_t imatrix_load_config(bool override_config)
     imx_printf( "User Configuration entries loaded\r\n" );
 
     cs_reset_defaults();
+    /*
+     * Let iMatrix know what version we are running
+     */
+    icb.send_host_sw_revision = true;   // Need to set this flag as data structures have not yet been initialized
 
     return imatrix_save_config();
 }

@@ -214,7 +214,7 @@ void coap_recv(uint16_t process_to_end )
 /*
  * Look for any data on the receive list and process it. if no data sleep for COAP_RECV_SLEEP
  */
-    response = 0;
+    response = COAP_NO_RESPONSE;
     confirmable = false;
     reset_condition = false;
     protocol = COMM_UDP;

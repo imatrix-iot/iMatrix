@@ -41,7 +41,7 @@
 /******************************************************
  *                      Macros
  ******************************************************/
-#define IMX_WATCHDOG_DELAY  20
+#define IMX_WATCHDOG_DELAY  40
 /******************************************************
  *                    Constants
  ******************************************************/
@@ -74,9 +74,9 @@ static  wiced_system_monitor_t watchdog;
   * @param  None
   * @retval : None
   */
-void init_watchdog(void)
+void imx_init_watchdog(void)
 {
-    if ( wiced_register_system_monitor( &watchdog, IMX_WATCHDOG_DELAY ) != WICED_SUCCESS ) {
+    if ( wiced_register_system_monitor( &watchdog, IMX_WATCHDOG_DELAY * 1000 ) != WICED_SUCCESS ) {
         imx_printf( "Watchdog failed to initialize.\r\n");
     }
 
@@ -84,5 +84,5 @@ void init_watchdog(void)
 
 void imx_kick_watchdog(void)
 {
-    wiced_update_system_monitor( &watchdog, IMX_WATCHDOG_DELAY );
+    wiced_update_system_monitor( &watchdog, IMX_WATCHDOG_DELAY * 1000 );
 }

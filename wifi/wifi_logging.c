@@ -133,9 +133,9 @@ void log_wifi_connection(void)
     }
 
     if( device_config.log_wifi_rfnoise == true ) {
-        noise = hal_get_wifi_rfnoise();
+        noise = hal_get_wifi_rf_noise();
 //        imx_printf( " RF Noise: %ld", noise );
-        imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rfnoise_scb(), (void *) &noise );
+        imx_set_control_sensor( IMX_SENSORS, imx_get_wifi_rf_noise_scb(), (void *) &noise );
     }
 
 //    imx_printf( "\r\n" );
@@ -153,7 +153,7 @@ void log_wifi_connection(void)
 
 void log_wifi_join_event_results( void )
 {
-#define WIFI_MSG_FORMAT_STRING "Wi Fi Failed to Connect %lu Times and Connected %lu Times"
+#define WIFI_MSG_FORMAT_STRING "Wi Fi Connected %lu Times and Failed to Connect %lu Times"
 
     char msg[ strlen( WIFI_MSG_FORMAT_STRING ) + 7 * 2 + 1 ]; // Add 7 digits/uint32 and 1 NULL terminator
     uint32_t joins = wiced_successful_wifi_joins();
@@ -161,7 +161,7 @@ void log_wifi_join_event_results( void )
 
     wiced_reset_wifi_event_counters( WICED_SUCCESSFUL_WIFI_JOIN_EVENT_COUNTER | WICED_FAILED_WIFI_JOIN_EVENT_COUNTER ); // Reset all counters to 0.
 
-    sprintf( msg, WIFI_MSG_FORMAT_STRING, failed_joins, joins );
+    sprintf( msg, WIFI_MSG_FORMAT_STRING, joins, failed_joins );
     log_iMatrix( msg );
     printf( "WIFI LOG: %s\r\n", msg );
 

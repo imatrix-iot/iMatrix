@@ -156,7 +156,7 @@ void cli_status( uint16_t arg )
 			cli_print( "Client list not yet implemented" );
 		} else {
 			rssi = hal_get_wifi_rssi();
-			noise = hal_get_wifi_rfnoise();
+			noise = hal_get_wifi_rf_noise();
 			channel = hal_get_wifi_channel();
     		cli_print( "Secured with: " );
 		    switch( device_config.st_security_mode ) {

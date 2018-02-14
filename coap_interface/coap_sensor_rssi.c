@@ -115,7 +115,7 @@ uint16_t coap_get_sensor_rssi(coap_message_t *msg, CoAP_msg_detail_t *cd, uint16
         response_type = ACKNOWLEDGEMENT;
     }
 
-    sprintf( json_out, "{ \"wifiRssi\" : %ld, \"signalNoise\" : %ld }", hal_get_wifi_rssi(), hal_get_wifi_rfnoise() );
+    sprintf( json_out, "{ \"wifiRssi\" : %ld, \"signalNoise\" : %ld }", hal_get_wifi_rssi(), hal_get_wifi_rf_noise() );
 
 
     if ( coap_store_response_data( msg, CONTENT, response_type, json_out, JSON_MEDIA_TYPE ) != WICED_SUCCESS ) {

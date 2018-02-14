@@ -61,6 +61,6 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-void init_watchdog(void);
+void imx_init_watchdog(void);
 void imx_kick_watchdog(void);
 #endif /* WATCHDOG_H_ */

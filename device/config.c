@@ -100,6 +100,7 @@ wiced_result_t imatrix_load_config(bool override_config)
     platform_dct_mfg_info_t* dct_mfg_info = NULL;
     wiced_result_t result;
     uint16_t i;
+    bool save_config_flag;
 
     update_cert_pointers();// Make sure cert pointers are updated regardless of any errors accessing the DCT.
 #ifdef USE_STM32
@@ -109,21 +110,35 @@ wiced_result_t imatrix_load_config(bool override_config)
 #endif
     if ( ( device_config.valid_config == IMX_MAGIC_CONFIG) && ( override_config == false)  ){
         imx_printf( "Restored configuration from DCT" );
+        save_config_flag = false;
         /*
          * Check if there is a change in the no control or sensors - reset to defaults
          */
         if( ( device_config.no_controls != imx_imatrix_init_config.no_controls  ) ||
             ( device_config.no_sensors != imx_imatrix_init_config.no_sensors  ) ) {
             if( imx_imatrix_init_config.no_controls > IMX_MAX_NO_CONTROLS ) {
-                imx_printf( "Max Controls Exceeded, keeping old configuration\r\n" );
+                imx_printf( "Max Controls Exceeded, keeping old configuration" );
             } else {
                 if( imx_imatrix_init_config.no_sensors > IMX_MAX_NO_SENSORS ) {
-                    imx_printf( "Max Sensors Exceeded, keeping old configuration\r\n" );
+                    imx_printf( "Max Sensors Exceeded, keeping old configuration" );
                 } else {
-                    imx_printf( "Updating Controls and Sensors Default Configuration\r\n" );
+                    imx_printf( "Updating Controls and Sensors Default Configuration" );
                     cs_reset_defaults();
                 }
             }
+        }
+        imx_printf( "\r\n" );
+        /*
+         * Update history & variable length buffer requirements
+         */
+        device_config.history_size = imx_imatrix_init_config.history_size;
+        if( imx_imatrix_init_config.no_variable_length_pools > IMX_MAX_VAR_LENGTH_POOLS )
+            device_config.no_variable_length_pools = IMX_MAX_VAR_LENGTH_POOLS;
+        else
+            device_config.no_variable_length_pools = imx_imatrix_init_config.no_variable_length_pools;
+        for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
+            device_config.var_data_config[ i ].size = imx_imatrix_init_config.var_data_config[ i ].size;
+            device_config.var_data_config[ i ].no_entries = imx_imatrix_init_config.var_data_config[ i ].no_entries;
         }
         /*
          * Check if S/W update occurred
@@ -141,9 +156,10 @@ wiced_result_t imatrix_load_config(bool override_config)
             imx_printf( IMX_VERSION_FORMAT, device_config.host_major_version, device_config.host_minor_version, device_config.host_build_version );
             imx_printf( "\r\n" );
             icb.send_host_sw_revision = true;   // Need to set this flag as data structures have not yet been initialized
+        }
+        if( save_config_flag == true ) {
             return imatrix_save_config();
         }
-        imx_printf( "\r\n" );
         return WICED_SUCCESS;
     }
 
@@ -311,13 +327,26 @@ wiced_result_t imatrix_save_config(void)
 #endif
     return wiced_dct_write( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, config ), sizeof( IOT_Device_Config_t ) );
 }
+/**
+  * @brief  Destory the config so system has nothing to fallback on
+  * @param  None
+  * @retval : DCT write return
+  */
+wiced_result_t imatrix_destroy_config(void)
+{
+#ifdef USE_CYW943907
+    return WICED_SUCCESS;
+#endif
+    memset( &device_config,  0x00, sizeof( IOT_Device_Config_t ) );
+
+    return wiced_dct_write( &device_config, DCT_APP_SECTION, OFFSETOF( device_app_dct_t, config ), sizeof( IOT_Device_Config_t ) );
+}
 
 /**
   * @brief	print saved configuration
   * @param  None
   * @retval : None
   */
-
 void imatrix_print_config( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
@@ -373,4 +402,20 @@ wiced_result_t imatrix_print_saved_config( uint16_t arg )
 	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", temp_app_dct_config->longitude, temp_app_dct_config->latitude, (float) temp_app_dct_config->local_seconds_offset_from_utc / ( 60 * 60 ) );
 
     return WICED_SUCCESS;
+}
+/**
+  * @brief  Set/Get the Debug flags for iMatrix
+  * @param  Flags
+  * @retval : None
+  */
+void imx_set_imatrix_debug_flags( uint32_t debug_flags )
+{
+    device_config.log_messages = debug_flags;
+    /*
+     * No need to save this as this is an API setting
+     */
+}
+uint32_t imx_get_imatrix_debug_flags(void)
+{
+    return device_config.log_messages;
 }

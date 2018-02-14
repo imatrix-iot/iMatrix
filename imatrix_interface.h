@@ -62,4 +62,6 @@
 imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background );
 imx_status_t imx_process(void);
 imx_status_t imx_deinit(void);
+void imx_boot_factory_reset(void);
+
 #endif /* IMX_IMATRIX_INTERFACE_H_ */

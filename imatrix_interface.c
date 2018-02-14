@@ -48,6 +48,8 @@
 #include "device/system_init.c"
 #include "imatrix_upload/imatrix_upload.h"
 #include "ota_loader/ota_loader.h"
+#include "ota_loader/ota_structure.h"
+#include "time/watchdog.h"
 #include "wifi/process_wifi.h"
 /******************************************************
  *                      Macros
@@ -92,6 +94,11 @@ imx_imatrix_init_config_t imx_imatrix_init_config;
 imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background )
 {
     imx_status_t result;
+
+    /*
+     * Set up watchdog
+     */
+    imx_init_watchdog();
 
     memset( &icb, 0x00, sizeof( iMatrix_Control_Block_t ) );
     /*
@@ -181,6 +188,10 @@ imx_status_t imx_process(void)
 
     wiced_time_get_time( &current_time );
 
+    /*
+     * Keep the watchdog happy
+     */
+    imx_kick_watchdog();
 
     if ( ota_is_active() ) {
         /*
@@ -237,4 +248,23 @@ imx_status_t imx_deinit(void)
         ;
     }
     return IMX_SUCCESS;
+}
+
+void imx_boot_factory_reset(void)
+{
+    /*
+     * This should boot to factory reset image
+     */
+    imx_printf( "System Failed to initialize - restoring to know good software image\r\n" );
+    imatrix_destroy_config();
+    /*
+     * For now boot to image 6
+     */
+    reboot_to_image( APP1 );
+    /*
+     * If we return from this then let the watchdog reboot this unit after we clear config data so system will do a full re intialization
+     */
+    imx_printf( "Factory Reset Image not valid - Attempting a fresh start with cleared configuration with currently installed Application\r\n" );
+    while( 1 )
+        ;
 }

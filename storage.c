@@ -176,11 +176,12 @@ imx_status_t init_storage(void)
 #endif
     memory_requested = 0;
     for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
+        if( ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries ) > 0 ) {
 #ifdef PRINT_ALLOCATION_MSGS
-        if( ( device_config.var_data_config[ i ].size * device_config.var_data_config[ i ].no_entries ) > 0 )
             imx_printf( "  Pool size: %u, %u entries\r\n", device_config.var_data_config[ i ].size, device_config.var_data_config[ i ].no_entries );
 #endif
-        memory_requested += ( sizeof( var_data_entry_t ) + ( device_config.var_data_config[ i ].size ) * device_config.var_data_config[ i ].no_entries );
+            memory_requested += ( sizeof( var_data_entry_t ) + device_config.var_data_config[ i ].size ) * device_config.var_data_config[ i ].no_entries;
+        }
     }
 
     if( memory_requested != 0 ) {

@@ -103,6 +103,12 @@ imx_imatrix_init_config_t imatrix_config = {
 imx_status_t imx_init( imx_imatrix_init_config_t *init_config, bool override_config, bool run_in_background );
 imx_status_t imx_process(void);
 imx_status_t imx_deinit(void);
+void imx_boot_factory_reset(void);
+/*
+ * Watchdog functions
+ */
+void imx_init_watchdog(void);
+void imx_kick_watchdog(void);
 /*
  * System status: Operating Mode Setup / Standalone mode - or normal online mode
  */
@@ -114,6 +120,9 @@ char *imx_get_device_serial_number(void);
  */
 wiced_result_t imx_get_config_current_address( void **config_address );
 wiced_result_t imx_save_config( void *config, uint16_t config_size );
+void imx_set_imatrix_debug_flags( uint32_t debug_flags );
+uint32_t imx_get_imatrix_debug_flags(void);
+
 /*
  * CLI - Console I/O
  */
@@ -167,8 +176,8 @@ uint16_t imx_get_wifi_bssid_scb(void);
 uint16_t imx_get_wifi_rf_noise_scb(void);
 void imx_init_rssi(uint16_t arg);
 imx_result_t imx_sample_rssi(uint16_t arg, void *value );
-void imx_init_rfnoise(uint16_t arg);
-imx_result_t imx_sample_rfnoise(uint16_t arg, void *value );
+void imx_init_rf_noise(uint16_t arg);
+imx_result_t imx_sample_rf_noise(uint16_t arg, void *value );
 imx_result_t imx_sample_wifi_channel(uint16_t arg, void *value );
 void imx_set_wifi_notification( void (*wifi_notification)( bool state ) );
 uint32_t imx_get_wifi_success_count(void);

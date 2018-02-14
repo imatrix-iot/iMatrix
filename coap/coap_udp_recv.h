@@ -67,6 +67,6 @@
 /******************************************************
  *               Function Definitions
  ******************************************************/
-wiced_udp_socket_callback_t coap_udp_recv(void);
+wiced_result_t coap_udp_recv( wiced_udp_socket_t* socket, void* arg );
 
 #endif /* COAP_RECV_H_ */

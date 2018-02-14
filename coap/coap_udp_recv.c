@@ -87,7 +87,6 @@
  *               Variable Definitions
  ******************************************************/
 extern message_list_t list_udp_coap_recv;
-extern wiced_udp_socket_t udp_coap_socket;
 extern iMatrix_Control_Block_t icb;
 
 /******************************************************
@@ -98,9 +97,10 @@ extern iMatrix_Control_Block_t icb;
   * @param  None
   * @retval : None
   */
-wiced_udp_socket_callback_t coap_udp_recv(void)
+wiced_result_t coap_udp_recv( wiced_udp_socket_t* udp_socket, void* arg )
 {
 
+    UNUSED_PARAMETER( arg );
 	wiced_packet_t*           packet;
     uint8_t*                  rx_data;
     uint16_t                  rx_data_length;
@@ -118,7 +118,7 @@ wiced_udp_socket_callback_t coap_udp_recv(void)
     uint16_t id = 0;
     wiced_time_get_time( &now );
 
-    result = wiced_udp_receive( &udp_coap_socket, &packet, 0 );
+    result = wiced_udp_receive( udp_socket, &packet, 0 );
     icb.ip_stats[ UDP_STATS].packets_received += 1;
 
     if ( ( result != WICED_TCPIP_SUCCESS ) ) {
@@ -126,7 +126,7 @@ wiced_udp_socket_callback_t coap_udp_recv(void)
 		icb.print_msg |= MSG_UDP_REC_ERROR;
 		icb.ip_stats[ UDP_STATS].rec_error = result;
     	set_last_packet_time( now );// Should never run out of packets, but if we do just assume the received packet is unicast.
-        return ( wiced_udp_socket_callback_t ) result;
+        return result;
     }
 
 
@@ -135,7 +135,7 @@ wiced_udp_socket_callback_t coap_udp_recv(void)
     if ( ( result != WICED_TCPIP_SUCCESS ) ) {
 		icb.print_msg |= MSG_UDP_GET_INFO_ERROR;
     	set_last_packet_time( now );// Should never run out of packets, but if we do just assume the received packet is unicast.
-        return ( wiced_udp_socket_callback_t ) result;
+        return result;
     }
 
     get_inbound_destination_ip( packet, &dest_ip ); // for multicasting this is different from what it normally is.
@@ -190,7 +190,7 @@ wiced_udp_socket_callback_t coap_udp_recv(void)
         // We Should send back a RST packet as we can not accept any data at this time
 
     	if ( ! imx_is_multicast_ip( &dest_ip ) ) {
-    	    coap_udp_xmit_reset( id, &udp_coap_socket, &udp_src_ip_addr, udp_src_port );
+    	    coap_udp_xmit_reset( id, udp_socket, &udp_src_ip_addr, udp_src_port );
     	}
 
         goto recv_cleanup;
@@ -225,6 +225,6 @@ recv_cleanup:
        /* Delete the received packet, it is no longer needed */
     wiced_packet_delete( packet );
 
-    return ( wiced_udp_socket_callback_t ) WICED_SUCCESS;
+    return WICED_SUCCESS;
 
 }

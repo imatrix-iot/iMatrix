@@ -105,7 +105,7 @@ bool init_udp( wiced_interface_t interface )
     }
 
 
-    if( wiced_udp_register_callbacks( &udp_coap_socket, (wiced_udp_socket_callback_t) coap_udp_recv, NULL ) != WICED_SUCCESS ) {
+    if( wiced_udp_register_callbacks( &udp_coap_socket, &coap_udp_recv, 0 ) != WICED_SUCCESS ) {
          imx_printf( "Unable to setup CoAP UDP callback...\r\n" );
          goto delete_socket_and_fail;
      }

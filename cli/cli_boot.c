@@ -40,10 +40,13 @@
 
 #include "wiced.h"
 
+#include "../common.h"
 #include "../device/icb_def.h"
+#include "../ota_loader/ota_structure.h"
+#include "../ota_loader/ota_loader.h"
 #include "interface.h"
 
-#include "cli_reboot.h"
+#include "cli_boot.h"
 /******************************************************
  *                      Macros
  ******************************************************/
@@ -75,6 +78,29 @@ extern iMatrix_Control_Block_t icb;
 /******************************************************
  *               Function Definitions
  ******************************************************/
+/**
+  * @brief Boot to an image in serial flash
+  * @param  None
+  * @retval : None
+  */
+void cli_boot( uint16_t arg )
+{
+    UNUSED_PARAMETER(arg);
+
+    char *token;
+    int bar;
+
+    token = strtok(NULL, " " ); // Get boot image
+
+    if( token ) {
+        bar = atoi( token );
+        if( ( bar == LEGACY_OTA ) || ( bar == APP0 ) || ( bar == APP1 ) || ( bar == FACTORY_RESET ) )
+            reboot_to_image( bar );
+        else
+            cli_print( "Image number must be be: %u or %u or %u or %u\r\n", FACTORY_RESET, LEGACY_OTA, APP0, APP1 );
+    } else
+        cli_print( "Must supply boot image number\r\n" );
+}
 /**
   * @brief Reboot the device
   * @param  None

@@ -67,7 +67,7 @@
 #include "cli_dump.h"
 #include "cli_log.h"
 #include "cli_ntp.h"
-#include "cli_reboot.h"
+#include "cli_boot.h"
 #include "cli_status.h"
 #include "cli_set_serial.h"
 #include "cli_set_ssid.h"
@@ -108,6 +108,7 @@ enum cmds {				// Must match commands variable order
 	CLI_BLE_SCAN_PRINT,	// Print results of BLE Scan
 	CLI_BLE_SCAN_START,	// Start a background BLE scan
 	CLI_BLE_SCAN_STOP,	// Stop a background BLE scan
+	CLI_BOOT,           // Boot to an image in SFLASH
     CLI_PRINT_CONFIG,   // Print the configuration
     CLI_DEBUG,          // Turn On / Off Debug messages
     CLI_PRINT_DCT,      // Print the DCT
@@ -166,6 +167,7 @@ static uint16_t terminal_cmd_index, telnet_cmd_index, *cmd_index, cmd_found;
 cli_commands_t command[ NO_CMDS ] = {
 		{ "?",	&cli_help, NO_CMDS,  "Print this help" },	// Help
 		{ "AT", &cli_at, 0, "AT Commands &IC/&IS to set Controls & Sensor values" },
+		{ "boot", &cli_boot, 0, "boot <n>, boot to image n where image should be: 2 - Factory Reset, 3 OTA App, 5 - APP0 or 6 APP1" },
 		{ "ble_print", &print_ble_scan_results, 0, "Print BLE Scan Results" },
 		{ "ble_start", &ble_scan, true, "Start background BLE Scan" },
 		{ "ble_stop", &ble_scan, false, "Stop background BLE Scan" },

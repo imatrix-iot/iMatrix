@@ -35,12 +35,12 @@
  *      Author: greg.phillips
  */
 
-#ifndef CLI_REBOOT_H_
-#define CLI_REBOOT_H_
+#ifndef CLI_BOOT_H_
+#define CLI_BOOT_H_
 
-/** @file cli_REBOOT.h
+/** @file cli_boot.h
  *
- * defines for cli_reboot.c
+ * defines for cli_boot.c
  *
  */
 
@@ -68,4 +68,6 @@
  *               Function Definitions
  ******************************************************/
 void cli_reboot( uint16_t arg );
-#endif /* CLI_reboot_H_ */
+void cli_boot( uint16_t arg );
+
+#endif /* CLI_BOOT_H_ */

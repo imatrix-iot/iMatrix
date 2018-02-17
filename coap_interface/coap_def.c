@@ -44,15 +44,6 @@
 #include "wiced.h"
 
 #include "../storage.h"
-
-
-
-
-
-
-
-
-
 #include "../json/mjson.h"
 #include "../cli/interface.h"
 #include "../CoAP/coap.h"

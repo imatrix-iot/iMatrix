@@ -85,7 +85,7 @@
 
 void print_my_mac_address( wiced_mac_t* mac )
 {
-    cli_print( "%02X:%02X:%02X:%02X:%02X:%02X", mac->octet[0],
+    imx_cli_print( "%02X:%02X:%02X:%02X:%02X:%02X", mac->octet[0],
             mac->octet[1],
             mac->octet[2],
             mac->octet[3],

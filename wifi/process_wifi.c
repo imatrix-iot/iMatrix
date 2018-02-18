@@ -134,9 +134,9 @@ void process_wifi(wiced_time_t current_time )
 			} else {
 				last_wifi_check = current_time;
 				wifi_check_count += 1;
-				cli_print( "Retry Count: %u\r\n", wifi_check_count );
+				imx_printf( "Retry Count: %u\r\n", wifi_check_count );
 				if( wifi_check_count >= 120 && wifi_was_connected == true ) {	// 2hrs minutes - reboot - but only if we had Wi Fi was here
-					cli_print( "Rebooting due to Wi Fi Failure\r\n" );
+					imx_printf( "Rebooting due to Wi Fi Failure\r\n" );
 					while( 1 )
 						;						// Watchdog will bite
 				}

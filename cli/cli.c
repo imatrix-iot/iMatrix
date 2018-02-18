@@ -212,7 +212,7 @@ void cli_init(void)
     memset( telnet_command_line, 0x00, COMMAND_LINE_LENGTH );
     telnet_cmd_index = 0;
 	active_device = CONSOLE_OUTPUT;
-    cli_print( "Command Line Processor\r\n" );
+    imx_cli_print( "Command Line Processor\r\n" );
 	cli_state = CLI_SETUP_CONSOLE;
 	imx_cli_mode = true;
 }
@@ -235,8 +235,8 @@ void cli_process( void )
             active_device = CONSOLE_OUTPUT;     // This is so when general status print out are made with no cli activity they will go to the console
 			if( ( device_config.at_command_mode == false ) || ( imx_cli_mode == false ) ) {
 			    if( imx_cli_mode == false )
-			        cli_print( "app" );
-			    cli_print( ">" );
+			        imx_cli_print( "app" );
+			    imx_cli_print( ">" );
 			}
 			cli_state = CLI_GET_CMD;
 			break;
@@ -245,8 +245,8 @@ void cli_process( void )
             telnet_cmd_index = 0;
             active_device = TELNET_OUTPUT;     // This is so when general status print out are made with no cli activity they will go to the console
             if( imx_cli_mode == false )
-                cli_print( "app" );
-            cli_print( ">" );
+                imx_cli_print( "app" );
+            imx_cli_print( ">" );
             cli_state = CLI_GET_CMD;
             break;
 		case CLI_GET_CMD :
@@ -275,14 +275,14 @@ void cli_process( void )
 			switch( ch ) {
 				case CHR_BS :	// Rubout the last
 					if( *cmd_index > 0 ) {
-						cli_print( "\b \b" );
+						imx_cli_print( "\b \b" );
 						*cmd_index -= 1;
 						command_line[ *cmd_index ] = 0x00;
 					}
 					break;
 				case CHR_LF :
 				case CHR_CR :	// End of input
-					cli_print( "\r\n" );
+					imx_cli_print( "\r\n" );
 					cli_state = CLI_PROCESS_CMD;
 					break;
 				default :
@@ -290,12 +290,12 @@ void cli_process( void )
 						if( isprint( (uint16_t) ch ) ) {
 							command_line[ *cmd_index ] = ch;
 							*cmd_index += 1;
-							cli_print( "%c", ch );
+							imx_cli_print( "%c", ch );
 						}
 						else
-							cli_print( "\x07" );	// Only accept printable characters
+							imx_cli_print( "\x07" );	// Only accept printable characters
 					} else
-						cli_print( "\x07" );	// tell user maximum buffer length
+						imx_cli_print( "\x07" );	// tell user maximum buffer length
 					break;
 			}
 			break;
@@ -344,7 +344,7 @@ void cli_process( void )
 			}
             if( cmd_found == false ) {
                 if( token != NULL )
-                    cli_print( "Unknown Command: %s, length: %u\r\n", token, strlen( token ) );
+                    imx_cli_print( "Unknown Command: %s, length: %u\r\n", token, strlen( token ) );
             }
 			if( active_device == CONSOLE_OUTPUT )
 			    cli_state = CLI_SETUP_CONSOLE;

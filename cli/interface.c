@@ -91,16 +91,16 @@ bool imx_verify_cmd( void )
 {
 	char ch;
 
-	cli_print( "\r\nAre u sure (y/n): " );
+	imx_cli_print( "\r\nAre u sure (y/n): " );
 
 	while( !imx_get_ch( &ch ) )
 		;
-	cli_print( "%c\r\n", ch );
+	imx_cli_print( "%c\r\n", ch );
 	if( toupper( (uint8_t )ch ) == 'Y' ) {
-		cli_print( "Command Accepted\r\n" );
+		imx_cli_print( "Command Accepted\r\n" );
 		return true;
 	} else {
-	    cli_print( "Command Ignored\r\n" );
+	    imx_cli_print( "Command Ignored\r\n" );
 		return false;
 	}
 }
@@ -141,7 +141,7 @@ void imx_printf( char *format, ... )
 }
 
 
-void cli_print( char *format, ... )
+void imx_cli_print( char *format, ... )
 {
 	char buffer[ SPRINTF_BUFFER_LENGTH ];
 	va_list args;// Arguments from the expanded elipsis "..."

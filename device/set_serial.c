@@ -119,6 +119,6 @@ void set_serial_number(void)
 void print_serial_number(void)
 {
 
-	cli_print( "Serial numbers Hardware: 3 %lu, Hardware: 2 %lu, Hardware 1: %lu\r\n", device_config.sn.serial3, device_config.sn.serial2, device_config.sn.serial1 );
+	imx_cli_print( "Serial numbers Hardware: 3 %lu, Hardware: 2 %lu, Hardware 1: %lu\r\n", device_config.sn.serial3, device_config.sn.serial2, device_config.sn.serial1 );
 
 }

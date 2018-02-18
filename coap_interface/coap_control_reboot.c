@@ -118,7 +118,7 @@ uint16_t coap_post_control_reboot(coap_message_t *msg, CoAP_msg_detail_t *cd, ui
      */
     icb.reboot = true;
     wiced_time_get_time( &icb.reboot_time );
-    cli_print( "System will reboot\r\n" );
+    imx_cli_print( "System will reboot\r\n" );
 
     response = CHANGED;
 

@@ -106,11 +106,11 @@ void cli_dump(uint16_t mode)
 		dump_length = MAX_BUFFER_SIZE;
 
 	if( mode == DUMP_MEMORY ) {
-		cli_print( "Dump of Internal Memory from: 0x%08x\r\n", dump_start );
+		imx_cli_print( "Dump of Internal Memory from: 0x%08x\r\n", dump_start );
 		buffer = (uint8_t *) dump_start;
 		hex_dump( buffer, dump_start, dump_length );
 	} else {
-		cli_print( "Dump of External Serial Flash Memory from: 0x%08x\r\n", dump_start );
+		imx_cli_print( "Dump of External Serial Flash Memory from: 0x%08x\r\n", dump_start );
 		buffer = malloc( MAX_BUFFER_SIZE );
 		if( buffer != 0 ) {
 
@@ -119,10 +119,10 @@ void cli_dump(uint16_t mode)
 			/*
 			 * Print the buffer out
 			 */
-			cli_print( "SFLASH Dump: 0x%08lx for %u Bytes\r\n", dump_start, dump_length );
+			imx_cli_print( "SFLASH Dump: 0x%08lx for %u Bytes\r\n", dump_start, dump_length );
 			hex_dump( buffer, dump_start, dump_length );
 		} else
-			cli_print( "Could not allocate space for buffer\r\n" );
+			imx_cli_print( "Could not allocate space for buffer\r\n" );
 		free( buffer );
 	}
 
@@ -138,19 +138,19 @@ void hex_dump( uint8_t *buffer, uint32_t dump_start, uint32_t dump_length )
 		/*
 		 * Print 32 Bytes per line
 		 */
-		cli_print( "%08lX  ", dump_start + (uint32_t) i );
+		imx_cli_print( "%08lX  ", dump_start + (uint32_t) i );
 		for( j = 0; ( ( i + j ) < dump_length ) && ( j < CHAR_PER_LINE ); j++ ) {
-			cli_print( "%02X ", buffer[ i + j ] );
+			imx_cli_print( "%02X ", buffer[ i + j ] );
 			if( ( j == 7 ) || ( j == 15 ) || (j == 23 ) )	// Make it easier to read
-				cli_print( " " );
+				imx_cli_print( " " );
 		}
 		for( j = 0; ( i + j ) < ( dump_length ) && ( j < CHAR_PER_LINE ); j++ )
 			if( isprint( (uint16_t) buffer[ i + j ] ) && ( (uint16_t) buffer[ i + j ] != 0x0a ) && ((uint16_t) buffer[ i + j ] != 0x0d ) )
-				cli_print( "%c", buffer[ i + j ] );
+				imx_cli_print( "%c", buffer[ i + j ] );
 			else
-				cli_print( "." );
+				imx_cli_print( "." );
 		i += CHAR_PER_LINE;
-		cli_print( "\r\n" );
+		imx_cli_print( "\r\n" );
 
 	}
 }

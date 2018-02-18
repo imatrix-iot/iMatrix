@@ -98,7 +98,7 @@ void cli_set_ssid( uint16_t arg)
 		if( strlen( token ) <= IMX_SSID_LENGTH ) {
 			strcpy( buffer1, token );
 		} else {
-			cli_print( "SSID name too long\r\n" );
+			imx_cli_print( "SSID name too long\r\n" );
 			return;
 		}
 		token = strtok(NULL, " " );
@@ -106,15 +106,15 @@ void cli_set_ssid( uint16_t arg)
 			if( strlen( token ) <= IMX_WPA2PSK_LENGTH ) {
 				strcpy( buffer2, token );
 			} else {
-				cli_print( "Pass phrase too long\r\n" );
+				imx_cli_print( "Pass phrase too long\r\n" );
 				return;
 			}
 			set_wifi_st_ssid( buffer1, buffer2, device_config.default_st_security_mode );
-			cli_print( "SSID changing\r\n" );
+			imx_cli_print( "SSID changing\r\n" );
 		} else {
-			cli_print( "Pass phrase Required\r\n" );
+			imx_cli_print( "Pass phrase Required\r\n" );
 		}
 	} else
-		cli_print( "SSID Required\r\n" );
+		imx_cli_print( "SSID Required\r\n" );
 
 }

@@ -390,7 +390,7 @@ uint16_t check_valid_ip_address(void)
 		wiced_ip_get_gateway_address( WICED_STA_INTERFACE, &icb.gw_ip );
 		wiced_ip_get_ipv4_address( WICED_STA_INTERFACE, &icb.my_ip );
 		if( ( icb.gw_ip.ip.v4 == 0 ) || ( icb.my_ip.ip.v4 == 0  ) ) {
-			cli_print( "0.0.0.0 Zero IP Address - failing network\r\n" );
+			imx_printf( "0.0.0.0 Zero IP Address - failing network\r\n" );
 	    	icb.wifi_up = false;
 	        return false;
 		}
@@ -541,7 +541,7 @@ void set_wifi_ap_ssid( char *ssid, char *passphrase, wiced_security_t security, 
     } save;
 
     if( ( strlen( ssid ) > IMX_SSID_LENGTH ) || ( strlen( passphrase ) > IMX_WPA2PSK_LENGTH ) ) {
-    	cli_print( "Failed to set SSID//Pass phrase too long, SSID: %s, Pass phrase: %s\r\n", ssid, passphrase );
+    	imx_printf( "Failed to set SSID//Pass phrase too long, SSID: %s, Pass phrase: %s\r\n", ssid, passphrase );
     	return;
     }
     /*
@@ -581,7 +581,7 @@ void st_printf_wifi_ssid(void)
     // Modify the SSID and passsphrase
 
     dct_wifi = (platform_dct_wifi_config_t*)wiced_dct_get_current_address( DCT_WIFI_CONFIG_SECTION );
-    cli_print( "%s", dct_wifi->stored_ap_list[0].details.SSID.value );
+    imx_printf( "%s", dct_wifi->stored_ap_list[0].details.SSID.value );
 }
 void set_fixture_dct_name(void)
 {
@@ -610,14 +610,14 @@ void cli_wifi_setup( uint16_t arg )
 	token = strtok(NULL, " " );	// Get arg if any
 	if( token ) {
 		if( strcmp( token, "off" ) == 0x00 ) {
-			cli_print( "Setting to Online mode - look System will connect to stored SSID: %s\r\n", device_config.st_ssid );
+			imx_printf( "Setting to Online mode - look System will connect to stored SSID: %s\r\n", device_config.st_ssid );
 			device_config.AP_setup_mode = false;
 			imatrix_save_config();
 			icb.wifi_up = false;
 		} else
-			cli_print( "on / off required\r\n" );
+			imx_printf( "on / off required\r\n" );
 	} else {
-		cli_print( "Setting to setup mode - look for AP and connect with App: %s + MAC\r\n", device_config.ap_ssid );
+		imx_printf( "Setting to setup mode - look for AP and connect with App: %s + MAC\r\n", device_config.ap_ssid );
 		device_config.AP_setup_mode = true;
 		imatrix_save_config();
 		icb.wifi_up = false;

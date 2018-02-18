@@ -739,16 +739,16 @@ void print_led_status( void )
     uint16_t i;
 
     for( i = 0; i < IMX_NO_LEDS; i++ ) {
-        cli_print( "Led Status: %s: ", led_names[ i ] );
+        imx_cli_print( "Led Status: %s: ", led_names[ i ] );
         if( lcb[ i ].blinking == true )
-            cli_print( "Blink Count 1 %u %umS, Count 2 %u %umS", lcb[ i ].blink_1_count * 10, lcb[ i ].blink_2_count * 10 );
+            imx_cli_print( "Blink Count 1 %u %umS, Count 2 %u %umS", lcb[ i ].blink_1_count * 10, lcb[ i ].blink_2_count * 10 );
         else if( lcb[i ].flashing == true )
-            cli_print( "Flashing duration %u Sec", ( lcb[ i ].flash_count / 10 ) );
+            imx_cli_print( "Flashing duration %u Sec", ( lcb[ i ].flash_count / 10 ) );
         else if( lcb[ i ].state == true )
-            cli_print( "On" );
+            imx_cli_print( "On" );
         else
-            cli_print( "Off" );
-        cli_print( "\r\n" );
+            imx_cli_print( "Off" );
+        imx_cli_print( "\r\n" );
 
     }
 }

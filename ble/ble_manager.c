@@ -332,7 +332,7 @@ void init_ble(void)
     /* Create a mutex for DCT access */
     wiced_rtos_init_mutex( &dct_mutex );
 
-    cli_print( "BT SmartBridge is running\r\n" );
+    imx_cli_print( "BT SmartBridge is running\r\n" );
 }
 void init_ble_scan(void)
 {
@@ -365,10 +365,10 @@ void ble_scan( uint16_t arg )
 {
 	if( arg == true ) {
 		if( dcb.ble_scan_active == true ) {
-			cli_print( "BLE Scan Already Active - Stop before restart\r\n" );
+			imx_cli_print( "BLE Scan Already Active - Stop before restart\r\n" );
 			return;
 		}
-		cli_print( "BLE Discovery Starting\n\r" );
+		imx_cli_print( "BLE Discovery Starting\n\r" );
 
 		dcb.no_ble_devices = 0;
 		dcb.no_ble_updates = 0;
@@ -379,7 +379,7 @@ void ble_scan( uint16_t arg )
 	    start_scan();
 	    dcb.ble_scan_active = true;
 	} else {
-		cli_print( "BLE Sensor Discovery terminated\r\n" );
+		imx_cli_print( "BLE Sensor Discovery terminated\r\n" );
 	    dcb.ble_scan_active = FALSE;
 	}
 }
@@ -1168,7 +1168,7 @@ void print_ble_scan_results( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 
-	cli_print( "BLE Scan to be implemented\r\n" );
+	imx_cli_print( "BLE Scan to be implemented\r\n" );
 }
 
 #else
@@ -1180,7 +1180,7 @@ void ble_scan( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 
-	cli_print( "BLE Not enabled on this platform\r\n" );
+	imx_cli_print( "BLE Not enabled on this platform\r\n" );
 
 }
 /*
@@ -1190,7 +1190,7 @@ void print_ble_scan_results( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 
-	cli_print( "BLE Not enabled on this platform\r\n" );
+	imx_cli_print( "BLE Not enabled on this platform\r\n" );
 }
 
 #endif

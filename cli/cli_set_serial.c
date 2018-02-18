@@ -95,10 +95,10 @@ void cli_set_serial( uint16_t arg)
 			strcpy( device_config.device_serial_number, token );
 			imatrix_save_config();
 		} else {
-			cli_print( "Serial Number too long: %u\r\n", strlen( token ) );
+			imx_cli_print( "Serial Number too long: %u\r\n", strlen( token ) );
 			return;
 		}
 	} else
-		cli_print( "Serial Number Required\r\n" );
+		imx_cli_print( "Serial Number Required\r\n" );
 
 }

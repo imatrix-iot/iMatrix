@@ -208,9 +208,9 @@ void print_var_pools(void)
     uint16_t i, j;
     var_data_entry_t *var_data_ptr;
 
-    cli_print( "Variable Length Pools: " );
+    imx_cli_print( "Variable Length Pools: " );
     for( i = 0; i < device_config.no_variable_length_pools; i++ ) {
-        cli_print( " %u Bytes", device_config.var_data_config[ i ].size );
+        imx_cli_print( " %u Bytes", device_config.var_data_config[ i ].size );
         j = 0;
         if( var_data_block[ i ].head != NULL ) {
             j = 1;  // At least one
@@ -220,7 +220,7 @@ void print_var_pools(void)
                 var_data_ptr = var_data_ptr->header.next;
             }
         }
-        cli_print( "[ %u ]", j );
+        imx_cli_print( "[ %u ]", j );
     }
-    cli_print( "\r\n" );
+    imx_cli_print( "\r\n" );
 }

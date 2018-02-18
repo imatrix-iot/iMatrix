@@ -160,7 +160,7 @@ uint16_t join_ent( char *ssid, eap_type_t eap_type, wiced_security_t auth_type, 
 
     // print_credentials();
     if ( !( ( eap_type == EAP_TYPE_TLS ) || ( eap_type == EAP_TYPE_PEAP ) ) ) {
-        cli_print("Unsupported security type\n" );
+        imx_printf("Unsupported security type\n" );
         return WICED_ERROR;
     }
 
@@ -244,7 +244,7 @@ uint16_t join_ent( char *ssid, eap_type_t eap_type, wiced_security_t auth_type, 
         }
 
     } else {
-        cli_print("Unable to initialize supplicant\n" );
+        imx_printf("Unable to initialize supplicant\n" );
         wiced_tls_deinit_context( &context );
         wiced_tls_deinit_root_ca_certificates();
         wiced_tls_deinit_identity( &identity );
@@ -273,19 +273,19 @@ static uint16_t wifi_join(char* ssid, uint8_t ssid_length, wiced_security_t auth
     imx_printf( "Starting Join Process to: %s, length: %u, with authentication: 0x%08lx\r\n", ssid, (uint16_t) ssid_length, (uint32_t) auth_type );
     if (ssid_length > SSID_NAME_SIZE)
     {
-    	cli_print( "SSID too long\r\n" );
+    	imx_printf( "SSID too long\r\n" );
         return false;
     }
 
     if (wwd_wifi_is_ready_to_transceive(WWD_STA_INTERFACE) == WWD_SUCCESS)
     {
-        cli_print("STA already joined; use leave command first\n");
+        imx_printf("STA already joined; use leave command first\n");
         return true;
     }
 
     if ( wwd_wifi_is_ready_to_transceive( WWD_AP_INTERFACE ) == WWD_SUCCESS )
     {
-        cli_print("AP will be moved to the STA assoc channel" );
+        imx_printf("AP will be moved to the STA assoc channel" );
         if ( imx_verify_cmd() == true )
         {
             return true;
@@ -376,35 +376,35 @@ static void analyse_failed_join_result( wiced_result_t join_result )
     switch( join_result )
     {
         case WICED_ERROR:
-            cli_print("General error\n" ); /* Getting a DHCP address may fail if at the edge of a cell and the join may timeout before DHCP has completed. */
+            imx_printf("General error\n" ); /* Getting a DHCP address may fail if at the edge of a cell and the join may timeout before DHCP has completed. */
             break;
 
         case WWD_NETWORK_NOT_FOUND:
-            cli_print("Failed to find network\n" ); /* Check that he SSID is correct and that the AP is up */
+            imx_printf("Failed to find network\n" ); /* Check that he SSID is correct and that the AP is up */
             break;
 
         case WWD_NOT_AUTHENTICATED:
-            cli_print("Failed to authenticate\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
+            imx_printf("Failed to authenticate\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
             break;
 
         case WWD_EAPOL_KEY_PACKET_M1_TIMEOUT:
-            cli_print("Timeout waiting for first EAPOL key frame from AP\n" );
+            imx_printf("Timeout waiting for first EAPOL key frame from AP\n" );
             break;
 
         case WWD_EAPOL_KEY_PACKET_M3_TIMEOUT:
-            cli_print("Check the passphrase and try again\n" ); /* The M3 timeout will occur if the passphrase is incorrect */
+            imx_printf("Check the passphrase and try again\n" ); /* The M3 timeout will occur if the passphrase is incorrect */
             break;
 
         case WWD_EAPOL_KEY_PACKET_G1_TIMEOUT:
-            cli_print("Timeout waiting for group key from AP\n" );
+            imx_printf("Timeout waiting for group key from AP\n" );
             break;
 
         case WWD_INVALID_JOIN_STATUS:
-            cli_print("Some part of the join process did not complete\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
+            imx_printf("Some part of the join process did not complete\n" ); /* May happen at the edge of the cell. Try moving closer to the AP. */
             break;
 
         default:
-            cli_print("\n" );
+            imx_printf("\n" );
             break;
     }
 }

@@ -73,7 +73,7 @@ enum output_devices {
  ******************************************************/
 bool imx_get_ch( char *ch );
 void imx_printf( char *format, ... );
-void cli_print( char *format, ... );
+void imx_cli_print( char *format, ... );
 bool imx_verify_cmd( void );
 int imx_log_printf( char *format, ... );
 

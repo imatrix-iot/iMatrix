@@ -219,7 +219,7 @@ uint32_t convert_bin_to_certificate( uint8_t *buffer, uint32_t buffer_length, ui
 		if( process_count > 0 ) {
 			encode_count = base64_encode( (unsigned char*) &buffer[ buffer_index ], process_count, (unsigned char *) &certificate[ cert_index ], certificate_length - cert_index, BASE64_STANDARD );
 			if( encode_count == -1 ) {
-				cli_print( "Encoding failed\r\n" );
+				imx_cli_print( "Encoding failed\r\n" );
 				return 0;	// Fail for some reason
 			}
 			cert_index += encode_count;
@@ -250,10 +250,10 @@ void cert_test(void)
 
     update_cert_pointers();
 
-	cli_print( "Testing with CA Root certificate - Verifying Certificate..." );
+	imx_cli_print( "Testing with CA Root certificate - Verifying Certificate..." );
 	if( verify_certificate( icb.root_certificate, IS_CERTIFICATE ) ) {
-		cli_print( "Verified\r\n" );
-		cli_print( "Encoding to binary..." );
+		imx_cli_print( "Verified\r\n" );
+		imx_cli_print( "Encoding to binary..." );
     	/*
     	 * Convert Certificate to Binary -
     	 */
@@ -263,10 +263,10 @@ void cert_test(void)
 			imx_printf( "Certificate is 0 length\r\n" );
 			return;
 		}
-		cli_print( "Certificate is: %u long\r\n", cert_length );
+		imx_cli_print( "Certificate is: %u long\r\n", cert_length );
 		hex_dump( buffer, 0, (uint32_t) cert_length );
 
-		cli_print( "Converting back to Text.." );
+		imx_cli_print( "Converting back to Text.." );
 
 		buffer_index = 0;
 		cert_index = sprintf( (char *) certificate, "%s\r\n", CERT_BEGIN );
@@ -284,7 +284,7 @@ void cert_test(void)
 				 */
 				encode_count = base64_encode( (unsigned char*) &buffer[ buffer_index ], process_count, (unsigned char *) &certificate[ cert_index ], MAX_CERT_LENGTH - cert_index, BASE64_STANDARD );
 				if( encode_count == -1 ) {
-					cli_print( "Encoding failed\r\n" );
+					imx_cli_print( "Encoding failed\r\n" );
 					return;	// Fail for some reason
 				}
 				cert_index += encode_count;
@@ -300,10 +300,10 @@ void cert_test(void)
 
 		cert_index += sprintf( (char *) &certificate[ cert_index ], "%s\r\n%c", CERT_END, 0x00 );
 
-		cli_print( "Converted: %u bytes long\r\n%s", cert_index, certificate );
+		imx_cli_print( "Converted: %u bytes long\r\n%s", cert_index, certificate );
 
 	} else
-		cli_print( "Certificate failed to verify\r\n" );
+		imx_cli_print( "Certificate failed to verify\r\n" );
 }
 
 /**
@@ -374,8 +374,8 @@ void update_cert_pointers()
 void print_credentials(void)
 {
 	update_cert_pointers();
-	cli_print( "Root CA certificate @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.root_certificate, icb.root_certificate );
-	cli_print( "802.1X WiFi certificate: @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.wifi_8021X_certificate, icb.wifi_8021X_certificate );
-	cli_print( "802.1X WiFi key: @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.wifi_8021X_key, icb.wifi_8021X_key );
-	//cli_print( "DTLS certificate: @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.dtls_certificate, icb.dtls_certificate );
+	imx_cli_print( "Root CA certificate @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.root_certificate, icb.root_certificate );
+	imx_cli_print( "802.1X WiFi certificate: @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.wifi_8021X_certificate, icb.wifi_8021X_certificate );
+	imx_cli_print( "802.1X WiFi key: @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.wifi_8021X_key, icb.wifi_8021X_key );
+	//imx_cli_print( "DTLS certificate: @ 0x%08lx\r\n%s\r\n", (uint32_t) icb.dtls_certificate, icb.dtls_certificate );
 }

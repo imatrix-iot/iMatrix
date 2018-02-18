@@ -895,43 +895,43 @@ void imatrix_status( uint16_t arg)
 
     wiced_time_get_time( &current_time );
 
-	cli_print( "iMatrix Max Batch Buffer length: %u entries, iMatrix state: ", device_config.history_size );
+	imx_cli_print( "iMatrix Max Batch Buffer length: %u entries, iMatrix state: ", device_config.history_size );
     switch( imatrix.state ) {
     	case IMATRIX_INIT :
-    		cli_print( "Initializing - checking for ready to upload @%lu, ", (uint32_t) current_time );
-    		cli_print( "Current Control/Sensor Data pending upload:\r\n" );
+    		imx_cli_print( "Initializing - checking for ready to upload @%lu, ", (uint32_t) current_time );
+    		imx_cli_print( "Current Control/Sensor Data pending upload:\r\n" );
     	    for( type = IMX_CONTROLS; type < IMX_NO_PERIPHERAL_TYPES; type++ ) {
 
                 SET_CSB_VARS( type );
                 no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
-    	        cli_print( "%u %s: Current Status @: %lu mS (mS Timer), Upload time + Check time: %lu\r\n",
+    	        imx_cli_print( "%u %s: Current Status @: %lu mS (mS Timer), Upload time + Check time: %lu\r\n",
     	                ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors,
     	                ( type == IMX_CONTROLS ) ? "Controls" : "Sensors", current_time, (uint32_t) imatrix.last_upload_time + device_config.imatrix_batch_check_time );
     	        no_items = ( type == IMX_CONTROLS ) ? device_config.no_controls : device_config.no_sensors;
 
     	        for( i = 0; i < no_items; i++ ) {
     	            if( ( csb[ i ].enabled == true ) && ( csb[ i ].send_imatrix == true ) ) {
-    	                cli_print( "No: %2u: 0x%08lx: %32s ", i, csb[ i ].id, csb[ i ].name );
+    	                imx_cli_print( "No: %2u: 0x%08lx: %32s ", i, csb[ i ].id, csb[ i ].name );
     	                if( csd[ i ].no_samples > 0 ) {
                             if( csb[ i ].sample_rate == 0 ) {
-                                cli_print( "Event Driven: " );
+                                imx_cli_print( "Event Driven: " );
                                 for( j = 0; j < csd[ i ].no_samples; j += 2 ) {
-                                    cli_print( "@ %lu, ", csd[ i ].data[ j ].uint_32bit );
+                                    imx_cli_print( "@ %lu, ", csd[ i ].data[ j ].uint_32bit );
                                     switch( csb[ i ].data_type ) {
                                         case IMX_UINT32 :
-                                            cli_print( "%lu ", csd[ i ].data[ j + 1 ].uint_32bit );
+                                            imx_cli_print( "%lu ", csd[ i ].data[ j + 1 ].uint_32bit );
                                             break;
                                         case IMX_INT32 :
-                                            cli_print( "%ld ", csd[ i ].data[ j + 1 ].int_32bit );
+                                            imx_cli_print( "%ld ", csd[ i ].data[ j + 1 ].int_32bit );
                                             break;
                                         case IMX_FLOAT :
-                                            cli_print( "%f ", csd[ i ].data[ j + 1 ].float_32bit );
+                                            imx_cli_print( "%f ", csd[ i ].data[ j + 1 ].float_32bit );
                                             break;
                                         case IMX_VARIABLE_LENGTH :
-                                            cli_print( "[%u] ", csd[ i ].last_value.var_data->length );
+                                            imx_cli_print( "[%u] ", csd[ i ].last_value.var_data->length );
                                             print_var_data( VR_DATA_STRING, csd[ i ].data[ j + 1 ].var_data );
-                                            cli_print( " " );
+                                            imx_cli_print( " " );
                                             break;
                                     }
                                 }
@@ -939,46 +939,46 @@ void imatrix_status( uint16_t arg)
                                 for( j = 0; j < csd[ i ].no_samples; j++ ) {
                                     switch( csb[ i ].data_type ) {
                                         case IMX_UINT32 :
-                                            cli_print( "%lu ", csd[ i ].data[ j ].uint_32bit );
+                                            imx_cli_print( "%lu ", csd[ i ].data[ j ].uint_32bit );
                                             break;
                                         case IMX_INT32 :
-                                            cli_print( "%ld ", csd[ i ].data[ j ].int_32bit );
+                                            imx_cli_print( "%ld ", csd[ i ].data[ j ].int_32bit );
                                             break;
                                         case IMX_FLOAT :
-                                            cli_print( "%f ", csd[ i ].data[ j ].float_32bit );
+                                            imx_cli_print( "%f ", csd[ i ].data[ j ].float_32bit );
                                             break;
                                         case IMX_VARIABLE_LENGTH :
                                             print_var_data( VR_DATA_STRING, csd[ i ].last_value.var_data );
-                                            cli_print( " " );
+                                            imx_cli_print( " " );
                                             break;
                                     }
                                 }
 
                             }
     	                } else {
-    	                    cli_print( "No Samples stored, " );
+    	                    imx_cli_print( "No Samples stored, " );
     	                    if( csb[ i ].sample_rate == 0 )
-    	                        cli_print( "Event Driven" );
+    	                        imx_cli_print( "Event Driven" );
     	                    else {
     	                        if( csd[ i ].valid == true )
-    	                            cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
+    	                            imx_cli_print( "next sample due @ %lu mSec", ( (uint32_t) csd[ i ].last_sample_time + ( csb[ i ].sample_rate ) ) - (uint32_t) current_time );
     	                        else
-    	                            cli_print( "Waiting for first sample" );
+    	                            imx_cli_print( "Waiting for first sample" );
     	                    }
     	                }
-    	                cli_print( "\r\n" );
+    	                imx_cli_print( "\r\n" );
     	            }
     	        }
     		}
     		break;
     	case IMATRIX_LOAD_PACKET :
-    		cli_print( "Pending upload #: %lu\r\n", icb.imatrix_upload_count );
+    		imx_cli_print( "Pending upload #: %lu\r\n", icb.imatrix_upload_count );
     		break;
     	case IMATRIX_UPLOAD_COMPLETE :
-    		cli_print( "History sending complete\r\n" );
+    		imx_cli_print( "History sending complete\r\n" );
     		break;
     	default:
-    		cli_print( "Unknown\r\n" );
+    		imx_cli_print( "Unknown\r\n" );
     		break;
     }
 }
@@ -989,11 +989,11 @@ void imatrix_status( uint16_t arg)
   */
 void print_imatrix_config(void)
 {
-	cli_print( "iMatrix is @: %s on IP: %u.%u.%u.%u", device_config.imatrix_public_url,
+	imx_cli_print( "iMatrix is @: %s on IP: %u.%u.%u.%u", device_config.imatrix_public_url,
 			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0xff000000 ) >> 24 ),
 			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x00ff0000 ) >> 16 ),
 			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x0000ff00 ) >> 8 ),
 			(unsigned int ) ( ( icb.imatrix_public_ip_address.ip.v4 & 0x000000ff ) ) );
-	cli_print( " iMatrix Uploads: %lu, upload check interval: %lu\r\n", icb.imatrix_upload_count, device_config.imatrix_batch_check_time );
+	imx_cli_print( " iMatrix Uploads: %lu, upload check interval: %lu\r\n", icb.imatrix_upload_count, device_config.imatrix_batch_check_time );
 
 }

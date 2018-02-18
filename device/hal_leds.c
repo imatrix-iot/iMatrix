@@ -196,11 +196,11 @@ void cli_set_led( uint16_t arg)
                         rate = (imx_led_state_t) strtoul( token, &foo, 10 ) + 1;
                     imx_set_led( led, IMX_LED_OTHER, rate );
                 } else
-                    cli_print( "Need to specify blink rate\r\n" );
+                    imx_cli_print( "Need to specify blink rate\r\n" );
             } else
-                cli_print( "Need to specify on / off  / blink\r\n" );
+                imx_cli_print( "Need to specify on / off  / blink\r\n" );
         } else
-            cli_print( "Need to specify state\r\n" );
+            imx_cli_print( "Need to specify state\r\n" );
     } else
-        cli_print( "Need to specify LED - 0 / red or 1 / green\r\n" );
+        imx_cli_print( "Need to specify LED - 0 / red or 1 / green\r\n" );
 }

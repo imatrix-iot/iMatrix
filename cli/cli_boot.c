@@ -97,9 +97,9 @@ void cli_boot( uint16_t arg )
         if( ( bar == LEGACY_OTA ) || ( bar == APP0 ) || ( bar == APP1 ) || ( bar == FACTORY_RESET ) )
             reboot_to_image( bar );
         else
-            cli_print( "Image number must be be: %u or %u or %u or %u\r\n", FACTORY_RESET, LEGACY_OTA, APP0, APP1 );
+            imx_cli_print( "Image number must be be: %u or %u or %u or %u\r\n", FACTORY_RESET, LEGACY_OTA, APP0, APP1 );
     } else
-        cli_print( "Must supply boot image number\r\n" );
+        imx_cli_print( "Must supply boot image number\r\n" );
 }
 /**
   * @brief Reboot the device
@@ -119,7 +119,7 @@ void cli_reboot( uint16_t arg )
 //										save_config();
 		}
 	}
-	cli_print( "Rebooting...\r\n" );
+	imx_cli_print( "Rebooting...\r\n" );
     wiced_rtos_delay_milliseconds( 2000 );
     wiced_framework_reboot();
 }

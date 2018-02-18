@@ -194,8 +194,8 @@ void coap_transmit( uint16_t process_to_end )
                         imx_printf( "[%02x]", msg->coap.data_block->data[ i ] );
                     }
                 }
+                imx_printf( "\r\n" );
             }
-            imx_printf( "\r\n" );
 #endif
             data[ 0 ] = msg->coap.header.ver; // first 2 bits are CoAP version
             data[ 0 ] = ( data[ 0 ] << 2 ) | ( msg->coap.header.t ); // next 2 bits are type

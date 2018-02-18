@@ -130,20 +130,20 @@ uint16_t coap_post_control_otagetlatest(coap_message_t *msg, CoAP_msg_detail_t *
      * Do not reenter OTA if already in progress
      */
 
-	imx_printf( "Attempting to get latest firmware\r\n" );
+	imx_cli_print( "Attempting to get latest firmware\r\n" );
 	if( strcmp( image, "master" ) == 0x00 ) {
 		setup_get_latest_version( OTA_IMAGE_MASTER, device_config.ota_public_url );
-		cli_print( "OTA Get Latest 'master' set to run\r\n" );
+		imx_cli_print( "OTA Get Latest 'master' set to run\r\n" );
 	} else if( strcmp( image, "sflash" ) == 0x00 ) {
 		setup_get_latest_version( OTA_IMAGE_SFLASH, device_config.ota_public_url );
-		cli_print( "OTA Get Latest 'sflash' set to run\r\n" );
+		imx_cli_print( "OTA Get Latest 'sflash' set to run\r\n" );
 	} else if( strcmp( image, "beta_master" ) == 0x00 ) {
 		setup_get_latest_version( OTA_IMAGE_BETA_MASTER, device_config.ota_public_url );
-		cli_print( "OTA Get Latest beta 'master' set to run\r\n" );
+		imx_cli_print( "OTA Get Latest beta 'master' set to run\r\n" );
 	} else if( strcmp( image, "beta_slave" ) == 0x00 ) {
 	} else if( strcmp( image, "beta_sflash" ) == 0x00 ) {
 		setup_get_latest_version( OTA_IMAGE_BETA_SFLASH, device_config.ota_public_url );
-		cli_print( "OTA Get Latest beta 'sflash' set to run\r\n" );
+		imx_cli_print( "OTA Get Latest beta 'sflash' set to run\r\n" );
 	} else {
     	response = BAD_REQUEST;
     	goto bad_data;

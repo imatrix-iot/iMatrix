@@ -912,15 +912,15 @@ void dump_lists(void)
 	/*
 	 * Dump out the lists to see their structure
 	 */
-	cli_print( "Free List:\r\n" );
+	imx_cli_print( "Free List:\r\n" );
 	dump_list( &list_free );
-	cli_print( "UDP Recv List:\r\n" );
+	imx_cli_print( "UDP Recv List:\r\n" );
 	dump_list( &list_udp_coap_recv );
-	cli_print( "UDP Xmit List:\r\n" );
+	imx_cli_print( "UDP Xmit List:\r\n" );
 	dump_list( &list_udp_coap_xmit );
-	cli_print( "TCP Recv List:\r\n" );
+	imx_cli_print( "TCP Recv List:\r\n" );
     dump_list( &list_tcp_coap_recv );
-    cli_print( "TCP Xmit List:\r\n" );
+    imx_cli_print( "TCP Xmit List:\r\n" );
     dump_list( &list_tcp_coap_xmit );
 
 }
@@ -930,10 +930,10 @@ void dump_list( message_list_t *list )
 	message_t* entry = list->head;
 
 	    if ( entry == NULL ) {
-	        cli_print( "No Entries\r\n" );
+	        imx_cli_print( "No Entries\r\n" );
 	    }
 	    while ( entry != NULL ) {
-	        cli_print( "Entry: 0x%08lX\r\n", (uint32_t) entry);
+	        imx_cli_print( "Entry: 0x%08lX\r\n", (uint32_t) entry);
 	        entry = entry->header.next;
 	    }
 }
@@ -1005,9 +1005,9 @@ static uint16_t blocks_remaining_in_free_messages_by_size( uint16_t index )
     uint16_t s, block_size, smallest_freelist_size, errors;
 
     s = 0;
-    cli_print( "Details on Each Size of Data Block, Total Errors: %u\r\n", get_messaging_list_empty_errors() );
+    imx_cli_print( "Details on Each Size of Data Block, Total Errors: %u\r\n", get_messaging_list_empty_errors() );
     while ( 0 < ( block_size = get_block_list_details( s, &smallest_freelist_size, &errors ) ) ) {// 0 block size is invalid.
-        cli_print( "  Block Size: %4u, Unused Blocks: %2u, Required Larger Block When Out of This Size: %u\r\n", block_size, smallest_freelist_size, errors );
+        imx_cli_print( "  Block Size: %4u, Unused Blocks: %2u, Required Larger Block When Out of This Size: %u\r\n", block_size, smallest_freelist_size, errors );
         s++;
     }
 
@@ -1021,7 +1021,7 @@ void print_free_msg_sizes()
 {
 	uint16_t s;
 
-	cli_print( "Free message packet sizes: ");
+	imx_cli_print( "Free message packet sizes: ");
 	for ( s = 0; s < NUMBER_OF_DATA_SIZES; s++ ) {
 /*
 		uint16_t count = 0;
@@ -1031,9 +1031,9 @@ void print_free_msg_sizes()
 			block = block->next;
 		}
 */
-		cli_print("%u Bytes[ %u ] ", free_messages_by_size[ s ].data_size, blocks_remaining_in_free_messages_by_size( s ) );
+		imx_cli_print("%u Bytes[ %u ] ", free_messages_by_size[ s ].data_size, blocks_remaining_in_free_messages_by_size( s ) );
 	}
-	cli_print( "\r\n" );
+	imx_cli_print( "\r\n" );
 }
 
 uint16_t max_packet_size(void)

@@ -70,52 +70,52 @@ wiced_result_t print_dct_header( void )
     /* since we passed ptr_is_writable as WICED_FALSE, we are not allowed to write in to memory pointed by dct_security */
 
     /* Header Section */
-    cli_print( "DCT Header Section \r\n");
-    cli_print( "Full size: %l u, Used size: %lu.\r\n", dct_header->full_size, dct_header->used_size );
-    cli_print( "Write incomplete: %s, is current DCT: %s, App valid: %s MFG info programmed: %s.\r\n",
+    imx_cli_print( "DCT Header Section \r\n");
+    imx_cli_print( "Full size: %l u, Used size: %lu.\r\n", dct_header->full_size, dct_header->used_size );
+    imx_cli_print( "Write incomplete: %s, is current DCT: %s, App valid: %s MFG info programmed: %s.\r\n",
             ( dct_header->write_incomplete ? "True" : "False" ),
             ( dct_header->is_current_dct ? "True" : "False" ),
             ( dct_header->app_valid ? "True" : "False" ),
             ( dct_header->mfg_info_programmed ? "True" : "False" ) );
 
-    cli_print( "Magic number: %lu, Entry point: %lu, Boot valid: %s Load once: %s.\r\n", dct_header->magic_number, dct_header->boot_detail.entry_point,
+    imx_cli_print( "Magic number: %lu, Entry point: %lu, Boot valid: %s Load once: %s.\r\n", dct_header->magic_number, dct_header->boot_detail.entry_point,
             ( dct_header->boot_detail.load_details.valid ? "True" : "False" ),
             ( dct_header->boot_detail.load_details.load_once ? "True" : "False" ) );
     if ( dct_header->boot_detail.load_details.source.id == EXTERNAL_FIXED_LOCATION ) {
-    	cli_print( "DCT external source: 0x%lx, size %lu, ",
+    	imx_cli_print( "DCT external source: 0x%lx, size %lu, ",
 		     dct_header->boot_detail.load_details.source.detail.external_fixed.location,
 		     dct_header->boot_detail.load_details.source.detail.external_fixed.size );
     }
     else if ( dct_header->boot_detail.load_details.source.id == INTERNAL ) {
-    	cli_print( "DCT internal source: 0x%lx, size %lu, ",
+    	imx_cli_print( "DCT internal source: 0x%lx, size %lu, ",
 			dct_header->boot_detail.load_details.source.detail.internal_fixed.location,
 			dct_header->boot_detail.load_details.source.detail.internal_fixed.size );
     }
     else if ( dct_header->boot_detail.load_details.source.id == NONE ) {
-    	cli_print( "No DCT boot source.\r\n" );
+    	imx_cli_print( "No DCT boot source.\r\n" );
     }
     else {
-    	cli_print( "Invalid boot source.\r\n");
+    	imx_cli_print( "Invalid boot source.\r\n");
     }
     if ( dct_header->boot_detail.load_details.destination.id == INTERNAL ) {
-    	cli_print( "DCT internal destination: 0x%lx, size %lu \r\n",
+    	imx_cli_print( "DCT internal destination: 0x%lx, size %lu \r\n",
 			dct_header->boot_detail.load_details.destination.detail.internal_fixed.location,
 			dct_header->boot_detail.load_details.destination.detail.internal_fixed.size );
     }
     else {
-    	cli_print( "Invalid boot destination.\r\n" );
+    	imx_cli_print( "Invalid boot destination.\r\n" );
     }
-    cli_print( "Load app function address 0x%lx \r\n", (unsigned int)dct_header->load_app_func );
+    imx_cli_print( "Load app function address 0x%lx \r\n", (unsigned int)dct_header->load_app_func );
     uint16_t i;
-    cli_print( "Saved App Locations:\r\n" );
+    imx_cli_print( "Saved App Locations:\r\n" );
     for ( i = 0; i < DCT_MAX_APP_COUNT; i++ ) {
     	if ( dct_header->apps_locations[ i ].id == EXTERNAL_FIXED_LOCATION ) {
-			cli_print( "(%u) 0x%lx, size: %lu \r\n", i,
+			imx_cli_print( "(%u) 0x%lx, size: %lu \r\n", i,
 				dct_header->apps_locations[ i ].detail.external_fixed.location,
 				dct_header->apps_locations[ i ].detail.external_fixed.size );
     	}
     	else {
-    		cli_print( "(%u) Entry is not listed as external fixed.\r\n");
+    		imx_cli_print( "(%u) Entry is not listed as external fixed.\r\n");
     	}
     }
 
@@ -135,12 +135,12 @@ wiced_result_t print_security_dct( void )
     }
     /* since we passed ptr_is_writable as WICED_FALSE, we are not allowed to write in to memory pointed by dct_security */
 
-    cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
+    imx_cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
 
     /* Security Section */
-    cli_print( "Security Section \r\n");
-    cli_print( "    Certificate : \r\n%s \r\n", dct_security->certificate );
-    cli_print( "    Private Key : \r\n%s \r\n", dct_security->private_key );
+    imx_cli_print( "Security Section \r\n");
+    imx_cli_print( "    Certificate : \r\n%s \r\n", dct_security->certificate );
+    imx_cli_print( "    Private Key : \r\n%s \r\n", dct_security->private_key );
 
     /* Here ptr_is_writable should be same as what we passed during wiced_dct_read_lock() */
     wiced_dct_read_unlock( dct_security, WICED_FALSE );
@@ -159,18 +159,18 @@ wiced_result_t print_mfg_info_dct( void )
     }
     /* since we passed ptr_is_writable as WICED_FALSE, we are not allowed to write in to memory pointed by dct_security */
 
-    cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
+    imx_cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
 
     /* Manufacturing Info Section */
-    cli_print( "Manufacturing Info Section \r\n");
-    cli_print( "     manufacturer          : %s \r\n", dct_mfg_info->manufacturer );
-    cli_print( "     product_name          : %s \r\n", dct_mfg_info->product_name );
-    cli_print( "     BOM_name              : %s \r\n", dct_mfg_info->BOM_name );
-    cli_print( "     BOM_rev               : %s \r\n", dct_mfg_info->BOM_rev );
-    cli_print( "     serial_number         : %s \r\n", dct_mfg_info->serial_number );
-    cli_print( "     manufacture_date_time : %s \r\n", dct_mfg_info->manufacture_date_time );
-    cli_print( "     manufacture_location  : %s \r\n", dct_mfg_info->manufacture_location );
-    cli_print( "     bootloader_version    : %s \r\n", dct_mfg_info->bootloader_version );
+    imx_cli_print( "Manufacturing Info Section \r\n");
+    imx_cli_print( "     manufacturer          : %s \r\n", dct_mfg_info->manufacturer );
+    imx_cli_print( "     product_name          : %s \r\n", dct_mfg_info->product_name );
+    imx_cli_print( "     BOM_name              : %s \r\n", dct_mfg_info->BOM_name );
+    imx_cli_print( "     BOM_rev               : %s \r\n", dct_mfg_info->BOM_rev );
+    imx_cli_print( "     serial_number         : %s \r\n", dct_mfg_info->serial_number );
+    imx_cli_print( "     manufacture_date_time : %s \r\n", dct_mfg_info->manufacture_date_time );
+    imx_cli_print( "     manufacture_location  : %s \r\n", dct_mfg_info->manufacture_location );
+    imx_cli_print( "     bootloader_version    : %s \r\n", dct_mfg_info->bootloader_version );
 
     /* Here ptr_is_writable should be same as what we passed during wiced_dct_read_lock() */
     wiced_dct_read_unlock( dct_mfg_info, WICED_FALSE );
@@ -189,23 +189,23 @@ wiced_result_t print_wifi_config_dct( void )
     }
     /* since we passed ptr_is_writable as WICED_FALSE, we are not allowed to write in to memory pointed by dct_security */
 
-    cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
+    imx_cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
 
     /* Wi-Fi Config Section */
-    cli_print( "Wi-Fi Config Section \r\n");
-    cli_print( "    device_configured               : %d \r\n", dct_wifi_config->device_configured );
-    cli_print( "    stored_ap_list[0]  (SSID)       : %s \r\n", dct_wifi_config->stored_ap_list[0].details.SSID.value );
-    cli_print( "    stored_ap_list[0]  (Passphrase) : %s \r\n", dct_wifi_config->stored_ap_list[0].security_key );
-    cli_print( "    soft_ap_settings   (SSID)       : %s \r\n", dct_wifi_config->soft_ap_settings.SSID.value );
-    cli_print( "    soft_ap_settings   (Passphrase) : %s \r\n", dct_wifi_config->soft_ap_settings.security_key );
-    cli_print( "    config_ap_settings (SSID)       : %s \r\n", dct_wifi_config->config_ap_settings.SSID.value );
-    cli_print( "    config_ap_settings (Passphrase) : %s \r\n", dct_wifi_config->config_ap_settings.security_key );
-    cli_print( "    country_code                    : %c%c%d \r\n", ((dct_wifi_config->country_code) >>  0) & 0xff,
+    imx_cli_print( "Wi-Fi Config Section \r\n");
+    imx_cli_print( "    device_configured               : %d \r\n", dct_wifi_config->device_configured );
+    imx_cli_print( "    stored_ap_list[0]  (SSID)       : %s \r\n", dct_wifi_config->stored_ap_list[0].details.SSID.value );
+    imx_cli_print( "    stored_ap_list[0]  (Passphrase) : %s \r\n", dct_wifi_config->stored_ap_list[0].security_key );
+    imx_cli_print( "    soft_ap_settings   (SSID)       : %s \r\n", dct_wifi_config->soft_ap_settings.SSID.value );
+    imx_cli_print( "    soft_ap_settings   (Passphrase) : %s \r\n", dct_wifi_config->soft_ap_settings.security_key );
+    imx_cli_print( "    config_ap_settings (SSID)       : %s \r\n", dct_wifi_config->config_ap_settings.SSID.value );
+    imx_cli_print( "    config_ap_settings (Passphrase) : %s \r\n", dct_wifi_config->config_ap_settings.security_key );
+    imx_cli_print( "    country_code                    : %c%c%d \r\n", ((dct_wifi_config->country_code) >>  0) & 0xff,
                                                                             ((dct_wifi_config->country_code) >>  8) & 0xff,
                                                                             ((dct_wifi_config->country_code) >> 16) & 0xff);
-    cli_print( "    DCT mac_address                 : ");
+    imx_cli_print( "    DCT mac_address                 : ");
     print_my_mac_address( (wiced_mac_t*) &dct_wifi_config->mac_address );
-    cli_print("\r\n");
+    imx_cli_print("\r\n");
 
     /* Here ptr_is_writable should be same as what we passed during wiced_dct_read_lock() */
     wiced_dct_read_unlock( dct_wifi_config, WICED_FALSE );
@@ -225,16 +225,16 @@ wiced_result_t print_app_dct( void )
     device_app_dct_t* apps_dct = wiced_dct_get_current_address( DCT_APP_SECTION );// These DCT pointers are only valid until a write is done to the DCT.
 	IOT_Device_Config_t *config = wiced_dct_get_current_address( DCT_APP_SECTION ) + OFFSETOF( device_app_dct_t, config );
 
-    cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
-    cli_print( "Application DCT Starts @: 0x%08lx, Config: 0x%08lx\r\n", (uint32_t) apps_dct, (uint32_t) config );
-    cli_print( "Application Section DCT version: %u, reboots: %u OTA App version: %u\r\n", apps_dct->header.dct_version & 0xFF, config->reboots, apps_dct->header.ota_app_version );
-    cli_print( "System Image is %s and in the %s location.\r\n",
+    imx_cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
+    imx_cli_print( "Application DCT Starts @: 0x%08lx, Config: 0x%08lx\r\n", (uint32_t) apps_dct, (uint32_t) config );
+    imx_cli_print( "Application Section DCT version: %u, reboots: %u OTA App version: %u\r\n", apps_dct->header.dct_version & 0xFF, config->reboots, apps_dct->header.ota_app_version );
+    imx_cli_print( "System Image is %s and in the %s location.\r\n",
     		( apps_dct->header.changed_known_good.system_image == apps_dct->header.using_alternate.system_image ) ? "known good" : "transitional",
     		apps_dct->header.using_alternate.system_image ? "alternate" : "normal" );
-    cli_print( "OTA App Image is %s and in the %s location.\r\n",
+    imx_cli_print( "OTA App Image is %s and in the %s location.\r\n",
     		( apps_dct->header.changed_known_good.ota_image == apps_dct->header.using_alternate.ota_image ) ? "known good" : "transitional",
     		apps_dct->header.using_alternate.ota_image ? "alternate" : "normal" );
-    cli_print( "PSOC Image is %s and in the %s location.\r\n",
+    imx_cli_print( "PSOC Image is %s and in the %s location.\r\n",
     		( apps_dct->header.changed_known_good.psoc_image == apps_dct->header.using_alternate.psoc_image ) ? "known good" : "transitional",
     		apps_dct->header.using_alternate.psoc_image ? "alternate" : "normal" );
 
@@ -251,12 +251,12 @@ wiced_result_t print_network_config_dct( void )
     }
     /* since we passed ptr_is_writable as WICED_FALSE, we are not allowed to write in to memory pointed by dct_security */
 
-    cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
+    imx_cli_print( "\r\n----------------------------------------------------------------\r\n\r\n");
 
     /* Network Config Section */
-    cli_print( "Network Configuration Section\r\n");
-    cli_print( "    wiced_interface_t       : %u \r\n", dct_network_config->interface  );
-    cli_print( "    hostname                : %s \r\n", dct_network_config->hostname.value );
+    imx_cli_print( "Network Configuration Section\r\n");
+    imx_cli_print( "    wiced_interface_t       : %u \r\n", dct_network_config->interface  );
+    imx_cli_print( "    hostname                : %s \r\n", dct_network_config->hostname.value );
 
 
     /* Here ptr_is_writable should be same as what we passed during wiced_dct_read_lock() */

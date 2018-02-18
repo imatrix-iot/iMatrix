@@ -351,30 +351,30 @@ void imatrix_print_config( uint16_t arg )
 {
 	UNUSED_PARAMETER(arg);
 
-    cli_print( "Running WICED: %s, Name: %s, Manufacturing ID: 0x%08lx - ", WICED_VERSION, device_config.product_name, device_config.manufactuer_id, device_config.manufactuer_id );
-	cli_print( "Active Configuration: - Magic: 0x%08lx\r\n", device_config.valid_config );
-	cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
-	cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: [%s]\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
-	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
-	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
-	cli_print( "Building ID: %lu, Level ID: %lu, Indoor Thing: %s, X: %lu, Y: %lu\r\n", device_config.building_id, device_config.level_id, device_config.indoor_device == true ? "True" : "False",
+    imx_cli_print( "Running WICED: %s, Name: %s, Manufacturing ID: 0x%08lx - ", WICED_VERSION, device_config.product_name, device_config.manufactuer_id, device_config.manufactuer_id );
+	imx_cli_print( "Active Configuration: - Magic: 0x%08lx\r\n", device_config.valid_config );
+	imx_cli_print( "Product Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
+	imx_cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: [%s]\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
+	imx_cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
+	imx_cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
+	imx_cli_print( "Building ID: %lu, Level ID: %lu, Indoor Thing: %s, X: %lu, Y: %lu\r\n", device_config.building_id, device_config.level_id, device_config.indoor_device == true ? "True" : "False",
 	        device_config.indoor_x, device_config.indoor_y );
-    cli_print( "Default AP SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
-    cli_print( "Default ST SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_st_ssid, device_config.default_st_wpa, device_config.default_st_security_mode );
-    cli_print( "Access Point Stored SSID: %s, Channel: %u, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.ap_ssid, device_config.ap_channel, device_config.ap_wpa, device_config.ap_security_mode );
-    cli_print( "Station Stored SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.st_ssid, device_config.st_wpa, device_config.st_security_mode );
-    cli_print( "Current Operating Mode: " );
+    imx_cli_print( "Default AP SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
+    imx_cli_print( "Default ST SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_st_ssid, device_config.default_st_wpa, device_config.default_st_security_mode );
+    imx_cli_print( "Access Point Stored SSID: %s, Channel: %u, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.ap_ssid, device_config.ap_channel, device_config.ap_wpa, device_config.ap_security_mode );
+    imx_cli_print( "Station Stored SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.st_ssid, device_config.st_wpa, device_config.st_security_mode );
+    imx_cli_print( "Current Operating Mode: " );
     if( device_config.AP_setup_mode == true )
-        cli_print( "Wi Fi Access Point: on Channel: %u", device_config.ap_channel );
+        imx_cli_print( "Wi Fi Access Point: on Channel: %u", device_config.ap_channel );
     else
-        cli_print( "Wi Fi Station" );
+        imx_cli_print( "Wi Fi Station" );
 
-    cli_print( "\r\niMatrix URL: %s, iMatrix batch check time: %lumS, History Size: %u\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time, device_config.history_size );
-	cli_print( "Manufacturing URL: %s, Bind URI: %s, OTA URL: %s\r\n", device_config.manufacturing_url, device_config.imatrix_bind_uri, device_config.ota_public_url );
-	cli_print( "AT Variable Entry Timeout: %u mS, AT Verbose mode: %u\r\n", device_config.AT_variable_data_timeout, device_config.AT_verbose );
-	cli_print( "Controls Configuration:\r\n" );
+    imx_cli_print( "\r\niMatrix URL: %s, iMatrix batch check time: %lumS, History Size: %u\r\n", device_config.imatrix_public_url, device_config.imatrix_batch_check_time, device_config.history_size );
+	imx_cli_print( "Manufacturing URL: %s, Bind URI: %s, OTA URL: %s\r\n", device_config.manufacturing_url, device_config.imatrix_bind_uri, device_config.ota_public_url );
+	imx_cli_print( "AT Variable Entry Timeout: %u mS, AT Verbose mode: %u\r\n", device_config.AT_variable_data_timeout, device_config.AT_verbose );
+	imx_cli_print( "Controls Configuration:\r\n" );
 	print_common_config( IMX_CONTROLS, &device_config.ccb[ 0 ] );
-	cli_print( "Sensors Configuration:\r\n" );
+	imx_cli_print( "Sensors Configuration:\r\n" );
 	print_common_config( IMX_SENSORS, &device_config.scb[ 0 ] );
 }
 /**
@@ -390,16 +390,16 @@ wiced_result_t imatrix_print_saved_config( uint16_t arg )
 	// The address in the DCT becomes invalid as soon as anything is written to the DCT
 	IOT_Device_Config_t *temp_app_dct_config = (IOT_Device_Config_t*) ( (uint32_t)wiced_dct_get_current_address( DCT_APP_SECTION ) + OFFSETOF( device_app_dct_t, config ) );
 	if ( temp_app_dct_config == GET_CURRENT_ADDRESS_FAILED ) {
-	    cli_print( "DCT access error while attempting to print the saved device configuration.\r\n");
+	    imx_cli_print( "DCT access error while attempting to print the saved device configuration.\r\n");
 	    return WICED_ERROR;
 	}
 
-	cli_print( "DCT Configuration,saved @: 0x%08lx, Magic: 0x%08lx\r\n", (uint32_t) temp_app_dct_config, device_config.valid_config );
-	cli_print( "Product Name: %s - Device Name: %s, ", temp_app_dct_config->product_name, temp_app_dct_config->device_name );
-	cli_print( "Serial Number: %08lX%08lX%08lX", temp_app_dct_config->sn.serial1, temp_app_dct_config->sn.serial2, temp_app_dct_config->sn.serial3 );
-	cli_print( " - iMatrix assigned: %s\r\n", temp_app_dct_config->device_serial_number );
-	cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) temp_app_dct_config->last_ntp_updated_time, temp_app_dct_config->reboots, temp_app_dct_config->valid_config );
-	cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", temp_app_dct_config->longitude, temp_app_dct_config->latitude, (float) temp_app_dct_config->local_seconds_offset_from_utc / ( 60 * 60 ) );
+	imx_cli_print( "DCT Configuration,saved @: 0x%08lx, Magic: 0x%08lx\r\n", (uint32_t) temp_app_dct_config, device_config.valid_config );
+	imx_cli_print( "Product Name: %s - Device Name: %s, ", temp_app_dct_config->product_name, temp_app_dct_config->device_name );
+	imx_cli_print( "Serial Number: %08lX%08lX%08lX", temp_app_dct_config->sn.serial1, temp_app_dct_config->sn.serial2, temp_app_dct_config->sn.serial3 );
+	imx_cli_print( " - iMatrix assigned: %s\r\n", temp_app_dct_config->device_serial_number );
+	imx_cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) temp_app_dct_config->last_ntp_updated_time, temp_app_dct_config->reboots, temp_app_dct_config->valid_config );
+	imx_cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", temp_app_dct_config->longitude, temp_app_dct_config->latitude, (float) temp_app_dct_config->local_seconds_offset_from_utc / ( 60 * 60 ) );
 
     return WICED_SUCCESS;
 }

@@ -128,6 +128,7 @@ uint32_t imx_get_imatrix_debug_flags(void);
  */
 bool imx_get_ch( char *ch );
 void imx_printf( char *format, ... );
+void imx_cli_print( char *format, ... );
 int imx_log_printf( char *format, ... );
 bool imx_verify_cmd(void);
 void imx_set_cli_handler( bool (*cli_handler)( char *token ) );

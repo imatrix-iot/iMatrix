@@ -1055,15 +1055,15 @@ void print_lut(uint16_t arg)
     get_apps_lut_if_needed();
     imx_printf( "Current LUT\r\n" );
     for( i = 0; i < 8; i++ ) {//NO_IMAGE_TYPES; i++ ) {
-        cli_print( "Entry: %u, Sector Count: %u, Secure: %s\r\n", i, apps_lut[ i ].count,
+        imx_cli_print( "Entry: %u, Sector Count: %u, Secure: %s\r\n", i, apps_lut[ i ].count,
                 apps_lut[ i ].secure ? "True" : "False" );
         if( apps_lut[ i ].count != 0xFF )   // Real Data
             for( j = 0; j < apps_lut[ i ].count; j++  )
-                cli_print( "Start Sector: %X Address: 0x%08lX, Length in sectors: %u - %lu Bytes ", apps_lut[ i ].sectors[ j ].start,
+                imx_cli_print( "Start Sector: %X Address: 0x%08lX, Length in sectors: %u - %lu Bytes ", apps_lut[ i ].sectors[ j ].start,
                     ( uint32_t ) ( apps_lut[ i ].sectors[ j ].start ) * SFLASH_SECTOR_SIZE,
                     apps_lut[ i ].sectors[ j ].count,
                     ( uint32_t ) ( apps_lut[ i ].sectors[ j ].count ) * SFLASH_SECTOR_SIZE );
-        cli_print("\r\n" );
+        imx_cli_print("\r\n" );
     }
 
 }

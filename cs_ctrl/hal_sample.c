@@ -155,21 +155,21 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
 			status = ( f[ *active ].update)( f[ *active ].arg, &sampled_value );
 #ifdef PRINT_DEBUGS_FOR_SAMPLING
 			if( device_config.log_messages & DEBUGS_FOR_SAMPLING ) {
-	            cli_print( "Sampled %s: %u, result: %u", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", *active, status );
-	            cli_print( ", Value: " );
+	            imx_cli_print( "Sampled %s: %u, result: %u", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", *active, status );
+	            imx_cli_print( ", Value: " );
 	            switch( csb[ *active ].data_type ) {
 	                case IMX_INT32 :
-	                    cli_print( "%ld", sampled_value.int_32bit );
+	                    imx_cli_print( "%ld", sampled_value.int_32bit );
 	                    break;
 	                case IMX_FLOAT :
-	                    cli_print( "%f", sampled_value.float_32bit );
+	                    imx_cli_print( "%f", sampled_value.float_32bit );
 	                    break;
 	                case IMX_UINT32 :
 	                default :
-	                    cli_print( "%lu", sampled_value.uint_32bit );
+	                    imx_cli_print( "%lu", sampled_value.uint_32bit );
 	                    break;
 	            }
-	            cli_print( "\r\n" );
+	            imx_cli_print( "\r\n" );
 			}
 #endif
 	        if( status == IMX_SUCCESS ) {
@@ -307,7 +307,7 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
                 ( percent_change_detected == true ) ) {
 #ifdef PRINT_DEBUGS_FOR_SAMPLING
                 if( device_config.log_messages & DEBUGS_FOR_SAMPLING ) {
-                    cli_print( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
+                    imx_cli_print( "Setting %s: %u, ID: 0x%08lx to send batch of: %u, batch size %u, sample_now: %s sensor_warning: %u, last: %u, %%change detected: %s\r\n", type == IMX_CONTROLS ? "Control" : "Sensor",
                             *active, csb[ *active ].id, csd[ *active ].no_samples, csb[ *active ].sample_batch_size, csd[ *active ].update_now ? "true" : "false",
                             csd[ *active ].warning, csd[ *active ].last_warning, percent_change_detected ? "true" : "false" );
                 }

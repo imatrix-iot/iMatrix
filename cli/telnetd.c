@@ -759,6 +759,6 @@ uint16_t telnetd_write( char *buffer, uint16_t length )
 
 void print_telnet_state(void)
 {
-	cli_print( "Telnet State: %s State: %u \r\n", telnet_config.active ? "Active" : "Idle", telnet_config.state );
+	imx_cli_print( "Telnet State: %s State: %u \r\n", telnet_config.active ? "Active" : "Idle", telnet_config.state );
 
 }

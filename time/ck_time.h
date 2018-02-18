@@ -62,7 +62,7 @@ wiced_utc_time_t imx_current_local_time(void);
 uint16_t imx_day_of_week(wiced_utc_time_t seconds_since_1969);
 wiced_result_t wiced_local_time_get_iso8601_time(wiced_iso8601_time_t* iso8601_time);
 wiced_result_t iso8601_time_of(wiced_utc_time_t utc_time, wiced_iso8601_time_t* iso8601_time);
-void sunrise_sunset( wiced_utc_time_t any_utc_time_on_day, wiced_utc_time_t* sunrise, wiced_utc_time_t* sunset );
+void imx_sunrise_sunset( wiced_utc_time_t any_utc_time_on_day, wiced_utc_time_t* sunrise, wiced_utc_time_t* sunset );
 wiced_time_t time_difference( wiced_time_t latest, wiced_time_t earliest );
 bool imx_is_later(  wiced_time_t time1, wiced_time_t time2 );
 uint16_t timer_timeout( wiced_time_t current_time, wiced_time_t start, uint32_t wait );

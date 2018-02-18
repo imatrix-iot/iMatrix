@@ -194,6 +194,7 @@ uint16_t imx_day_of_week(wiced_utc_time_t seconds_since_1969);
 bool imx_is_later(  wiced_time_t time1, wiced_time_t time2 );
 imx_result_t imx_get_utc(uint16_t arg, void *value );
 void imx_kick_watchdog(void);
+void imx_sunrise_sunset( wiced_utc_time_t any_utc_time_on_day, wiced_utc_time_t* sunrise, wiced_utc_time_t* sunset );
 /*
  * Memory management - used to take advantage of CCMSRAM space - will allocate from regular heap - but never freed
  */

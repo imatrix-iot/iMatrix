@@ -293,7 +293,7 @@ uint8_t is_leap( uint32_t year ) {
  *
  * written  by Eric Thelin 15 July 2015
  */
-void sunrise_sunset( wiced_utc_time_t any_utc_time_on_day, wiced_utc_time_t* sunrise, wiced_utc_time_t* sunset )
+void imx_sunrise_sunset( wiced_utc_time_t any_utc_time_on_day, wiced_utc_time_t* sunrise, wiced_utc_time_t* sunset )
 {
 
     // seconds in 1 full day revolution / degrees in a full revolution * longitude converts to the time offset

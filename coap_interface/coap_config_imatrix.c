@@ -69,6 +69,8 @@
  *                    Constants
  ******************************************************/
 #define NO_SECURITY                 0xFFFF
+#define PRODUCT_ID_SN_TEMPLATE      "{ \"manufacturer-id\" : \"%08lu\", \"product-name\" : \"%s\", \"product-id\" : \"%08lu\", \"serial-number\" : \"%s\", \"cpuid\" : \"0x%08lX%08lX%08lX\", \"capabilities\" : \"%08lu\", \"api-version-name\" : \"%s\" }"
+#define PRODUCT_ID_SN_BUFFER_LENGTH ( sizeof( PRODUCT_ID_SN_TEMPLATE ) + IMX_PRODUCT_NAME_LENGTH + IMX_PRODUCT_ID_LENGTH + IMX_DEVICE_SERIAL_NUMBER_LENGTH + CPUID_LENGTH + 1 )
 
 /******************************************************
  *                   Enumerations
@@ -101,7 +103,7 @@ extern iMatrix_Control_Block_t icb;
   */
 uint16_t coap_post_config_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, uint16_t arg)
 {
-    char url[ IMX_IMATRIX_URL_LENGTH ];
+    char upload_url[ IMX_IMATRIX_URL_LENGTH ], ota_url[ IMX_IMATRIX_URL_LENGTH ];
     char ssid[ IMX_SSID_LENGTH ], phrase_key[ IMX_WPA2PSK_LENGTH ];
     unsigned int security_type;
     int result;
@@ -109,7 +111,8 @@ uint16_t coap_post_config_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, ui
             {"ssid",        t_string, .addr.string = ssid, .len = IMX_SSID_LENGTH  },// Defaults to empty string ""
             {"phrase_key",  t_string, .addr.string = phrase_key, .len = IMX_WPA2PSK_LENGTH  },// Defaults to empty string ""
             {"security_type", t_uinteger, .addr.uinteger = &security_type, .dflt.uinteger = NO_SECURITY },
-            {"url",  t_string, .addr.string = url, .len = IMX_IMATRIX_URL_LENGTH },
+            {"upload_url",  t_string, .addr.string = upload_url, .len = IMX_IMATRIX_URL_LENGTH },
+            {"ota_url",  t_string, .addr.string = ota_url, .len = IMX_IMATRIX_URL_LENGTH },
             {NULL}
     };
     uint16_t response;
@@ -133,17 +136,30 @@ uint16_t coap_post_config_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, ui
         goto bad_data;
     }
 
-    if( strcmp( url, "" ) == 0 ) {
-        PRINTF( "Missing uri value in JSON from request.\r\n");
+    if( strcmp( upload_url, "" ) == 0 ) {
+        PRINTF( "Missing upload uri value in JSON from request.\r\n");
         response = BAD_REQUEST;
         goto bad_data;
     }
 
-    if( strlen( url ) > IMX_IMATRIX_URL_LENGTH ) {
-        PRINTF( "uri name too long in JSON from request.\r\n");
+    if( strlen( upload_url ) > IMX_IMATRIX_URL_LENGTH ) {
+        PRINTF( "upload uri name too long in JSON from request.\r\n");
         response = BAD_REQUEST;
         goto bad_data;
     }
+
+    if( strcmp( ota_url, "" ) == 0 ) {
+        PRINTF( "Missing ota uri value in JSON from request.\r\n");
+        response = BAD_REQUEST;
+        goto bad_data;
+    }
+
+    if( strlen( upload_url ) > IMX_IMATRIX_URL_LENGTH ) {
+        PRINTF( "ota uri name too long in JSON from request.\r\n");
+        response = BAD_REQUEST;
+        goto bad_data;
+    }
+
     if( result || ( strcmp( ssid, "" ) == 0x00 )|| ( security_type == NO_SECURITY ) ) {
         PRINTF( "Invalid JSON object in coap_post_control_securessid function.\r\n");
         response = BAD_REQUEST;
@@ -159,7 +175,8 @@ uint16_t coap_post_config_imatrix(coap_message_t *msg, CoAP_msg_detail_t *cd, ui
      */
 
     set_wifi_st_ssid( ssid, phrase_key, security_type );
-    strcpy( device_config.imatrix_public_url, url );
+    strcpy( device_config.imatrix_public_url, upload_url );
+    strcpy( device_config.ota_public_url, ota_url );
     init_registration();
 
     if( msg->header.t == CONFIRMABLE ) {

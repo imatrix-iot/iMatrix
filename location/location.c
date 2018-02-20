@@ -227,8 +227,8 @@ uint32_t imx_get_indoor_x(void)
 }
 /**
   * @brief Set the indoor_x of the Thing
-  * @param  None
-  * @retval : indoor_x
+  * @param  indoor_x
+  * @retval : None
   */
 void imx_set_indoor_x(uint32_t indoor_x)
 {
@@ -245,8 +245,8 @@ uint32_t imx_get_indoor_y(void)
 }
 /**
   * @brief Set the indoor_y of the Thing
-  * @param  None
-  * @retval : indoor_y
+  * @param  indoor_y
+  * @retval : None
   */
 void imx_set_indoor_y(uint32_t indoor_y)
 {
@@ -263,10 +263,86 @@ uint32_t imx_get_indoor_z(void)
 }
 /**
   * @brief Set the indoor_z of the Thing
-  * @param  None
-  * @retval : indoor_z
+  * @param  indoor_z
+  * @retval : None
   */
 void imx_set_indoor_z(uint32_t indoor_z)
 {
     icb.indoor_z = indoor_z;
+}
+/**
+  * @brief Get the building ID of the Thing
+  * @param  None
+  * @retval : building ID
+  */
+uint32_t imx_get_building_id(void)
+{
+    return device_config.building_id;
+}
+/**
+  * @brief Set the building ID of the Thing
+  * @param  building id
+  * @retval : None
+  */
+void imx_set_building_id(uint32_t building_id )
+{
+    device_config.building_id = building_id;
+    imatrix_save_config();
+}
+/**
+  * @brief Get the floor ID of the Thing
+  * @param  None
+  * @retval : floor ID
+  */
+uint32_t imx_get_floor_id(void)
+{
+    return device_config.floor_id;
+}
+/**
+  * @brief Set the floor ID of the Thing
+  * @param  floor id
+  * @retval : None
+  */
+void imx_set_floor_id(uint32_t floor_id )
+{
+    device_config.floor_id = floor_id;
+    imatrix_save_config();
+}
+/**
+  * @brief Get the room ID of the Thing
+  * @param  None
+  * @retval : Room ID
+  */
+uint32_t imx_get_room_id(void)
+{
+    return device_config.room_id;
+}
+/**
+  * @brief Set the room ID of the Thing
+  * @param  room id
+  * @retval : None
+  */
+void imx_set_room_id(uint32_t room_id )
+{
+    device_config.room_id = room_id;
+    imatrix_save_config();
+}
+/**
+  * @brief Get the group ID of the Thing
+  * @param  None
+  * @retval : Group ID
+  */
+uint32_t imx_get_group_id(void)
+{
+    return device_config.group_id;
+}
+/**
+  * @brief Set the group ID of the Thing
+  * @param  group id
+  * @retval : None
+  */
+void imx_set_group_id(uint32_t group_id )
+{
+    device_config.group_id = group_id;
+    imatrix_save_config();
 }

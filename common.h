@@ -359,9 +359,12 @@ typedef struct {
     uint32_t product_id;
     uint32_t manufactuer_id;
     uint32_t building_id;
-    uint32_t level_id;
+    uint32_t floor_id;
+    uint32_t room_id;
+    uint32_t group_id;
     uint32_t indoor_x;
     uint32_t indoor_y;
+    uint32_t indoor_z;
     uint32_t sflash_size;
     float longitude;
     float latitude;
@@ -375,6 +378,8 @@ typedef struct {
     /*
      * Following items are flags
      */
+    unsigned int indoor_thing           : 1;                // Is this device located indoors
+    unsigned int mobile_thing           : 1;
     unsigned int print_debugs           : 1;                // Do we print the set debug messages.
     unsigned int start_in_station_mode  : 1;                // Start Client with default Station Settings - Use for Development only
     unsigned int at_command_mode        : 1;                // What type of command interface is used

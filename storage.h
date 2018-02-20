@@ -289,7 +289,7 @@ typedef struct IOT_Device_Config {
     uint32_t ota_fail_sflash_crc;
     uint32_t ota_fail_communications_link;
     uint32_t valid_config;
-    uint32_t building_id, level_id, indoor_x, indoor_y, indoor_z;
+    uint32_t building_id, floor_id, room_id, group_id, indoor_x, indoor_y, indoor_z;
     int32_t local_seconds_offset_from_utc;
     uint32_t log_messages;
     float longitude, latitude, elevation;
@@ -313,8 +313,8 @@ typedef struct IOT_Device_Config {
     unsigned int ssh_enabled                : 1;    // 11
     unsigned int username_password_enabled  : 1;    // 12
     unsigned int comm_mode                  : 4;    // 13-16 Used for iMatrix Communication options
-    unsigned int mobile_device              : 1;    // 17 - Send regular location updates
-    unsigned int indoor_device              : 1;    // 18 - Do we send both GPS or indoor locations?
+    unsigned int mobile_thing               : 1;    // 17 - Send regular location updates
+    unsigned int indoor_thing               : 1;    // 18 - Do we send both GPS or indoor locations?
     unsigned int enable_imatrix             : 1;    // 19
     unsigned int use_rssi                   : 1;    // 20
     unsigned int use_rfnoise                : 1;    // 21

@@ -47,15 +47,20 @@
  *
  * The following is a template for the initial settings of the iMatrix Config structure
  *
-imx_imatrix_init_config_t imatrix_config = {
+imx_imatrix_init_config_t test_imatrix_config = {
     .product_name = IMX_PRODUCT_NAME,
     .device_name = IMX_PRODUCT_NAME,
     .imatrix_public_url = IMX_IMATRIX_SITE,
     .ota_public_url = IMX_OTA_SITE,
+    .manufacturing_url = IMX_MANUFACTURING_SITE,
     .no_sensors = IMX_NO_SENSORS,
     .no_controls = IMX_NO_CONTROLS,
     .no_arduino_sensors = IMX_NO_ARDUINO_SENSORS,
     .no_arduino_controls = IMX_NO_ARDUINO_CONTROLS,
+    .no_at_controls = IMX_NO_AT_CONTROLS,
+    .at_control_start = IMX_AT_CONTROL_START,
+    .no_at_sensors = IMX_NO_AT_SENSORS,
+    .at_sensor_start = IMX_AT_SENSOR_START,
     .ap_eap_mode = 0,
     .st_eap_mode = 0,
     .ap_security_mode = WICED_SECURITY_OPEN,
@@ -64,13 +69,14 @@ imx_imatrix_init_config_t imatrix_config = {
     .product_id = IMX_PRODUCT_ID,
     .organization_id = IMX_ORGANIZATION_ID,
     .building_id = 0,
-    .level_id = 0,
+    .floor_id = 0,
+    .room_id = 0,
+    .group_id = 0,
     .indoor_x = 0,
     .indoor_y = 0,
     .longitude = IMX_LONGITUDE_DEFAULT,
-    .Latitude = IMX_LATITUDE_DEFAULT,
+    .latitude = IMX_LATITUDE_DEFAULT,
     .elevation = IMX_ELEVATION_DEFAULT
-    bool (*set_led)( imx_led_t led, uint16_t state );
 };
  *
  */
@@ -163,6 +169,14 @@ uint32_t imx_get_indoor_y(void);
 void imx_set_indoor_y(uint32_t indoor_y);
 uint32_t imx_get_indoor_z(void);
 void imx_set_indoor_z(uint32_t indoor_z);
+uint32_t imx_get_building_id(void);
+void imx_set_building_id(uint32_t building_id );
+uint32_t imx_get_floor_id(void);
+void imx_set_floor_id(uint32_t floor_id );
+uint32_t imx_get_room_id(void);
+void imx_set_room_id(uint32_t room_id );
+uint32_t imx_get_group_id(void);
+void imx_set_group_id(uint32_t group_id );
 /*
  * General Wi Fi Status routines
  */

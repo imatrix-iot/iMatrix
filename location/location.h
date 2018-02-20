@@ -76,4 +76,12 @@ uint32_t imx_get_indoor_y(void);
 void imx_set_indoor_y(uint32_t indoor_y);
 uint32_t imx_get_indoor_z(void);
 void imx_set_indoor_z(uint32_t indoor_z);
+uint32_t imx_get_building_id(void);
+void imx_set_building_id(uint32_t building_id );
+uint32_t imx_get_floor_id(void);
+void imx_set_floor_id(uint32_t floor_id );
+uint32_t imx_get_room_id(void);
+void imx_set_room_id(uint32_t room_id );
+uint32_t imx_get_group_id(void);
+void imx_set_group_id(uint32_t group_id );
 #endif /* LOCATAION__H_ */

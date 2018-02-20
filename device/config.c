@@ -238,9 +238,13 @@ wiced_result_t imatrix_load_config(bool override_config)
     }
     device_config.building_id = imx_imatrix_init_config.building_id;
     device_config.product_capabilities = imx_imatrix_init_config.product_capabilities;
-    device_config.level_id = imx_imatrix_init_config.level_id;
+    device_config.floor_id = imx_imatrix_init_config.floor_id;
+    device_config.room_id = imx_imatrix_init_config.room_id;
+    device_config.group_id = imx_imatrix_init_config.group_id;
     device_config.indoor_x = imx_imatrix_init_config.indoor_x;
     device_config.indoor_y = imx_imatrix_init_config.indoor_y;
+    device_config.indoor_z = imx_imatrix_init_config.indoor_z;
+    device_config.indoor_thing = imx_imatrix_init_config.indoor_thing;
     device_config.longitude = imx_imatrix_init_config.longitude;
     device_config.latitude = imx_imatrix_init_config.latitude;
     device_config.elevation = imx_imatrix_init_config.elevation;
@@ -357,8 +361,8 @@ void imatrix_print_config( uint16_t arg )
 	imx_cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: [%s]\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
 	imx_cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	imx_cli_print( "Longitude %6.06f, Latitude: %6.06f, Time Offset from UTC: %2.2f\r\n", device_config.longitude, device_config.latitude, (float) device_config.local_seconds_offset_from_utc / ( 60 * 60 ) );
-	imx_cli_print( "Building ID: %lu, Level ID: %lu, Indoor Thing: %s, X: %lu, Y: %lu\r\n", device_config.building_id, device_config.level_id, device_config.indoor_device == true ? "True" : "False",
-	        device_config.indoor_x, device_config.indoor_y );
+	imx_cli_print( "Building ID: %lu, Floor ID: %lu, Room ID: %lu, Group ID: %lu, Indoor Thing: %s, X: %lu, Y: %lu, Z: %lu\r\n", device_config.building_id, device_config.floor_id,
+	        device_config.room_id, device_config.group_id, device_config.indoor_thing == true ? "True" : "False", device_config.indoor_x, device_config.indoor_y, device_config.indoor_z );
     imx_cli_print( "Default AP SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_ap_ssid, device_config.default_ap_wpa, device_config.default_ap_security_mode );
     imx_cli_print( "Default ST SSID: %s, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.default_st_ssid, device_config.default_st_wpa, device_config.default_st_security_mode );
     imx_cli_print( "Access Point Stored SSID: %s, Channel: %u, Passphrase: ->%s<-, Security Mode: 0x%0x8l\r\n", device_config.ap_ssid, device_config.ap_channel, device_config.ap_wpa, device_config.ap_security_mode );

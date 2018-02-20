@@ -123,6 +123,7 @@ enum cmds {				// Must match commands variable order
 	CLI_DUMP_MEMORY,	// dump internal memory
 	CLI_MFG_TEST,       // Do a manufacturing test / function
     CLI_REBOOT,         // reboot
+    CLI_RESET,          // Reset the configuration
 	CLI_SETUP_MODE,		// Set to setup mode for provisioning
 	CLI_PRINT_STATUS,	// s
     CLI_SET_SERIAL,     // Set the serial number of a unit
@@ -185,6 +186,7 @@ cli_commands_t command[ NO_CMDS ] = {
 		{ "ntp", &cli_ntp, 0, "ntp - Retry get NTP" },
 		{ "mfg", mfg_test, 0, "mfg <test/function number>" },
 		{ "reboot", &cli_reboot, 0, "reboot the device" },	// reboot the device
+		{ "reset", (void*) &imatrix_load_config, true, "Reset the configuration of the device to factory defaults" },
 		{ "s", &cli_status, 0, "Print the status" },		// Current Status
 		{ "setup", &cli_wifi_setup, 0, "setup <on | off> - Sets to use Soft AP to provision" },
         { "set_serial", &cli_set_serial, 0, "Set the serial number of a unit <serial number>" },    // Set SSID and PSK

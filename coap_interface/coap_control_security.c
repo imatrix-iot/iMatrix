@@ -53,7 +53,7 @@
 #include "../device/icb_def.h"
 #include "../json/mjson.h"
 #include "../coap/add_coap_option.h"
-#include "../coAP_interface/get_uint_from_query_str.h"
+#include "../coAP_interface/imx_get_uint_from_query_str.h"
 #include "../wifi/wifi.h"
 #include "../device/cert_defs.h"
 #include "../device/cert_util.h"
@@ -144,7 +144,7 @@ uint16_t coap_get_control_security(coap_message_t *msg, CoAP_msg_detail_t *cd, u
     PRINTF( "Get Configuration - '/control/security'\r\n");
     PRINTF( "URI Query: %s\r\n", cd->uri_query );
 
-    if ( WICED_SUCCESS != get_uint_from_query_str( "cert_type", &cert_type, cd->uri_query ) ) {// Require ID
+    if ( WICED_SUCCESS != imx_get_uint_from_query_str( "cert_type", &cert_type, cd->uri_query ) ) {// Require ID
         if( coap_store_response_header( msg, BAD_REQUEST, response_type, NULL )  != WICED_SUCCESS ) {
     		PRINTF( "Failed to create response.\r\n" );
         }

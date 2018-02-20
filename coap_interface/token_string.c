@@ -95,7 +95,7 @@
  * 
  * written by Eric Thelin 19 April 2015
  */
-int left_str_equals( char* str1, char* str2, int length ) 
+int imx_left_str_equals( char* str1, char* str2, int length ) 
 {
    int a;
    for ( a = 0; a < length; a++ ) {
@@ -123,7 +123,7 @@ int left_str_equals( char* str1, char* str2, int length )
  * 
  * written by Eric Thelin 19 April 2015
  */
-int get_length_before( char terminating_chars[], char str[], int max_length )
+int imx_get_length_before( char terminating_chars[], char str[], int max_length )
 {
    int n, a;
    for ( n = 0; n < max_length; n++ ) {
@@ -151,7 +151,7 @@ int get_length_before( char terminating_chars[], char str[], int max_length )
  * 
  * written by Eric Thelin 19 April 2015
  */
-uint16_t left_str_is_uint( char  *number, int length )
+uint16_t imx_left_str_is_uint( char  *number, int length )
 {
     int i = 0;
 
@@ -172,7 +172,7 @@ uint16_t left_str_is_uint( char  *number, int length )
     return true;
 }
 
-uint16_t left_str_is_int( char *number, int length )
+uint16_t imx_left_str_is_int( char *number, int length )
 {
     if( length <= 0 )
         return false;
@@ -193,7 +193,7 @@ uint16_t left_str_is_int( char *number, int length )
  * 
  * written by Eric Thelin 20 April 2015
  */
-uint16_t make_str_uint( char* str, int length ) {
+uint16_t imx_make_str_uint( char* str, int length ) {
 
    uint16_t result = 0;
    int n;
@@ -239,7 +239,7 @@ uint16_t make_str_uint( char* str, int length ) {
  *
  * written by Eric Thelin 20 April 2015
  */
-uint32_t make_str_uint32( char* str, int length ) {
+uint32_t imx_make_str_uint32( char* str, int length ) {
 
     uint32_t result = 0;
     int n;
@@ -285,7 +285,7 @@ uint32_t make_str_uint32( char* str, int length ) {
  *
  * written by Eric Thelin 20 April 2015
  */
-int32_t make_str_int32( char* str, int length ) {
+int32_t imx_make_str_int32( char* str, int length ) {
 
     uint32_t unsigned_number;
 
@@ -296,10 +296,10 @@ int32_t make_str_int32( char* str, int length ) {
     }
 
     if (str[0] == '-') {
-        unsigned_number = make_str_uint32( &( str[1] ), length - 1 );
+        unsigned_number = imx_make_str_uint32( &( str[1] ), length - 1 );
     }
     else {
-        unsigned_number = make_str_uint32( str, length );
+        unsigned_number = imx_make_str_uint32( str, length );
     }
 
     if ( unsigned_number > 2147483647 ) {

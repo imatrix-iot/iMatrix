@@ -57,7 +57,7 @@
 #include "../cs_ctrl/hal_event.h"
 #include "../json/mjson.h"
 #include "../coap/add_coap_option.h"
-#include "../CoAP_interface/get_uint_from_query_str.h"
+#include "../CoAP_interface/imx_get_uint_from_query_str.h"
 #include "../cs_ctrl/imx_cs_interface.h"
 #include "../device/var_data.h"
 #include "../wifi/wifi.h"
@@ -152,7 +152,7 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
     PRINTF( "Get Configuration - '/control/cs_ctrl'\r\n");
     PRINTF( "URI Query: %s\r\n", coap_cd->uri_query );
 
-    if ( WICED_SUCCESS != get_uint_from_query_str( "type", &type, coap_cd->uri_query ) ) {// Require type
+    if ( WICED_SUCCESS != imx_get_uint_from_query_str( "type", &type, coap_cd->uri_query ) ) {// Require type
         if( coap_store_response_header( msg, BAD_REQUEST, response_type, NULL )  != WICED_SUCCESS ) {
             PRINTF( "Failed to create response.\r\n" );
             return COAP_NO_RESPONSE;
@@ -163,7 +163,7 @@ uint16_t coap_get_control_cs_ctrl(coap_message_t *msg, CoAP_msg_detail_t *coap_c
         }
     }  else {// type is OK.
 
-        if ( WICED_SUCCESS == get_uint32_from_query_str( "id", &id, coap_cd->uri_query ) ) {
+        if ( WICED_SUCCESS == imx_get_uint32_from_query_str( "id", &id, coap_cd->uri_query ) ) {
 
             if ( imx_is_multicast_ip( &( msg->my_ip_from_request ) ) ) {
                 return COAP_NO_RESPONSE;

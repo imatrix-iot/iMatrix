@@ -54,6 +54,7 @@
 #include "../CoAP_interface/coap_def.h"
 #include "../CoAP_interface/match_uri.h"
 #include "../CoAP_interface/coap_msg_get_store.h"
+#include "../CoAP_interface/imx_wrong_group.h"
 #include "que_manager.h"
 #include "coap_receive.h"
 #include "../cli/messages.h"
@@ -126,6 +127,14 @@ uint16_t handle_request(message_t* msg) {
         PRINTF( "Bad request received!\r\n");
         return response;
     }
+    // Reject all packets being sent to the wrong_group except for packets sent to provisioning.
+    // Because devices don't initially have groups assigned,
+    // all devices need to get provisioning messages regardless of group.
+    if ( ( 0 != strcmp( cd.uri, "/control/provisioning" ) ) &&
+         imx_wrong_group( &cd ) ) {
+        return COAP_NO_RESPONSE;
+    }
+
 
     PRINTF( "Looking for uri in iMatrix CoAP entries\r\n" );
     matched_entry = match_uri( cd.uri, CoAP_entries, NO_IMATRIX_COAP_ENTRIES );

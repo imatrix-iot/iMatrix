@@ -605,7 +605,7 @@ uint16_t add_options_from_string( uint16_t option_number, char separator, char *
         return 0;
     }
     char split_list[ 2 ] = { separator, '\0' };
-    int word_length = get_length_before( split_list, word, strlen( word ) );
+    int word_length = imx_get_length_before( split_list, word, strlen( word ) );
     while( word_length < strlen( word ) - 1 ) {// While there is at least one character after the separator.
 
         word[ word_length ] = '\0';// Terminate string for first word by replacing slash with NULL.
@@ -617,7 +617,7 @@ uint16_t add_options_from_string( uint16_t option_number, char separator, char *
 
         buf_index += option_length;
         word = next_word;
-        word_length = get_length_before( split_list, word, strlen( word ) );
+        word_length = imx_get_length_before( split_list, word, strlen( word ) );
     }
     // The last word should have no slash after it.
     option_length = add_coap_str_option( option_number, current_option_number, word,

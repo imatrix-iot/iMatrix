@@ -47,7 +47,7 @@
 #include "../imatrix_upload/registration.h"
 #include "../json/mjson.h"
 #include "../coap/add_coap_option.h"
-#include "../CoAP_interface/get_uint_from_query_str.h"
+#include "../CoAP_interface/imx_get_uint_from_query_str.h"
 #include "../wifi/wifi.h"
 #include "coap_def.h"
 #include "coap_msg_get_store.h"

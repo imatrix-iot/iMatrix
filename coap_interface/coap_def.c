@@ -49,7 +49,7 @@
 #include "../CoAP/coap.h"
 #include "../CoAP/add_coap_option.h"
 #include "../CoAP/que_manager.h"
-#include "../CoAP_interface/get_uint_from_query_str.h"
+#include "../CoAP_interface/imx_get_uint_from_query_str.h"
 #include "../device/icb_def.h"
 #include "../ota_loader/ota_loader.h"
 #include "../ota_loader/ota_structure.h"

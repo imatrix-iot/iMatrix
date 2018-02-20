@@ -45,7 +45,7 @@
 #include "../coap/coap.h"
 #include "../json/mjson.h"
 #include "../coap/add_coap_option.h"
-#include "../CoAP_interface/get_uint_from_query_str.h"
+#include "../CoAP_interface/imx_get_uint_from_query_str.h"
 #include "../ota_loader/ota_loader.h"
 #include "../wifi/wifi.h"
 #include "coap_def.h"

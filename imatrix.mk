@@ -73,6 +73,7 @@ coap/coap_transmit.c coap/coap_transmit.h \
 coap/tcp_transport.c coap/tcp_transport.h \
 coap/coap_tcp_recv.c coap/coap_tcp_recv.h \
 coap/udp_transport.c coap/udp_transport.h \
+coap_interface/imx_wrong_group.c coap_interface/imx_wrong_group.h \
 coap_interface/coap_config_imatrix.c coap_interface/coap_config_imatrix.h \
 coap_interface/coap_control_cs_ctrl.c coap_interface/coap_control_cs_ctrl.h \
 coap_interface/coap_control_getlatest.c coap_interface/coap_control_getlatest.h \
@@ -84,7 +85,7 @@ coap_interface/coap_control_security.c coap_interface/coap_control_security.h \
 coap_interface/coap_def.c coap_interface/coap_def.h \
 coap_interface/coap_msg_get_store.c coap_interface/coap_msg_get_store.h \
 coap_interface/coap_sensor_rssi.c coap_interface/coap_sensor_rssi.h \
-coap_interface/get_uint_from_query_str.c coap_interface/get_uint_from_query_str.h \
+coap_interface/imx_get_uint_from_query_str.c coap_interface/imx_get_uint_from_query_str.h \
 coap_interface/match_uri.c coap_interface/match_uri.h \
 coap_interface/token_string.c coap_interface/token_string.h \
 cs_ctrl/controls.c cs_ctrl/controls.h cs_ctrl/common_config.c cs_ctrl/common_config.h cs_ctrl/imx_cs_interface.c cs_ctrl/imx_cs_interface.h \

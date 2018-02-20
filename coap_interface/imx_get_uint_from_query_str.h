@@ -76,5 +76,5 @@
  *      Author: eric
  */
 
-wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query_str );
-wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* query_str );
+wiced_result_t imx_get_uint_from_query_str( char* name, uint16_t *value, char* query_str );
+wiced_result_t imx_get_uint32_from_query_str( char* name, uint32_t *value, char* query_str );

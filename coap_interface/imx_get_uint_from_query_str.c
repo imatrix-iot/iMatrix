@@ -39,7 +39,7 @@
 
 #include "wiced.h"
 #include "token_string.h"
-#include "get_uint_from_query_str.h"
+#include "imx_get_uint_from_query_str.h"
 #include "../cli/interface.h"
 
 /**
@@ -54,7 +54,7 @@
  *
  * written by Eric Thelin 9 January 2016
  */
-wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query_str )
+wiced_result_t imx_get_uint_from_query_str( char* name, uint16_t *value, char* query_str )
 {
     int a = 0;
     int option_end = 0;
@@ -73,7 +73,7 @@ wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query
 
         short_query = &(query_str[a]); //get the right side of query starting at index a
 
-        option_end = get_length_before( "&=", short_query, strlen( short_query ) );
+        option_end = imx_get_length_before( "&=", short_query, strlen( short_query ) );
 
         if ( option_end <= 0 ) {// No token in front of & or =
             imx_printf( "error: infinite while loop in function get_group_from_query_str.\n\r" );
@@ -84,7 +84,7 @@ wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query
             return WICED_ERROR;
         }
         //option name OK, need value
-        value_end = get_length_before( "&", short_query, strlen( short_query ) );
+        value_end = imx_get_length_before( "&", short_query, strlen( short_query ) );
 
         if ( value_end <= option_end + 1 ) { // no value after option=
             imx_printf( "error: query string has an option= nothing!\n\r" );
@@ -92,15 +92,15 @@ wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query
         }
         // else there is some kind of value
 
-        if ( left_str_equals( name, short_query, option_end ) ) {
+        if ( imx_left_str_equals( name, short_query, option_end ) ) {
 
             value_and_more = &( query_str[a + option_end + 1 ] );
 
-            value_end = get_length_before( "&", value_and_more,
+            value_end = imx_get_length_before( "&", value_and_more,
                 strlen( value_and_more ) );
 
-            if ( left_str_is_uint( value_and_more, value_end ) ) {
-                *value = make_str_uint( value_and_more, value_end );
+            if ( imx_left_str_is_uint( value_and_more, value_end ) ) {
+                *value = imx_make_str_uint( value_and_more, value_end );
                 return WICED_SUCCESS;
             }
             else {
@@ -127,7 +127,7 @@ wiced_result_t get_uint_from_query_str( char* name, uint16_t *value, char* query
  * written by Eric Thelin 9 January 2016
  * updated by Greg Phillips 14 April 2017 to support unsigned long
  */
-wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* query_str )
+wiced_result_t imx_get_uint32_from_query_str( char* name, uint32_t *value, char* query_str )
 {
     int a = 0;
     int option_end = 0;
@@ -146,7 +146,7 @@ wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* que
 
         short_query = &(query_str[a]); //get the right side of query starting at index a
 
-        option_end = get_length_before( "&=", short_query, strlen( short_query ) );
+        option_end = imx_get_length_before( "&=", short_query, strlen( short_query ) );
 
         if ( option_end <= 0 ) {// No token in front of & or =
             imx_printf( "error: infinite while loop in function get_group_from_query_str.\n\r" );
@@ -157,7 +157,7 @@ wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* que
             return WICED_ERROR;
         }
         //option name OK, need value
-        value_end = get_length_before( "&", short_query, strlen( short_query ) );
+        value_end = imx_get_length_before( "&", short_query, strlen( short_query ) );
 
         if ( value_end <= option_end + 1 ) { // no value after option=
             imx_printf( "error: query string has an option= nothing!\n\r" );
@@ -165,14 +165,14 @@ wiced_result_t get_uint32_from_query_str( char* name, uint32_t *value, char* que
         }
         // else there is some kind of value
 
-        if ( left_str_equals( name, short_query, option_end ) ) {
+        if ( imx_left_str_equals( name, short_query, option_end ) ) {
 
             value_and_more = &( query_str[a + option_end + 1 ] );
 
-            value_end = get_length_before( "&", value_and_more,
+            value_end = imx_get_length_before( "&", value_and_more,
                 strlen( value_and_more ) );
 
-            if ( left_str_is_uint( value_and_more, value_end ) ) {
+            if ( imx_left_str_is_uint( value_and_more, value_end ) ) {
                 *value = strtoul( value_and_more, (char**) ( (uint32_t) value_and_more + value_end ), 10 );
                 return WICED_SUCCESS;
             }

@@ -64,6 +64,11 @@
 #define IMX_CONTROL_SENSOR_NAME_LENGTH  ( 32 )
 #define IMX_CONTROL_NAME_LENGTH         (IMX_CONTROL_SENSOR_NAME_LENGTH)
 /*
+ * CoAP Related
+ */
+#define IMX_NO_GROUP_VALUE              65535
+
+/*
  * Product Capabilities
  */
 #define IMX_WIFI_2_4GHZ                 0x00000001

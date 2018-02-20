@@ -216,12 +216,25 @@ void *imx_allocate_storage( uint16_t size );
 void imx_add_var_free_pool( var_data_entry_t *var_data_ptr );
 var_data_entry_t *imx_get_var_data( uint16_t length );
 /*
- * IP & CoAP Processing defines
+ * IP & CoAP Processing defines and related string handling
  */
 #include "coap/coap.h"
 bool imx_is_multicast_ip( wiced_ip_address_t *addr );
 void imx_set_host_coap_interface( uint16_t no_coap_entries, CoAP_entry_t *host_coap_entries );
 bool imx_supress_multicast_response( wiced_ip_address_t *addr, uint16_t response );
+int imx_wrong_group( CoAP_msg_detail_t *cd );
+wiced_result_t imx_get_group_from_query_str( char* query_str, uint16_t *group );
+uint16_t imx_in_my_groups( uint16_t group );
+wiced_result_t imx_get_group_from_json( char *data, uint16_t data_length, uint16_t *group );
+uint16_t imx_skip_whitespace( int direction, char *data, uint16_t start, uint16_t data_length );
+uint16_t imx_end_of_string( char *data, uint16_t start, uint16_t data_length );
+uint16_t imx_end_of_object( char *data, uint16_t start, uint16_t data_length );
+wiced_result_t imx_get_uint_from_query_str( char* name, uint16_t *value, char* query_str );
+int imx_left_str_equals( char* str1, char* str2, int length );
+int imx_get_length_before( char terminating_chars[], char str[], int max_length );
+uint16_t imx_left_str_is_uint( char  *number, int length );
+uint16_t imx_make_str_uint( char* str, int length );
+
 /*
  * Include JSON library
  */

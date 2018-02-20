@@ -74,7 +74,7 @@
  *      Author: eric thelin
  */
 
-int left_str_equals( char* str1, char* str2, int length ); 
-int get_length_before( char terminating_chars[], char str[], int max_length );
-uint16_t left_str_is_uint( char  *number, int length );
-uint16_t make_str_uint( char* str, int length );
+int imx_left_str_equals( char* str1, char* str2, int length );
+int imx_get_length_before( char terminating_chars[], char str[], int max_length );
+uint16_t imx_left_str_is_uint( char  *number, int length );
+uint16_t imx_make_str_uint( char* str, int length );

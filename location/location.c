@@ -349,3 +349,25 @@ void imx_set_group_id(uint32_t group_id )
     device_config.group_id = group_id;
     imatrix_save_config();
 }
+
+/**
+  * @brief Set all location information
+  * @param  all location items
+  * @retval : longitude
+  */
+void imx_set_all_location( uint32_t local_seconds_offset_from_utc, float longitude, float latitude, float elevation, uint32_t indoor_x, uint32_t indoor_y, uint32_t indoor_z,
+        uint32_t building_id, uint32_t floor_id, uint32_t room_id, uint32_t group_id )
+{
+    device_config.local_seconds_offset_from_utc = local_seconds_offset_from_utc;
+    device_config.longitude = longitude;
+    device_config.latitude = latitude;
+    device_config.elevation = elevation;
+    device_config.indoor_x = indoor_x;
+    device_config.indoor_y = indoor_y;
+    device_config.indoor_z = indoor_z;
+    device_config.building_id = building_id;
+    device_config.floor_id = floor_id;
+    device_config.room_id = room_id;
+    device_config.group_id = group_id;
+    imatrix_save_config();
+}

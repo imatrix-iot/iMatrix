@@ -177,6 +177,8 @@ uint32_t imx_get_room_id(void);
 void imx_set_room_id(uint32_t room_id );
 uint32_t imx_get_group_id(void);
 void imx_set_group_id(uint32_t group_id );
+void imx_set_all_location( uint32_t local_seconds_offset_from_utc, float longitude, float latitude, float elevation, uint32_t indoor_x, uint32_t indoor_y, uint32_t indoor_z,
+        uint32_t building_id, uint32_t floor_id, uint32_t room_id, uint32_t group_id );
 /*
  * General Wi Fi Status routines
  */

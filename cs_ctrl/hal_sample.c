@@ -293,7 +293,7 @@ void hal_sample( imx_peripheral_type_t type, wiced_time_t current_time )
              * Check for overflow - Save only the last sample values
              */
             if( csd[ *active ].no_samples >= ( device_config.history_size - 1 ) ) {
-                memmove( &csd[ *active ].data[ 0 ], &csd[ *active ].data[ 1 ], ( device_config.history_size - 1 ) * SAMPLE_LENGTH );
+                memmove( &csd[ *active ].data[ 0 ], &csd[ *active ].data[ 1 ], ( device_config.history_size - 1 ) * IMX_SAMPLE_LENGTH );
             } else
                 csd[ *active ].no_samples += 1;
             csd[ *active ].last_sample_time = current_time;

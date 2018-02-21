@@ -130,13 +130,13 @@ void add_registration( upload_data_t **upload_data, uint16_t *remaining_data_len
     /*
     * Update the pointer and amount number of bytes left in buffer
     */
-    foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH * 2 );
+    foo32bit = sizeof( header_t ) + ( IMX_SAMPLE_LENGTH * 2 );
     (*upload_data) = ( upload_data_t *) ( ( uint32_t) ( *upload_data ) + foo32bit );
     *remaining_data_length -= foo32bit;
     /*
     * Update the pointer and amount number of bytes left in buffer
     */
-    foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH );
+    foo32bit = sizeof( header_t ) + ( IMX_SAMPLE_LENGTH );
     (*upload_data) = ( upload_data_t *) ( ( uint32_t) ( *upload_data ) + foo32bit );
     *remaining_data_length -= foo32bit;
     imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit * 3, *remaining_data_length );
@@ -187,12 +187,12 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     (*upload_data)->header.last_utc_ms_sample_time = 0;
     if( icb.time_set_with_NTP == true )
         (*upload_data)->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-    memcpy( &foo32bit, &icb.latitude, SAMPLE_LENGTH );
+    memcpy( &foo32bit, &icb.latitude, IMX_SAMPLE_LENGTH );
     (*upload_data)->data[ 0 ].uint_32bit = htonl( foo32bit );
     /*
     * Update the pointer and amount number of bytes left in buffer
     */
-    foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH );
+    foo32bit = sizeof( header_t ) + ( IMX_SAMPLE_LENGTH );
     (*upload_data) = ( upload_data_t *) ( ( uint32_t) ( *upload_data ) + foo32bit );
     *remaining_data_length -= foo32bit;
     /*
@@ -213,12 +213,12 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     (*upload_data)->header.last_utc_ms_sample_time = 0;
     if( icb.time_set_with_NTP == true )
         (*upload_data)->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-    memcpy( &foo32bit, &icb.longitude, SAMPLE_LENGTH );
+    memcpy( &foo32bit, &icb.longitude, IMX_SAMPLE_LENGTH );
     (*upload_data)->data[ 0 ].uint_32bit = htonl( foo32bit );
     /*
     * Update the pointer and amount number of bytes left in buffer
     */
-    foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH );
+    foo32bit = sizeof( header_t ) + ( IMX_SAMPLE_LENGTH );
     (*upload_data) = ( upload_data_t *) ( ( uint32_t) ( *upload_data ) + foo32bit );
     *remaining_data_length -= foo32bit;
     /*
@@ -239,12 +239,12 @@ void add_gps( upload_data_t **upload_data, uint16_t *remaining_data_length, wice
     (*upload_data)->header.last_utc_ms_sample_time = 0;
     if( icb.time_set_with_NTP == true )
         (*upload_data)->header.last_utc_ms_sample_time = htonll( upload_utc_ms_time );
-    memcpy( &foo32bit, &icb.elevation, SAMPLE_LENGTH );
+    memcpy( &foo32bit, &icb.elevation, IMX_SAMPLE_LENGTH );
     (*upload_data)->data[ 0 ].uint_32bit = htonl( foo32bit );
     /*
     * Update the pointer and amount number of bytes left in buffer
     */
-    foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH );
+    foo32bit = sizeof( header_t ) + ( IMX_SAMPLE_LENGTH );
     (*upload_data) = ( upload_data_t *) ( ( uint32_t) ( *upload_data ) + foo32bit );
     *remaining_data_length -= foo32bit;
     imx_printf( "Added %lu Bytes, %u Bytes remaining in packet\r\n", foo32bit * 3, *remaining_data_length );

@@ -118,7 +118,7 @@ imx_status_t imx_get_control_sensor( imx_peripheral_type_t type, uint16_t entry,
     if( csb[ entry ].enabled == false )
         return IMX_CONTROL_DISABLED;
     if( csd[ entry ].valid == true ) {
-        memcpy( value, &csd[ entry ].last_value, SAMPLE_LENGTH );
+        memcpy( value, &csd[ entry ].last_value, IMX_SAMPLE_LENGTH );
         return IMX_SUCCESS;
     } else
         return IMX_NO_DATA;
@@ -177,7 +177,7 @@ imx_status_t imx_set_control_sensor( imx_peripheral_type_t type, uint16_t entry,
          * copy the value and do any action needed - Note this is for just raw uint, int and float data
          */
         PRINTF( "Copying %s: %u to last value @ 0x%08lx\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry, &csd[ entry ].last_value );
-        memcpy( &csd[ entry ].last_value, value, SAMPLE_LENGTH );
+        memcpy( &csd[ entry ].last_value, value, IMX_SAMPLE_LENGTH );
     }
     csd[ entry ].valid = true;  // We have a sample
     PRINTF( "%s: %u Now Valid\r\n", ( type == IMX_CONTROLS ) ? "Control" : "Sensor", entry );

@@ -128,7 +128,7 @@ imx_status_t init_storage(void)
         if( cd == NULL )
             return IMX_OUT_OF_MEMORY;
         for( i = 0; i < device_config.no_controls; i++ ) {
-            memory_requested = ( device_config.history_size * SAMPLE_LENGTH  );
+            memory_requested = ( device_config.history_size * IMX_SAMPLE_LENGTH  );
             cd[ i ].data = (imx_data_32_t*) imx_allocate_storage( memory_requested );
             if( cd[ i ].data == NULL )
                 return IMX_OUT_OF_MEMORY;
@@ -155,7 +155,7 @@ imx_status_t init_storage(void)
         if( sd == NULL )
             return IMX_OUT_OF_MEMORY;
         for( i = 0; i < device_config.no_sensors; i++ ) {
-            memory_requested = ( device_config.history_size * SAMPLE_LENGTH  );
+            memory_requested = ( device_config.history_size * IMX_SAMPLE_LENGTH  );
             sd[ i ].data = (imx_data_32_t *) imx_allocate_storage( memory_requested );
             if( sd[ i ].data == NULL )
                 return IMX_OUT_OF_MEMORY;

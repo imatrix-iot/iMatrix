@@ -91,7 +91,6 @@
  *  Define the number of supported controls and sensors in the system
  *
  */
-#define SAMPLE_LENGTH                       4
 
 #define USE_WARNING_LEVEL_1                 ( 0x01 )    // Bit Masks
 #define USE_WARNING_LEVEL_2                 ( 0x02 )

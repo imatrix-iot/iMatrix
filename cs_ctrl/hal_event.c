@@ -139,7 +139,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
          */
         if( csb[ entry ].data_type == IMX_VARIABLE_LENGTH )
             imx_add_var_free_pool( csd[ entry ].data[ 0 ].var_data );
-        memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( device_config.history_size - 2 ) * SAMPLE_LENGTH );
+        memmove( &csd[ entry ].data[ 0 ], &csd[ entry ].data[ 2 ], ( device_config.history_size - 2 ) * IMX_SAMPLE_LENGTH );
         csd[ entry ].no_samples -= 2;
     }
 	/*
@@ -150,7 +150,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
     } else
         upload_utc_time = 0;        // Tell iMatrix to assign
 
-    memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ],  &upload_utc_time, SAMPLE_LENGTH );
+    memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ],  &upload_utc_time, IMX_SAMPLE_LENGTH );
     /*
      * Add Data
      */
@@ -191,7 +191,7 @@ void hal_event( imx_peripheral_type_t type, uint16_t entry, void *value )
          * All Other Data is really just 32 bit
          */
         csd[ entry ].no_samples += 1;
-        memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, SAMPLE_LENGTH );
+        memcpy( &csd[ entry ].data[ csd[ entry ].no_samples ].uint_32bit, value, IMX_SAMPLE_LENGTH );
     }
 
     /*

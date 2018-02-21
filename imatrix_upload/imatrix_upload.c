@@ -515,7 +515,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                 /*
                                                  * Move data up and free up variable data records
                                                  */
-                                                memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
+                                                memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, IMX_SAMPLE_LENGTH * no_samples );
                                                 upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb[ i ].sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
                                                 csd[ i ].no_samples = csd[ i ].no_samples - no_samples;
                                             }
@@ -525,10 +525,10 @@ void imatrix_upload(wiced_time_t current_time)
                                             * Amount = ?time stamp ( 4 bytes ) + data length ( 4 bytes ) + actual variable length data + padding to fill out 32 bits.
                                             */
                                             foo32bit = sizeof( header_t )
-                                                    + ( ( csb[ i ].sample_rate == 0 ) ? SAMPLE_LENGTH : 0 ) // Timestamp
-                                                    + SAMPLE_LENGTH                                         // Data length
+                                                    + ( ( csb[ i ].sample_rate == 0 ) ? IMX_SAMPLE_LENGTH : 0 ) // Timestamp
+                                                    + IMX_SAMPLE_LENGTH                                         // Data length
                                                     + variable_data_length;                                  // Data + padding
-                                                    // + ( ( variable_data_length % SAMPLE_LENGTH == 0 ) ? 0 : ( SAMPLE_LENGTH - ( variable_data_length % SAMPLE_LENGTH ) ) );
+                                                    // + ( ( variable_data_length % IMX_SAMPLE_LENGTH == 0 ) ? 0 : ( IMX_SAMPLE_LENGTH - ( variable_data_length % IMX_SAMPLE_LENGTH ) ) );
                                             upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
                                             remaining_data_length -= foo32bit;
                                             entry_loaded = true;
@@ -552,7 +552,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                     /*
                                                      * Move data up in history
                                                      */
-                                                    memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ 1 ].uint_32bit, SAMPLE_LENGTH * 1 );
+                                                    memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ 1 ].uint_32bit, IMX_SAMPLE_LENGTH * 1 );
                                                 }
                                                 /*
                                                  * Sanity check
@@ -567,7 +567,7 @@ void imatrix_upload(wiced_time_t current_time)
                                         /*
                                          * Process Regular data record, samplings and events
                                          */
-                                        if( remaining_data_length >= ( sizeof( header_t ) + SAMPLE_LENGTH ) ) {
+                                        if( remaining_data_length >= ( sizeof( header_t ) + IMX_SAMPLE_LENGTH ) ) {
                                             /*
                                              * Process a regular set of samples
                                              */
@@ -575,7 +575,7 @@ void imatrix_upload(wiced_time_t current_time)
                                              * See how many we can fit
                                              */
                                             PRINTF( "Checking to see if %u samples can fit in %u", csd[ i ].no_samples, remaining_data_length );
-                                            if( remaining_data_length >= ( sizeof( header_t ) + ( SAMPLE_LENGTH * csd[ i ].no_samples ) ) ) {
+                                            if( remaining_data_length >= ( sizeof( header_t ) + ( IMX_SAMPLE_LENGTH * csd[ i ].no_samples ) ) ) {
                                                 /*
                                                  * They can all fit
                                                  */
@@ -585,7 +585,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                 /*
                                                  * Calculate how many will fit
                                                  */
-                                                no_samples = ( remaining_data_length - sizeof( header_t ) ) / ( SAMPLE_LENGTH );
+                                                no_samples = ( remaining_data_length - sizeof( header_t ) ) / ( IMX_SAMPLE_LENGTH );
                                                 PRINTF( " *** - Can Can Fit: %u\r\n", no_samples );
                                             }
                                             PRINTF( "Adding %u samples for %s: %u - ID: 0x%08lx ", no_samples, type == IMX_CONTROLS ? "Control" : "Sensor", i, csb[ i ].id );
@@ -629,7 +629,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                 /*
                                                  * Raw copy the data so sign & float are not cast
                                                  */
-                                                memcpy( &foo32bit, &csd[ i ].data[ j ].uint_32bit, SAMPLE_LENGTH );
+                                                memcpy( &foo32bit, &csd[ i ].data[ j ].uint_32bit, IMX_SAMPLE_LENGTH );
                                                 upload_data->data[ j ].uint_32bit = htonl( foo32bit );
                                             }
                                             /*
@@ -642,7 +642,7 @@ void imatrix_upload(wiced_time_t current_time)
                                                 /*
                                                  * Move up the data and re calculate the last sample time
                                                  */
-                                                memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, SAMPLE_LENGTH * no_samples );
+                                                memmove( &csd[ i ].data[ 0 ].uint_32bit, &csd[ i ].data[ no_samples ].uint_32bit, IMX_SAMPLE_LENGTH * no_samples );
                                                 upload_data->header.last_utc_ms_sample_time = htonll( (uint64_t) upload_utc_ms_time - ( csb[ i ].sample_rate * ( csd[ i ].no_samples - no_samples ) ) );
                                                 csd[ i ].no_samples = csd[ i ].no_samples - no_samples;
                                                 entry_loaded = true;
@@ -650,7 +650,7 @@ void imatrix_upload(wiced_time_t current_time)
                                             /*
                                             * Update the pointer and amount number of bytes left in buffer
                                             */
-                                            foo32bit = sizeof( header_t ) + ( SAMPLE_LENGTH * no_samples );
+                                            foo32bit = sizeof( header_t ) + ( IMX_SAMPLE_LENGTH * no_samples );
                                             upload_data = ( upload_data_t *) ( ( uint32_t) ( upload_data ) + foo32bit );
                                             remaining_data_length -= foo32bit;
                                             PRINTF( "Added %lu Bytes, index @: 0x%08lx, %u Bytes remaining in packet\r\n", foo32bit, (uint32_t) upload_data, remaining_data_length );

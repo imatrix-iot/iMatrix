@@ -169,7 +169,7 @@ void process_location( wiced_time_t current_time )
   */
 float imx_get_longitude(void)
 {
-    return icb.longitude;
+    return device_config.longitude;
 }
 /**
   * @brief Set the longitude of the Thing
@@ -178,7 +178,7 @@ float imx_get_longitude(void)
   */
 void imx_set_longitude(float longitude)
 {
-    icb.longitude = longitude;
+    device_config.longitude = longitude;
 }
 /**
   * @brief Get the latitude of the Thing
@@ -187,7 +187,7 @@ void imx_set_longitude(float longitude)
   */
 float imx_get_latitude(void)
 {
-    return icb.latitude;
+    return device_config.latitude;
 }
 /**
   * @brief Set the latitude of the Thing
@@ -196,7 +196,7 @@ float imx_get_latitude(void)
   */
 void imx_set_latitude(float latitude)
 {
-    icb.latitude = latitude;
+    device_config.latitude = latitude;
 }
 /**
   * @brief Get the elevation of the Thing
@@ -205,7 +205,7 @@ void imx_set_latitude(float latitude)
   */
 float imx_get_elevation(void)
 {
-    return icb.elevation;
+    return device_config.elevation;
 }
 /**
   * @brief Set the elevation of the Thing
@@ -214,7 +214,7 @@ float imx_get_elevation(void)
   */
 void imx_set_elevation(float elevation)
 {
-    icb.elevation = elevation;
+    device_config.elevation = elevation;
 }
 /**
   * @brief Get the indoor_x of the Thing
@@ -223,7 +223,7 @@ void imx_set_elevation(float elevation)
   */
 uint32_t imx_get_indoor_x(void)
 {
-    return icb.indoor_x;
+    return device_config.indoor_x;
 }
 /**
   * @brief Set the indoor_x of the Thing
@@ -232,7 +232,8 @@ uint32_t imx_get_indoor_x(void)
   */
 void imx_set_indoor_x(uint32_t indoor_x)
 {
-    icb.indoor_x = indoor_x;
+    device_config.indoor_x = indoor_x;
+    imatrix_save_config();
 }
 /**
   * @brief Get the indoor_y of the Thing
@@ -241,7 +242,7 @@ void imx_set_indoor_x(uint32_t indoor_x)
   */
 uint32_t imx_get_indoor_y(void)
 {
-    return icb.indoor_y;
+    return device_config.indoor_y;
 }
 /**
   * @brief Set the indoor_y of the Thing
@@ -250,7 +251,8 @@ uint32_t imx_get_indoor_y(void)
   */
 void imx_set_indoor_y(uint32_t indoor_y)
 {
-    icb.indoor_y = indoor_y;
+    device_config.indoor_y = indoor_y;
+    imatrix_save_config();
 }
 /**
   * @brief Get the indoor_z of the Thing
@@ -259,7 +261,7 @@ void imx_set_indoor_y(uint32_t indoor_y)
   */
 uint32_t imx_get_indoor_z(void)
 {
-    return icb.indoor_z;
+    return device_config.indoor_z;
 }
 /**
   * @brief Set the indoor_z of the Thing
@@ -268,7 +270,8 @@ uint32_t imx_get_indoor_z(void)
   */
 void imx_set_indoor_z(uint32_t indoor_z)
 {
-    icb.indoor_z = indoor_z;
+    device_config.indoor_z = indoor_z;
+    imatrix_save_config();
 }
 /**
   * @brief Get the building ID of the Thing

@@ -178,10 +178,10 @@ uint16_t imx_left_str_is_int( char *number, int length )
         return false;
 
     if( number[0] == '-' ) {
-        return left_str_is_uint( &( number[1] ), length - 1 );
+        return imx_left_str_is_uint( &( number[1] ), length - 1 );
     }
 
-    return left_str_is_uint( number, length );
+    return imx_left_str_is_uint( number, length );
 }
 
 /** 

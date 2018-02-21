@@ -42,6 +42,7 @@
 #include "wiced.h"
 
 #include "../storage.h"
+#include "../version.h"
 #include "interface.h"
 #include "./ble/ble_manager.h"
 #include "../coap/que_manager.h"
@@ -117,9 +118,16 @@ void cli_status( uint16_t arg )
     seconds = uptime % 60;
 
 
+    imx_cli_print( "\r\nProduct Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
+    imx_cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
+    imx_cli_print( "Running iMatrix version:" );
+    imx_cli_print( IMX_VERSION_FORMAT, MajorVersion, MinorVersion, IMATRIX_BUILD );
+    imx_cli_print( ", Running Host version:" );
+    imx_cli_print( IMX_VERSION_FORMAT, device_config.host_major_version, device_config.host_minor_version, device_config.host_build_version );
+
     wiced_time_get_utc_time( &utc_time );
     wiced_time_get_iso8601_time( &iso8601_time );
-    imx_cli_print( "System UTC time is: %lu -> %.26s - ", utc_time, (char*)&iso8601_time );
+    imx_cli_print( "\r\nSystem UTC time is: %lu -> %.26s - ", utc_time, (char*)&iso8601_time );
 
     if( icb.boot_time != icb.fake_utc_boot_time ) {
         wiced_time_convert_utc_ms_to_iso8601( (wiced_utc_time_ms_t)icb.boot_time * 1000, &iso8601_time );
@@ -130,8 +138,6 @@ void cli_status( uint16_t arg )
     }
     imx_cli_print( "System up time %u Days, %02lu Hours %02lu Minutes %02lu Seconds", days, hours, minutes, seconds );
 
-    imx_cli_print( "\r\nProduct Name: %s, Device Name: %s - ", device_config.product_name, device_config.device_name  );
-    imx_cli_print( "Serial Number: %08lX%08lX%08lX - iMatrix assigned: %s\r\n", device_config.sn.serial1, device_config.sn.serial2, device_config.sn.serial3, device_config.device_serial_number );
     imx_cli_print( "Last NTP Updated time: %lu, Reboot Counter: %lu, Valid Config: 0x%08x\r\n", (uint32_t) device_config.last_ntp_updated_time, device_config.reboots, device_config.valid_config );
 	imx_cli_print( "Device location: Longitude: %f, Latitude: %f, Elevation: %fm (%6.2fft.)\r\n", icb.longitude, icb.latitude, icb.elevation, ( icb.elevation * FEET_IN_1METER )  );
 
